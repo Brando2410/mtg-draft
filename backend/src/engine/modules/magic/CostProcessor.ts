@@ -74,7 +74,7 @@ export class CostProcessor {
       case CostType.Mana:
         const effectiveMana = this.getEffectiveManaCost(state, cost, source, stackObject);
         const { mana: ManaProcessor } = getProcessors(state);
-        return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana, source);
+        return ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveMana, source);
 
       case CostType.Loyalty: {
         const loyaltyCost = cost as LoyaltyCost;
@@ -92,7 +92,7 @@ export class CostProcessor {
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validSacrifices = state.battlefield.filter(c =>
           String(c.controllerId) === String(playerId) &&
-          (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id }))
+          (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] }))
         );
         return validSacrifices.length >= neededSac;
       }
@@ -106,7 +106,7 @@ export class CostProcessor {
         const neededDisc = String(discCost.amount) === 'ALL' ? player.hand.length : (Number(discCost.amount) || 1);
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validDiscards = player.hand.filter(c =>
-          (!discCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, discCost.restrictions, { controllerId: playerId, sourceId: source.id }))
+          (!discCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, discCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] }))
         );
         return validDiscards.length >= neededDisc;
       }
@@ -137,7 +137,7 @@ export class CostProcessor {
         const neededExile = String(exileCost.amount) === 'ALL' ? pool.length : (Number(exileCost.amount) || 1);
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validExiles = pool.filter((c: GameObject) =>
-          (!exileCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions, { controllerId: playerId, sourceId: source.id }))
+          (!exileCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] }))
         );
         return validExiles.length >= neededExile;
       }
@@ -165,7 +165,7 @@ export class CostProcessor {
           !o.isTapped &&
           (() => {
             const { targeting: TargetingProcessor } = getProcessors(state);
-            return (!tapCost.restrictions || TargetingProcessor.matchesRestrictions(state, o, tapCost.restrictions, { controllerId: playerId, sourceId: source.id }));
+            return (!tapCost.restrictions || TargetingProcessor.matchesRestrictions(state, o, tapCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] }));
           })()
         );
         return candidates.length >= amount;
@@ -227,7 +227,7 @@ export class CostProcessor {
           } else {
             // Fallback for auto-order/automated effects (not recommended for complex costs)
             const { targeting: TargetingProcessor } = getProcessors(state);
-            toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id })));
+            toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] })));
           }
         }
 

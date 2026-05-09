@@ -96,6 +96,7 @@ export class RestrictionValidator {
         return ConditionProcessor.matchesCondition(state, restriction.condition, {
             sourceId: obj.id,
             controllerId: obj.controllerId,
+            effects: [],
             targets: []
         });
     }
@@ -133,7 +134,7 @@ export class RestrictionValidator {
         if (this.handleSplitSecond(state)) return false;
 
         const playerRestrictions = this.getPlayerRestrictions(state, playerId);
-        
+
         // General cast permission
         const isGenerallyRestricted = playerRestrictions.some(r => r.type === RestrictionType.CannotCastSpells && this.isPlayerRestrictionActive(state, playerId, r));
         if (isGenerallyRestricted) return false;
@@ -146,7 +147,7 @@ export class RestrictionValidator {
                 }
 
                 if (r.type === RestrictionType.CannotCastNamedCard) {
-                    const namedCardName = state.turnState.namedCards?.[r.sourceId || ""] || (r as any).value;
+                    const namedCardName = state.turnState.namedCards?.[r.sourceId || ""] || r.value;
                     if (namedCardName && card.definition.name.toLowerCase() === namedCardName.toLowerCase() && this.isPlayerRestrictionActive(state, playerId, r)) {
                         return false;
                     }
@@ -195,6 +196,7 @@ export class RestrictionValidator {
         return ConditionProcessor.matchesCondition(state, restriction.condition, {
             sourceId: "global",
             controllerId: playerId,
+            effects: [],
             targets: []
         });
     }

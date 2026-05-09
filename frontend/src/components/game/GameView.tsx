@@ -194,7 +194,8 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
               const selected = currentPending?.data?.selectedTargets || [];
               const targetDef = currentPending?.data?.targetDefinition;
               const isOptional = targetDef?.optional || targetDef?.minCount === 0;
-              const min = currentPending?.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
+              const rawMin = currentPending?.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
+              const min = typeof rawMin === 'number' ? rawMin : (typeof rawMin === 'object' && rawMin !== null && 'min' in rawMin ? (rawMin as any).min : 1);
               const canConfirm = selected.length >= min;
               actions.resolveTarget(canConfirm ? 'skip' : 'undo');
             } else {

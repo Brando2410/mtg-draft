@@ -1,6 +1,7 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ActionType } from '@shared/engine_types';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 interface ActionPromptProps {
   pendingAction: any;
@@ -8,6 +9,7 @@ interface ActionPromptProps {
 }
 
 export const ActionPrompt = memo(({ pendingAction, isMe }: ActionPromptProps) => {
+  const meta = useMemo(() => getActionMeta(pendingAction), [pendingAction]);
   if (!pendingAction) return null;
 
 
@@ -36,8 +38,8 @@ export const ActionPrompt = memo(({ pendingAction, isMe }: ActionPromptProps) =>
                           {pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :
                           pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
                           pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
-                          pendingAction.type === ActionType.Discard ? (pendingAction.data?.label || `Discard ${pendingAction.count || 1} card${(pendingAction.count || 1) > 1 ? 's' : ''}`) :
-                          pendingAction.type === ActionType.Targeting ? (pendingAction.data?.prompt || 'Select targets') :
+                          pendingAction.type === ActionType.Discard ? (pendingAction.data?.label || `Discard ${pendingAction.data?.minChoices || meta.discardAmount || pendingAction.count || 1} card${(Number(pendingAction.data?.minChoices || meta.discardAmount || pendingAction.count || 1)) > 1 ? 's' : ''}`) :
+                          pendingAction.type === ActionType.Targeting ? (pendingAction.data?.prompt || pendingAction.data?.label || 'Select targets') :
                           (pendingAction.data?.label || 'Make a choice')}
                       </h2>
                   </div>

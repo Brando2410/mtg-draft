@@ -176,7 +176,7 @@ export class SpellValidator {
             return false;
         }
 
-        if (ability.triggerCondition && !ability.triggerCondition(state, { type: 'NONE' } as any, { sourceId: obj.id, controllerId: playerId })) {
+        if (ability.triggerCondition && !ability.triggerCondition(state, { type: 'NONE' } as any, { sourceId: obj.id, controllerId: playerId , effects: [], targets: []})) {
             logger.info(state, LogCategory.ACTION, `Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
             return false;
         }
@@ -195,14 +195,14 @@ export class SpellValidator {
     }
 
 
-    public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, cardLogic: CardLogic | undefined): boolean {
+    public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition): boolean {
         const { logger } = getProcessors(state);
         const isPlaneswalker = RuleUtils.isPlaneswalker(obj);
         
         let isSorceryOnly = false;
         if (ability.type === AbilityType.Activated) {
             const activated = ability as ActivatedAbilityDefinition;
-            isSorceryOnly = !!activated.activatedOnlyAsSorcery || (activated as any).isSorcerySpeed;
+            isSorceryOnly = !!activated.activatedOnlyAsSorcery;
         }
 
         if (isPlaneswalker || isSorceryOnly) {
@@ -210,7 +210,7 @@ export class SpellValidator {
             const isMainPhase = (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
             const stackEmpty = state.stack.length === 0;
             const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
-            const canActivateAnyTime = (cardLogic?.abilities || []).some((a: string | AbilityDefinition) => {
+            const canActivateAnyTime = (obj.definition.abilities || []).some((a: string | AbilityDefinition) => {
                 if (typeof a === 'string') return false;
                 return a.type === AbilityType.Static && String(a.id).includes('any_turn');
             }) ||

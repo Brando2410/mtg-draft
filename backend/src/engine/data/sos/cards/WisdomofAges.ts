@@ -6,6 +6,7 @@ export const WisdomofAges: CardDefinition = {
     types: ["Sorcery"],
     subtypes: [],
     keywords: [],
+    exileOnResolution: true,
     oracleText: "Return all instant and sorcery cards from your graveyard to your hand. You have no maximum hand size for the rest of the game.\nExile Wisdom of Ages.",
     abilities: [
         {
@@ -24,10 +25,6 @@ export const WisdomofAges: CardDefinition = {
                     duration: { type: DurationType.Permanent },
                     playerModifier: { maxHandSize: 999 },
                     targetMapping: TargetMapping.Controller
-                },
-                {
-                    type: EffectType.Exile,
-                    targetMapping: TargetMapping.Self
                 }
             ]
         }

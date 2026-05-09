@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ActionType, type GameObject, type PlayerState, type StackObject } from '@shared/engine_types';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 export const useChoiceModalLogic = (
     pendingAction: any,
@@ -22,6 +23,8 @@ export const useChoiceModalLogic = (
         setScryState({ top: [], bottom: [], graveyard: [] });
         setViewedPlayerId(me?.id || null);
     }, [pendingAction?.type, pendingAction?.sourceId, pendingAction?.data?.label, me?.id]);
+
+    const meta = useMemo(() => getActionMeta(pendingAction), [pendingAction]);
 
     const sourceObject = useMemo(() => {
         const sourceId = pendingAction?.sourceId;
@@ -55,17 +58,17 @@ export const useChoiceModalLogic = (
     const allowDuplicates = pendingAction?.data?.allowDuplicates;
 
     useEffect(() => {
-        if (isOrderTriggers && pendingAction?.data?.triggers) {
-            setOrderedTriggers(pendingAction.data.triggers);
+        if (isOrderTriggers && (pendingAction?.data?.triggers || meta.triggers)) {
+            setOrderedTriggers(pendingAction?.data?.triggers || meta.triggers);
         }
-        if (isScrySurveil && pendingAction?.data?.lookingCards) {
+        if (isScrySurveil && (pendingAction?.data?.lookingCards || meta.lookingCards)) {
             setScryState({
-                top: [...pendingAction.data.lookingCards],
+                top: [...(pendingAction?.data?.lookingCards || meta.lookingCards || [])],
                 bottom: [],
                 graveyard: []
             });
         }
-    }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, isOrderTriggers, isScrySurveil]);
+    }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, meta.triggers, meta.lookingCards, isOrderTriggers, isScrySurveil]);
 
     const handleChoiceClick = useCallback((originalIdx: number) => {
         const choice = choices[originalIdx];
@@ -122,6 +125,7 @@ export const useChoiceModalLogic = (
         moveCard,
         choices,
         minChoices,
-        maxChoices
+        maxChoices,
+        meta
     };
 };

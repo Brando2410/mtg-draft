@@ -22,14 +22,14 @@ export class ManaPoolManager {
   public static getUsableMana(player: PlayerState, payingFor?: GameObject): ManaPoolRecord {
     const combined = { ...player.manaPool };
     if (player.restrictedMana && player.restrictedMana.length > 0) {
-      player.restrictedMana.forEach((m: any) => {
+      player.restrictedMana.forEach((m) => {
         let matches = true;
         if (m.restrictions && m.restrictions.length > 0) {
           if (!payingFor) {
             matches = false;
           } else {
             const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
-            matches = m.restrictions.every((r: string) => {
+            matches = m.restrictions.every(r => {
               const lowR = r.toLowerCase();
               // Handle common STX restrictions
               if (lowR === 'instant_or_sorcery') {
@@ -40,7 +40,7 @@ export class ManaPoolManager {
           }
         }
         if (matches) {
-          (combined as any)[m.color] += m.amount;
+          combined[m.color] += m.amount;
         }
       });
     }
@@ -55,18 +55,18 @@ export class ManaPoolManager {
 
     const colorsSpent = new Set<string>();
     const requirements = ManaParser.parseManaCost(costStr);
-    
+
     // Support for Chromatic Orrery / Spend as Any Color
-    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => 
-        (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
-        e.controllerId === player.id &&
-        (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e =>
+      (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) &&
+      e.controllerId === player.id &&
+      (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
     );
 
     const spend = (color: string, amount: number) => {
       if (amount <= 0) return;
       if (color !== 'C') colorsSpent.add(color);
-      
+
       let left = amount;
       // Prioritize restricted mana (specific resources first)
       if (player.restrictedMana) {
@@ -121,7 +121,7 @@ export class ManaPoolManager {
       if (symbol.includes('/')) {
         let left = amount;
         const options = symbol.split('/');
-        
+
         // 1. Try to pay with colors first
         for (const opt of options) {
           if (opt === 'P' || !isNaN(parseInt(opt))) continue;
@@ -162,8 +162,8 @@ export class ManaPoolManager {
 
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
-         const first = symbol.split('/')[0];
-         if (first !== 'P') (player.manaPool as any)[first] += amount;
+        const first = symbol.split('/')[0];
+        if (first !== 'P') player.manaPool[first as keyof ManaPoolRecord] += amount;
       } else {
         player.manaPool[symbol as keyof typeof player.manaPool] += amount;
       }

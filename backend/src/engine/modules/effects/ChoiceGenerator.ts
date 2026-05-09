@@ -1,7 +1,8 @@
-import { ActionType, GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { ActionType, GameObject, GameState, PlayerId, Zone, AbilityCost, EffectDefinition, PendingAction, ChoiceOption, TargetRestriction, EngineFrame, StackObject } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { getProcessors } from '../ProcessorRegistry';
 import { pruneContext } from './EffectProcessor';
+import { ActionBuilder } from '../../utils/ActionBuilder';
 
 export interface ChoiceConfig {
     label: string;
@@ -10,8 +11,8 @@ export interface ChoiceConfig {
     hideUndo?: boolean;
     optional?: boolean;
     actionType?: ActionType;
-    stackObj?: any;
-    parentContext?: any;
+    stackObj?: StackObject;
+    parentContext?: EngineFrame;
     targets?: string[];
     isSpellCasting?: boolean;
     isCostChoice?: boolean;
@@ -20,16 +21,17 @@ export interface ChoiceConfig {
     exileOnResolution?: boolean;
     allowDuplicates?: boolean;
     metadata?: any;
+    nextEffectIndex?: number;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
-    restrictions?: any[];
+    restrictions?: (TargetRestriction | string)[];
     reveal?: boolean;
     filterSelectable?: boolean;
     minChoices?: number;
     maxChoices?: number;
-    onSelected?: (card: GameObject) => any[]; // Returns effects to run
-    onNone?: () => any[]; // Returns effects if skipped/none selected
+    onSelected?: (card: GameObject) => EffectDefinition[]; // Returns effects to run
+    onNone?: () => EffectDefinition[]; // Returns effects if skipped/none selected
 }
 
 /**
@@ -48,14 +50,16 @@ export class ChoiceGenerator {
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
         const { targeting: TargetingProcessor } = getProcessors(state);
-        
-        let options = cards.map(c => {
+
+        let options: ChoiceOption[] = cards.map(c => {
             const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, {
                 controllerId: playerId,
                 sourceId,
-                stackObject: config.stackObj
-            } as any);
-            
+                stackObject: config.stackObj,
+                effects: [],
+                targets: []
+            });
+
             return {
                 label: isMatch ? `Select ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
                 value: c.id,
@@ -80,7 +84,7 @@ export class ChoiceGenerator {
                 cardData: undefined,
                 selectable: true,
                 effects: onNone ? onNone() : []
-            } as any);
+            });
         }
 
         return this.wrap(state, playerId, sourceId, {
@@ -97,8 +101,8 @@ export class ChoiceGenerator {
             costType: config.costType,
             isFreeCast: config.isFreeCast,
             exileOnResolution: config.exileOnResolution || config.stackObj?.exileOnResolution,
-            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? config.stackObj?.data?.minChoices ?? 1),
-            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? config.stackObj?.data?.maxChoices ?? 1),
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
         }, config.actionType);
     }
 
@@ -128,8 +132,8 @@ export class ChoiceGenerator {
             costType: config.costType,
             isFreeCast: config.isFreeCast,
             exileOnResolution: config.exileOnResolution || config.stackObj?.exileOnResolution,
-            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? config.stackObj?.data?.minChoices ?? 1),
-            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? config.stackObj?.data?.maxChoices ?? 1),
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
         }, config.actionType);
     }
 
@@ -167,31 +171,33 @@ export class ChoiceGenerator {
      */
     public static createDiscardChoice(state: GameState, playerIds: PlayerId[], sourceId: string, amount: number | any, label: string, stackObj?: any, parentContext?: any, onFailureEffects?: any[]): any {
         if (playerIds.length === 0) return null;
-        
+
         const { logger } = getProcessors(state);
         const [currentPlayerId, ...nextPlayerIds] = playerIds;
         const player = state.players[currentPlayerId];
-        
+
         logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] createDiscardChoice for ${currentPlayerId}. Next: ${JSON.stringify(nextPlayerIds)}`);
-        
+
         // Reset discard tracking state even if skipping
         state.turnState.lastDiscardedCount = 0;
         state.turnState.lastDiscardedIds = [];
 
         // Skip player if hand is empty
         if (!player || player.hand.length === 0) {
-            const failureEffects = onFailureEffects || (stackObj?.data?.onFailureEffects);
+            const failureEffects = onFailureEffects || stackObj?.onFailureEffects;
             if (failureEffects) {
                 const { effect: EffectProcessor } = getProcessors(state);
                 logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
                 EffectProcessor.resolveEffects({
                     state,
-                    effects: failureEffects,
-                    sourceId,
-                    targets: [currentPlayerId],
-                    stackObject: stackObj,
-                    parentContext: parentContext,
-                    controllerIdOverride: currentPlayerId // Set controller from the discard context
+                    context: EffectProcessor.createEngineFrame(state, {
+                        sourceId,
+                        effects: failureEffects,
+                        targets: [currentPlayerId],
+                        stackObject: stackObj,
+                        parentContext: parentContext,
+                        controllerIdOverride: currentPlayerId
+                    })
                 });
             }
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects);
@@ -204,7 +210,7 @@ export class ChoiceGenerator {
             targets: [currentPlayerId],
             effects: []
         }, [currentPlayerId]));
-        
+
         const isAny = resolvedAmount === 'ANY';
         const isAll = resolvedAmount === 'ALL';
         const discardAmount = isAll || isAny ? player.hand.length : (typeof resolvedAmount === 'number' ? Math.min(player.hand.length, resolvedAmount) : 1);
@@ -216,28 +222,21 @@ export class ChoiceGenerator {
         player.pendingDiscardCount = discardAmount;
         state.turnState.lastDiscardedCount = 0; // Reset for new selection phase
         state.turnState.lastDiscardedIds = [];
-        
+
         const finalAction = this.createCardChoice(state, player.hand, {
             label: isAny ? `${label} (Any number)` : `${label} (${discardAmount})`,
             playerId: currentPlayerId,
             sourceId,
             optional: isAny,
-            actionType: ActionType.Discard, 
+            actionType: ActionType.Discard,
             minChoices: minChoices,
             maxChoices: maxChoices,
             stackObj: {
                 ...stackObj,
                 minChoices: minChoices,
                 maxChoices: maxChoices,
-                onFailureEffects: onFailureEffects,
-                data: {
-                    ...(stackObj?.data || {}),
-                    minChoices: minChoices,
-                    maxChoices: maxChoices,
-                    isOptionalDiscard: isAny, // Flag so engine knows player can stop early
-                    onFailureEffects: onFailureEffects // Preserve for next steps
-                }
-            } as any,
+                onFailureEffects: onFailureEffects
+            },
             parentContext: pruneContext(parentContext),
             targets: [currentPlayerId],
             onSelected: (card: GameObject) => {
@@ -264,20 +263,20 @@ export class ChoiceGenerator {
      */
     public static createCostInteractionChoice(state: GameState, cost: any, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
         const { targeting: TargetingProcessor } = getProcessors(state);
-        
+
         let candidates: GameObject[] = [];
         let label = "Choose targets for cost";
 
         if (cost.type === 'TapSelection') {
-            candidates = state.battlefield.filter(o => 
-                String(o.controllerId) === String(playerId) && 
+            candidates = state.battlefield.filter(o =>
+                String(o.controllerId) === String(playerId) &&
                 !o.isTapped &&
-                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId }))
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId, effects: [], targets: [] }))
             );
             label = `Tap ${cost.amount || cost.value || 1} creatures`;
         } else if (cost.type === 'Discard') {
             candidates = state.players[playerId].hand.filter(c =>
-                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId })
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId, effects: [], targets: [] })
             );
             label = `Discard ${cost.amount || cost.value || 1} cards`;
         } else if (cost.type === 'Exile') {
@@ -288,13 +287,13 @@ export class ChoiceGenerator {
             if (zones.includes('Battlefield')) pool.push(...state.battlefield.filter(o => String(o.controllerId) === String(playerId)));
 
             candidates = pool.filter(c =>
-                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId })
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId, effects: [], targets: [] })
             );
             label = `Exile ${cost.amount || cost.value || 1} cards`;
         } else if (cost.type === 'Sacrifice') {
             candidates = state.battlefield.filter(o =>
                 String(o.controllerId) === String(playerId) &&
-                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId }))
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId, effects: [], targets: [] }))
             );
             label = `Sacrifice ${cost.amount || cost.value || 1} permanents`;
         }
@@ -303,14 +302,10 @@ export class ChoiceGenerator {
         const { action: ActionProcessor } = getProcessors(state);
 
         if (cost.type === 'TapSelection' || cost.type === 'Sacrifice') {
-            return ActionProcessor.prepareAction(state, {
-                type: ActionType.Targeting,
-                playerId,
-                sourceId,
-                data: {
-                    label,
-                    isCostChoice: true,
-                    costType: cost.type,
+            return ActionProcessor.prepareAction(state, ActionBuilder.targeting(playerId, sourceId, label)
+                .asCost(cost.type)
+                .withContext({ stackObj: data.stackObj, parentContext: data.parentContext })
+                .withData({
                     minChoices: amount,
                     maxChoices: amount,
                     targetDefinitions: [{
@@ -319,14 +314,12 @@ export class ChoiceGenerator {
                         restrictions: cost.restrictions || []
                     }],
                     targets: candidates.map(c => c.id),
-                    stackObj: data.stackObj,
-                    parentContext: data.parentContext,
                     choiceEffects: choice.effects,
                     remainingCosts: choice.costs.filter((c: any) => c !== cost),
                     selectedChoice: choice,
                     originalActionData: data
-                }
-            });
+                })
+                .build());
         }
     }
 
@@ -335,24 +328,17 @@ export class ChoiceGenerator {
      */
     public static createXChoice(state: GameState, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
         const { action: ActionProcessor } = getProcessors(state);
-        return ActionProcessor.prepareAction(state, {
-            type: ActionType.ChooseX,
-            playerId,
-            sourceId,
-            data: {
-                label: choice.label || "Choose a value for X",
-                sourceId,
+        return ActionProcessor.prepareAction(state, ActionBuilder.chooseX(playerId, sourceId, choice.label || "Choose a value for X")
+            .withContext({ stackObj: data?.stackObj, parentContext: pruneContext(data?.parentContext), nextEffectIndex: data?.nextEffectIndex })
+            .withData({
                 isResolutionX: true,
-                stackObj: data?.stackObj,
-                parentContext: pruneContext(data?.parentContext),
                 nextEffectIndex: data?.nextEffectIndex,
                 choiceEffects: choice.effects,
                 choiceCosts: choice.costs,
-                // These are needed for ChoiceProcessor to resume
                 selectedChoice: choice,
                 originalActionData: data
-            }
-        });
+            })
+            .build());
     }
 
     /**
@@ -360,27 +346,13 @@ export class ChoiceGenerator {
      */
     private static wrap(state: GameState, playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
         const { action: ActionProcessor } = getProcessors(state);
-        
-        // ARCHITECTURAL NOTE: Metadata Threading
-        // We ensure that critical metadata is preserved in a standardized 'metadata' object.
-        // This prevents flag loss during complex resolution chains (e.g. Cascade -> Choice -> Cast).
-        if (data && !data.metadata) {
-            data.metadata = {
-                isSpellCasting: data.isSpellCasting,
-                isFreeCast: data.isFreeCast,
-                exileOnResolution: data.exileOnResolution,
-                parentContext: data.parentContext,
-                stackObj: data.stackObj,
-                targets: data.targets
-            };
-        }
 
-        return ActionProcessor.prepareAction(state, {
-            type,
-            playerId,
-            sourceId,
-            data
-        });
+        // The new ingest() method handles all metadata consolidation and pruning automatically.
+        const finalAction = ActionBuilder.fromType(type, playerId, sourceId)
+            .ingest(data)
+            .build();
+
+        return ActionProcessor.prepareAction(state, finalAction);
     }
 }
 

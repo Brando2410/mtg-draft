@@ -1,4 +1,4 @@
-import { ActionType, GameObject, GameState, PlayerId, Restriction, TargetDefinition, TargetType, Zone, ResolutionContext } from "@shared/engine_types";
+import { ActionType, GameObject, GameState, PlayerId, Restriction, TargetDefinition, TargetType, Zone, EngineFrame, StackObject } from "@shared/engine_types";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { TargetingProcessor } from "./TargetingProcessor";
@@ -7,14 +7,14 @@ import { getProcessors } from "../../ProcessorRegistry";
 export interface TargetingDispatchOptions {
     state: GameState;
     playerId: PlayerId;
-    sourceObj: GameObject;
+    sourceObj: GameObject | StackObject;
     targetDefinitions: TargetDefinition[];
     existingTargets: string[];
     xValue: number;
     isSpellCasting: boolean;
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
     abilityIndex?: number;
     preSelectedChoice?: number;
     isCopyTargeting?: boolean;
@@ -49,7 +49,7 @@ export class TargetingDispatcher {
             controllerId: sourceObj.controllerId || playerId,
             targetDefinitions: targetDefinitions,
             targetIndex: nextIndex
-        }, tid));
+        , effects: [], targets: []}, tid));
         
         logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalPool.length} legal targets for slot ${nextIndex} of ${sourceObj.definition.name}: [${legalPool.join(', ')}]`);
 
@@ -73,7 +73,7 @@ export class TargetingDispatcher {
                 controllerId: sourceObj.controllerId || playerId,
                 targetDefinitions: targetDefinitions,
                 targetIndex: autoSelected.length
-            }, tid));
+            , effects: [], targets: []}, tid));
             
             const nextCounts = TargetingProcessor.getCountsForDefinition(nextDefAfterAuto, xValue);
             const prompt = TargetingProcessor.generateTargetPrompt(targetDefinitions, autoSelected.length, xValue, isSpellCasting);
@@ -87,21 +87,23 @@ export class TargetingDispatcher {
                     targets: secondaryPool,
                     selectedTargets: autoSelected,
                     label: nextDefAfterAuto?.label || '',
-                    isSpellCasting,
-                    xValue,
+                    metadata: {
+                        isSpellCasting,
+                        isFreeCast,
+                        exileOnResolution,
+                        xValue,
+                        parentContext,
+                        abilityIndex,
+                        preSelectedChoice,
+                        isCopyTargeting,
+                        spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                    },
                     maxCount: nextCounts.maxCount,
                     minCount: nextCounts.minCount,
                     count: nextCounts.count,
                     prompt,
                     isOptional: nextCounts.minCount === 0,
                     canSkip: nextCounts.minCount === 0 || autoSelected.length >= nextCounts.minCount,
-                    isFreeCast,
-                    exileOnResolution,
-                    parentContext,
-                    abilityIndex,
-                    preSelectedChoice,
-                    isCopyTargeting,
-                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
                 }
             };
             return true;
@@ -172,12 +174,12 @@ export class TargetingDispatcher {
                 return existingTargets; // No more slots in this group, move on
             }
 
-            const choices = legalPool.map(id => {
+            const choices: import('@shared/engine_types').ChoiceOption[] = legalPool.map(id => {
                 const obj = RuleUtils.findObject(state, id);
                 return {
-                    label: (RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : id)),
+                    label: (RuleUtils.isEntity(obj) ? (obj.definition.name || 'Unknown') : (RuleUtils.isPlayer(obj) ? obj.name : id)),
                     value: id,
-                    cardData: obj,
+                    cardData: obj as any,
                     selectable: true
                 };
             });
@@ -193,15 +195,17 @@ export class TargetingDispatcher {
                     minChoices: Math.max(1, consecutiveMin),
                     maxChoices: consecutiveCount,
                     label: currentDef?.label || `Choose a card from your graveyard for ${sourceObj.definition.name}`,
-                    isSpellCasting,
-                    xValue,
-                    isFreeCast,
-                    exileOnResolution,
-                    parentContext,
-                    abilityIndex,
-                    preSelectedChoice,
-                    isCopyTargeting,
-                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                    metadata: {
+                        isSpellCasting,
+                        isFreeCast,
+                        exileOnResolution,
+                        xValue,
+                        parentContext,
+                        abilityIndex,
+                        preSelectedChoice,
+                        isCopyTargeting,
+                        spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                    }
                 }
             };
             logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT-MODAL] Grouping ${consecutiveCount} consecutive ${currentDef.type} targets into modal.`);
@@ -219,24 +223,27 @@ export class TargetingDispatcher {
                 targets: legalPool,
                 label: currentDef?.label || `Select target for ${sourceObj.definition.name}`,
                 selectedTargets: existingTargets,
-                isSpellCasting,
-                xValue,
+                metadata: {
+                    isSpellCasting,
+                    isFreeCast,
+                    exileOnResolution,
+                    xValue,
+                    parentContext,
+                    abilityIndex,
+                    preSelectedChoice,
+                    isCopyTargeting,
+                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                },
                 maxCount: stepCounts.maxCount,
                 minCount: stepCounts.minCount,
                 count: stepCounts.count,
                 prompt,
                 isOptional: stepCounts.minCount === 0,
                 canSkip: stepCounts.minCount === 0 || existingTargets.length >= stepCounts.minCount,
-                isFreeCast,
-                exileOnResolution,
-                parentContext,
-                abilityIndex,
-                preSelectedChoice,
-                isCopyTargeting,
-                spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
             }
         };
         logger.info(state, LogCategory.ACTION, `[TARGETING] ${state.players[playerId].name} is selecting targets for ${sourceObj.definition.name}...`);
         return true;
     }
 }
+

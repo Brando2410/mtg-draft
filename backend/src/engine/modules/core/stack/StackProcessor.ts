@@ -1,9 +1,10 @@
-import { AbilityType, EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
+import { EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { RegistryUtils } from '../../../utils/RegistryUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { EngineValidator } from '../logic/EngineValidator';
+import { ResolutionManager } from './ResolutionManager';
 
 /**
  * Handles the management and resolution of objects on the stack (Rule 405)
@@ -37,7 +38,6 @@ export class StackProcessor {
   public static resolveTopOrAdvanceStep(
     state: GameState,
     engine: import('../../../interfaces/EngineContext').EngineContext,
-    resolver: import('./StackResolver').StackResolver,
   ) {
     const { logger } = getProcessors(state);
     if (EngineValidator.isSuspended(state)) {
@@ -59,32 +59,16 @@ export class StackProcessor {
         logger.info(state, LogCategory.STACK, `[RESOLVING] >>> ${objectName} is resolving <<<`);
 
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
-        // CR 608.2: Ensure the stack object tracks its primary effects list for resolution state management.
         if (!objectToResolve.effects) objectToResolve.effects = effects;
         
         const startIndex = objectToResolve.resolution?.effectIndex ?? objectToResolve.nextEffectIndex ?? 0;
-        const completed = resolver.resolveObject(objectToResolve, effects, startIndex);
+        const completed = ResolutionManager.resolve(state, objectToResolve, effects, engine, startIndex);
 
         if (!completed) {
           // Suspended resolution. Push the object back to the stack.
-          // Note: EffectProcessor.resolveEffects already populated stackObject.resolution
           state.stack.push(objectToResolve);
-
-          // During suspended resolution, priority is given to the player who must act
           state.priorityPlayerId = state.pendingAction?.playerId || null;
           return;
-        }
-
-        // --- KEYWORD HOOK: ON RESOLUTION ---
-        logger.debug(state, LogCategory.STACK, `${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
-        if (completed && objectToResolve.type === AbilityType.Spell) {
-          const { trigger: TriggerProcessor } = getProcessors(state);
-          logger.debug(state, LogCategory.STACK, `Firing ON_RESOLVE_SPELL for ${objectName}`);
-          TriggerProcessor.onEvent(state, {
-            type: 'ON_RESOLVE_SPELL',
-            playerId: objectToResolve.controllerId,
-            payload: { object: objectToResolve.sourceObject, sourceId: objectToResolve.sourceId }
-          });
         }
 
         const stackRemaining = state.stack.map(s => s.sourceObject?.definition.name || 'Effect').join(', ');
@@ -93,10 +77,43 @@ export class StackProcessor {
         } else {
           logger.info(state, LogCategory.STACK, `[STACK-EMPTY] The stack is now empty.`);
         }
-        engine.resetPriorityToActivePlayer();
       }
     } else {
       engine.advanceStep();
     }
+  }
+
+  /**
+   * Centralized UI metadata refresh for stack objects.
+   */
+  public static refreshTargetMetadata(state: GameState, stackObj: StackObject, targets: string[]): void {
+    stackObj.targets = targets;
+
+    stackObj.targetsControllers = targets.map((tid: string) => {
+      const obj = RuleUtils.findObject(state, tid);
+      return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
+    }) as string[];
+
+    const targetNames = targets.map((tid: string) => {
+      const obj = RuleUtils.findObject(state, tid);
+      return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
+    });
+
+    if (targetNames.length > 0) {
+      stackObj.summary = `targeting ${targetNames.join(', ')}`;
+    }
+  }
+
+  /**
+   * Ensures a stack object is on the stack exactly once.
+   */
+  public static ensureOnStack(state: GameState, stackObj: StackObject): boolean {
+    const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
+    if (!isAlreadyOnStack) {
+      state.stack.push(stackObj);
+      getProcessors(state).action.updateEntityCache(state, stackObj);
+      return true;
+    }
+    return false;
   }
 }

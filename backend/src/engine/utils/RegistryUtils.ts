@@ -20,7 +20,7 @@ export class RegistryUtils {
      */
     public static getEffectiveLogic(state: GameState, obj: GameObject | StackObject): CardLogic {
         const definition = obj.definition;
-        const oracleLogic = oracle.getCard(definition.name);
+        const oracleLogic = oracle.getCard(definition.name || '');
 
         // Merge instance definition with oracle data (oracle takes precedence for engine logic)
         return {
@@ -58,7 +58,7 @@ export class RegistryUtils {
         const abilityIndex = (obj as StackObject).abilityIndex;
         if (abilityIndex !== undefined) {
             const ability = logic.abilities?.[abilityIndex] ||
-                obj.definition.abilities?.[abilityIndex];
+                ('abilities' in obj.definition ? obj.definition.abilities?.[abilityIndex] : undefined);
             if (ability && typeof ability !== 'string') {
                 return {
                     effects: ability.effects || [],
@@ -73,17 +73,17 @@ export class RegistryUtils {
         // 1. Initial extraction from root or spell ability
         let targetDefinitions = logic.targetDefinitions ||
             this.getSpellAbility(logic.abilities)?.targetDefinitions ||
-            obj.definition.targetDefinitions ||
-            this.getSpellAbility(obj.definition.abilities)?.targetDefinitions || [];
+            ('targetDefinitions' in obj.definition ? obj.definition.targetDefinitions : undefined) ||
+            ('abilities' in obj.definition ? this.getSpellAbility(obj.definition.abilities)?.targetDefinitions : undefined) || [];
 
         let effects = logic.effects ||
             this.getSpellAbility(logic.abilities)?.effects ||
-            this.getSpellAbility(obj.definition.abilities)?.effects || [];
+            ('abilities' in obj.definition ? this.getSpellAbility(obj.definition.abilities)?.effects : undefined) || [];
 
         // 2. Override with Modal Choice if selections exist
         if (hasPreSelectedMode) {
             const modalAbility = (logic.abilities?.find((a): a is AbilityDefinition => typeof a !== 'string' && !!a.modes) ||
-                obj.definition.abilities?.find((a): a is AbilityDefinition => typeof a !== 'string' && !!a.modes));
+                ('abilities' in obj.definition ? (obj.definition.abilities || []).find((a: AbilityDefinition | string): a is AbilityDefinition => typeof a !== 'string' && !!a.modes) : undefined));
 
             if (modalAbility?.modes) {
                 const indices = Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex];

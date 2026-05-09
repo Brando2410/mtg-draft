@@ -3,9 +3,10 @@
 
 import type { GameObjectId, PlayerId } from './core';
 import { Zone } from './core';
-import type { EffectDefinition, EffectDuration } from './effects';
-import type { TriggerEvent } from './events';
-import type { TargetDefinition } from './targeting';
+import type { EffectDefinition, EffectDuration, ConditionDefinition, CostModifierEffect, EngineFrame } from './effects';
+import type { TriggerEvent, GameEvent } from './events';
+import type { GameState } from './state';
+import type { TargetDefinition, TargetRestriction } from './targeting';
 
 export const AbilityType = {
     Spell: 'Spell',
@@ -122,7 +123,7 @@ export const ConditionType: Record<string, string> & typeof _ConditionType = new
 
         // Convert CamelCase to SNAKE_CASE
         const snake = prop.replace(/([A-Z0-9])/g, (match) => `_${match}`).toUpperCase();
-        
+
         // Handle Subjects (Target1, TriggerSource, etc.)
         // Example: Target1HasFlying -> TARGET_1_HAS_FLYING
         // Example: OpponentControlsArtifact -> OPPONENT_CONTROLS_ARTIFACT
@@ -182,7 +183,7 @@ export interface ExileCost extends BaseAbilityCost {
     type: typeof CostType.Exile | typeof CostType.ExileSelf;
     amount?: number | string;
     sourceZones?: Zone[];
-    restrictions?: any[];
+    restrictions?: (TargetRestriction | string)[];
     targetMapping?: 'SELF' | string;
 }
 
@@ -194,7 +195,7 @@ export interface CrewCost extends BaseAbilityCost {
 export interface TapSelectionCost extends BaseAbilityCost {
     type: typeof CostType.TapSelection;
     amount: string | number;
-    restrictions?: any[];
+    restrictions?: (TargetRestriction | string)[];
 }
 
 /**
@@ -238,11 +239,7 @@ export interface AddCounterCost extends BaseAbilityCost {
     value?: number | string;
 }
 
-export interface ActivatedAbility {
-    id: string;
-    sourceId: GameObjectId;
-    controllerId: PlayerId;
-    activeZone?: Zone;
+export interface ActivatedAbility extends BaseAbility {
     costs: AbilityCost[];
     effects: EffectDefinition[];
     targetDefinitions?: TargetDefinition[];
@@ -258,25 +255,19 @@ export interface ActivatedAbility {
  */
 export interface TriggerPayload {
     /** Fallback definition for virtual triggers (Emblems, Delayed Triggers) */
-    definition?: any; 
+    definition?: any;
     /** Additional metadata for specific trigger logic (e.g. storage for LKI or effect params) */
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     /** Catch-all for specialized card-logic properties */
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
-export interface TriggeredAbility {
-    id: string;
-    sourceId: GameObjectId;
-    controllerId: PlayerId;
+export interface TriggeredAbility extends BaseAbility {
     name?: string;
     eventMatch: string | string[];
-    activeZone?: Zone;
-    condition?: string | any | ((state: any, event: any, ability: TriggeredAbility) => boolean);
     limitPerTurn?: number;
     duration?: EffectDuration;
     oracleText?: string;
-    effects?: EffectDefinition[];
     isGlobal?: boolean;
     type?: AbilityType;
     payload?: TriggerPayload;
@@ -286,21 +277,26 @@ export interface TriggeredAbility {
     abilityIndex?: number;
     targetIds?: string[];
     image_url?: string;
+    optional?: boolean;
     exileOnResolution?: boolean;
 }
 
-export interface ReplacementEffect {
+export interface BaseAbility {
     id: string;
     sourceId: GameObjectId;
     controllerId: PlayerId;
-    activeZone: Zone;
+    activeZone?: Zone;
     eventMatch?: string | string[];
     replacesEvent?: string;
-    condition?: any;
-    effects?: EffectDefinition[];
-    data?: any;
+    condition?: ConditionDefinition;
+    effects: EffectDefinition[]; // Mandatory for EngineFrame compatibility
+    targets: string[]; // Mandatory for EngineFrame compatibility
+    data?: Record<string, unknown>;
+    sourceZones?: Zone[];
+    linkKey?: string;
 }
 
+export interface ReplacementEffect extends BaseAbility { }
 export interface PreventionEffect {
     id: string;
     sourceId: GameObjectId;
@@ -308,7 +304,9 @@ export interface PreventionEffect {
     damageType?: 'CombatDamage' | 'AllDamage';
     targetMapping: string;
     amount?: number;
-    duration?: EffectDuration | string;
+    duration?: EffectDuration;
+    sourceZones?: Zone[];
+    linkKey?: string;
 }
 
 /**
@@ -321,6 +319,17 @@ export type AbilityDefinition =
     | TriggeredAbilityDefinition
     | StaticAbilityDefinition;
 
+export interface AbilityMode {
+    /** Effects executed when this mode is chosen */
+    effects: EffectDefinition[];
+    /** Targets required for this specific mode */
+    targetDefinitions?: TargetDefinition[];
+    /** UI label for the mode choice */
+    label?: string;
+    /** Condition for this mode to be selectable */
+    condition?: ConditionDefinition;
+}
+
 export interface BaseAbilityDefinition {
     id?: string;
     /** The name of the ability (e.g. "Equip", "Flashback", or custom names) */
@@ -331,6 +340,21 @@ export interface BaseAbilityDefinition {
     oracleText?: string;
     /** The zone where this ability is active (Default: Battlefield for permanents, Stack for spells) */
     activeZone?: Zone;
+    /** Whether this ability can be copied on the stack (Rule 707) */
+    cannotBeCopied?: boolean;
+    /** Polymorphic stubs for card compatibility */
+    types?: string[];
+    subtypes?: string[];
+    supertypes?: string[];
+    keywords?: string[];
+    colors?: string[];
+    power?: string | number;
+    toughness?: string | number;
+    manaValue?: number;
+    preparedFace?: any;
+    faces?: any[];
+    /** Polymorphic stub for card compatibility */
+    abilities?: (AbilityDefinition | string)[];
     /** 
      * ACTIVATION-TIME TARGETS (CR 601.2c / 602.2b)
      * These must be chosen when the spell/ability is put on the stack.
@@ -345,30 +369,44 @@ export interface BaseAbilityDefinition {
     };
     /** Optionality of the entire ability */
     optional?: boolean;
+    /** Logic expression or custom function to check before activation or trigger */
+    condition?: ConditionDefinition;
+    /** Logic for modal spells that allow choosing all modes (e.g. Commander condition) */
+    chooseBothCondition?: ConditionDefinition;
     /** Costs that must be paid in addition to the primary cost (Rule 601.2f) */
     additionalCosts?: AbilityCost[];
     /** Primary costs to pay for activation or casting */
     costs?: AbilityCost[];
-    /** Effects executed when this ability resolves */
+    /** Ordered list of effects to execute upon resolution (Rule 608) */
     effects?: EffectDefinition[];
+    /** Pre-declared targets for the ability/spell */
+    targets?: string[];
     /** Choices for modal abilities */
-    modes?: any[]; // Keep any for now as modes are complex
-    chooseBothCondition?: any; // Added for modal logic like Commander condition
+    modes?: AbilityMode[];
+    /** Limit to usage per turn */
+    limitPerTurn?: number;
+    /** Specific rule restrictions (e.g. "Cannot attack") */
+    restrictions?: (TargetRestriction | string)[];
+    /** Whether multiple instances of this ability can exist */
     allowDuplicates?: boolean;
     /** Shortcut mana cost for display or complex resolution hooks */
     manaCost?: string;
     /** Specific cost override for Flashback implementation */
     flashbackCost?: string;
     /** Inherent cost reduction logic (used by some specialized cards) */
-    costReduction?: any;
+    costReduction?: CostModifierEffect;
     /** Activation requirement logic */
-    triggerCondition?: (state: import('./state').GameState, event: import('./events').GameEvent, context: { sourceId: string, controllerId: string }) => boolean;
+    triggerCondition?: (state: GameState, event: GameEvent, context: EngineFrame) => boolean;
     /** Whether this is a mana ability (doesn't use stack, Rule 605) */
     isManaAbility?: boolean;
     /** UI metadata for labeling or selection counts */
     label?: string;
     minChoices?: number;
     maxChoices?: number;
+    /** Whether the object is exiled after resolving instead of going to graveyard */
+    exileOnResolution?: boolean;
+    sourceZones?: Zone[];
+    linkKey?: string;
 }
 
 /**
@@ -376,20 +414,10 @@ export interface BaseAbilityDefinition {
  */
 export interface SpellAbilityDefinition extends BaseAbilityDefinition {
     type: typeof AbilityType.Spell;
-    /** Ordered list of effects to execute upon resolution (Rule 608). Optional for Auras/Modals that use ETB or modes. */
-    effects?: EffectDefinition[];
-    /** Whether the card is exiled after resolving instead of going to graveyard */
-    exileOnResolution?: boolean;
     /** Modal spell configuration (e.g. "Choose one --") */
     isModal?: boolean;
     multiMode?: { type: string };
     multiTargetMapping?: boolean;
-    minChoices?: number;
-    maxChoices?: number;
-    allowDuplicates?: boolean;
-    modes?: any[];
-    /** Alternative costs (e.g. Flashback, Overload) */
-    costs?: AbilityCost[];
 }
 
 /**
@@ -405,16 +433,6 @@ export interface ActivatedAbilityDefinition extends BaseAbilityDefinition {
     activatedOnlyAsSorcery?: boolean;
     /** Whether this is a mana ability (doesn't use stack, Rule 605) */
     isManaAbility?: boolean;
-    /** Modal choices for activated ability */
-    modes?: any[];
-    /** Usage limits per turn */
-    limitPerTurn?: number;
-    /** Activation condition (e.g. "only if you have 27+ life") */
-    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
-    /** Pre-declared targets for the ability */
-    targets?: any[];
-    /** Restrictions on what can be targeted or affected */
-    restrictions?: any[];
 }
 
 /**
@@ -426,13 +444,8 @@ export interface TriggeredAbilityDefinition extends BaseAbilityDefinition {
     eventMatch: TriggerEvent | TriggerEvent[];
     /** Ordered list of effects to execute upon resolution */
     effects: EffectDefinition[];
-    /** Logic expression or custom function to check before putting on stack (The "intervening if" clause) */
-    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
     /** Usage limits per turn */
     maxTriggersPerTurn?: number;
-    limitPerTurn?: number;
-    /** Pre-declared targets for the triggered ability */
-    targets?: any[];
 }
 
 /**
@@ -443,13 +456,13 @@ export interface StaticAbilityDefinition extends BaseAbilityDefinition {
     /** Continuous effects generated by this ability (Rule 611) */
     effects?: EffectDefinition[];
     /** Custom logic conditions for the static effect to be active */
-    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+    condition?: ConditionDefinition;
     /** Specific rule restrictions (e.g. "Cannot attack") */
     restrictions?: { type: string, value?: string, effectZone?: string, targetId?: string, targetMapping?: string }[];
     /** Event to replace (for Replacement effects) */
     replacesEvent?: string;
     /** Specific cost reductions granted by this ability */
-    costReduction?: any;
+    costReduction?: CostModifierEffect;
     /** Cost overrides for special actions */
     flashbackCost?: string;
     manaCost?: string;

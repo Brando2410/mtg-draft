@@ -13,7 +13,7 @@ export const TenuredConcocter: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BecomeTarget,
-            condition: (state, event, ability) => event.playerId !== ability.controllerId,
+            condition: ConditionType.EventPlayerIsOpponent,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -38,4 +38,3 @@ export const TenuredConcocter: CardDefinition = {
         }
     ]
 }
-

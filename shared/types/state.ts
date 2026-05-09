@@ -5,8 +5,11 @@ import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, Replacement
 import { AbilityType } from './abilities';
 import type { CounterType, GameObjectId, PlayerId } from './core';
 import { Phase, Step, Zone } from './core';
-import type { ContinuousEffect, EffectDefinition, ConditionDefinition, ResolutionContext } from './effects';
+import type { ContinuousEffect, EffectDefinition, ConditionDefinition } from './effects';
 import type { AbilityRestriction, TargetDefinition, TargetRestriction } from './targeting';
+
+export type ManaPool = { W: number; U: number; B: number; R: number; G: number; C: number; };
+export type RestrictedMana = { color: 'W' | 'U' | 'B' | 'R' | 'G' | 'C'; amount: number; restrictions: string[]; };
 
 export interface CardLogic extends Partial<CardDefinition> {
     condition?: ConditionDefinition;
@@ -53,7 +56,7 @@ export interface BaseEntity {
     counters: Partial<Record<CounterType, number>>;
     data?: Record<string, any>;
     dealtDamageThisTurn?: boolean;
-    definition: CardDefinition;
+    definition: CardDefinition | AbilityDefinition;
     exileOnResolution?: boolean;
     exiledBy?: string;
     id: string;
@@ -91,6 +94,7 @@ export interface EffectiveStats {
 }
 
 export interface GameObject extends BaseEntity {
+    definition: CardDefinition;
     abilitiesUsedThisTurn: number;
     attachedTo?: GameObjectId;
     cannotUntapThisTurn?: boolean;
@@ -106,6 +110,8 @@ export interface GameObject extends BaseEntity {
     isFreeCast?: boolean;
     isGoaded?: boolean;
     isPTSwitched?: boolean;
+    isCopyTargeting?: boolean;
+    bypassTargeting?: boolean;
     isRevealed?: boolean;
     isSpellCasting?: boolean;
     isTapped: boolean;
@@ -157,7 +163,13 @@ export interface StackObject extends BaseEntity {
     targetDefinitions?: TargetDefinition[];
     targets: GameObjectId[] | PlayerId[];
     targetsControllers?: PlayerId[];
+    summary?: string;
+    isOptionalDiscard?: boolean;
+    isFreeCast?: boolean;
+    paidManaValue?: number;
+    isCopy?: boolean;
     type: AbilityType;
+    optional?: boolean;
     xValue?: number;
 }
 
@@ -178,25 +190,14 @@ export interface PlayerState {
     library: GameObject[];
     life: number;
     manaCheat?: boolean;
-    manaPool: {
-        W: number;
-        U: number;
-        B: number;
-        R: number;
-        G: number;
-        C: number;
-    };
+    manaPool: ManaPool;
     maxHandSize: number;
     name: string;
     ownerId: PlayerId;      // Harmonized for Targetable union
     passUntilEndOfTurn: boolean;
     pendingDiscardCount: number;
     poisonCounters: number;
-    restrictedMana?: {
-        color: 'W' | 'U' | 'B' | 'R' | 'G' | 'C';
-        amount: number;
-        restrictions: string[];
-    }[];
+    restrictedMana?: RestrictedMana[];
     sideboard: GameObject[];
     stops: Record<string, boolean>;
     turnsToSkip: number;
@@ -258,12 +259,14 @@ export interface TurnState {
 }
 
 export interface ChoiceOption {
-    cardData?: GameObject;
+    cardData?: GameObject | PlayerState | StackObject;
     costs?: AbilityCost[];
     effects?: EffectDefinition[];
     imageUrl?: string;
+    isNone?: boolean;
     label: string;
     selectable?: boolean;
+    targetDefinitions?: import('./targeting').TargetDefinition[];
     type_line?: string;
     value: string | number; // The key ID or index returned to the engine
 }
@@ -299,58 +302,156 @@ export interface ChoiceQueueItem {
  * Used to ensure flags like 'exileOnResolution' or 'isFreeCast' are not lost between choice creation and action resolution.
  */
 export interface InteractionMetadata {
+    effects?: import('./effects').EffectDefinition[];
     exileOnResolution?: boolean;
     isFreeCast?: boolean;
     isSpellCasting?: boolean;
-    parentContext?: any; // ResolutionContext from EffectProcessor
+    lastDiscardedIds?: string[];
+    lastMilledIds?: string[];
+    lookingCards?: GameObject[];
+    nextEffectIndex?: number;
+    paidManaValue?: number;
+    parentContext?: import('./effects').EngineFrame | any;
     sourceMV?: number;
     stackObj?: StackObject;
+    startIndex?: number;
     targets?: string[];
-}
-
-export interface BaseActionData {
-    abilityIndex?: number;
-    hideUndo?: boolean;
-    isContextual?: boolean;
-    isFreeCast?: boolean;
-    isSpellCasting?: boolean;
-    label: string;
-    metadata?: InteractionMetadata; // NEW: Standardized metadata container
-    mutationCheckpoint?: number;
-    parentContext?: ResolutionContext;
-    stackObj?: StackObject;
-    summary?: string;
     xValue?: number;
-    [key: string]: any;
+
+    // --- Phase 5 Migration Fields ---
+    manaSnapshot?: ManaPool;
+    restrictedSnapshot?: RestrictedMana[];
+    producedMana?: Partial<ManaPool>;
+    tappedLandIds?: string[];
+    isCopyTargeting?: boolean;
+    isCostTargeting?: boolean;
+    isResolutionX?: boolean;
+    xValueConfirmed?: boolean;
+    discardAmount?: string | number;
+    confirmedAutoTap?: boolean;
+    abilityIndex?: number;
+    preSelectedChoice?: number;
+    spellCopyRef?: StackObject;
+    isManaChoiceToggle?: boolean;
+    hybridGroups?: any[];
+    triggers?: any[];
+    nextPlayerIds?: string[];
+    onFailureEffects?: import('./effects').EffectDefinition[];
+    isOptionalDiscard?: boolean;
 }
 
-export interface ModalActionData extends BaseActionData {
-    choices: ChoiceOption[];
-    costType?: 'Sacrifice' | 'Discard' | 'TapSelection' | 'Exile';
+export interface CommonResolutionFields {
+    effects?: import('./effects').EffectDefinition[];
+    nextEffectIndex?: number;
+    parentContext?: import('./effects').EngineFrame;
+    stackObj?: StackObject;
+    targets?: string[];
+    declaredTargets?: string[];
+}
+
+export interface CommonChoiceFields {
+    choices?: ChoiceOption[];
+    choiceEffects?: import('./effects').EffectDefinition[];
+    costType?: string;
     isCostChoice?: boolean;
+    isTargetingModal?: boolean;
     maxChoices?: number;
     minChoices?: number;
+    originalActionData?: any;
+    selectedChoice?: any;
 }
 
-export interface XChoiceActionData extends BaseActionData {
-    isResolutionX: boolean;
-    originalActionData: PendingAction;
+export interface BaseActionData extends CommonResolutionFields, CommonChoiceFields {
+    // --- Core Identity ---
+    label: string;
+    summary?: string;
+    allowDuplicates?: boolean;
+    reveal?: boolean;
+    isOptionalDiscard?: boolean;
+    isResolutionX?: boolean;
+    discardAmount?: number | string;
+    metadata?: InteractionMetadata;
+
+    sourceId?: string;
+    sourceObject?: GameObject;
+    hideUndo?: boolean;
+    isContextual?: boolean;
+    mutationCheckpoint?: number;
+
+    // --- Component: Targeting ---
+    count?: number;
+    minCount?: number;
+    maxCount?: number;
+    targetDefinition?: import('./targeting').TargetDefinition;
+    targetDefinitions?: import('./targeting').TargetDefinition[];
+    selectedTargets?: (string | null)[];
+
+
+    originalTargets?: string[];
+    legalTargetIds?: string[];
+    legalPlayerIds?: string[];
+
+    // --- Component: Casting & Mana ---
+
+    totalMana?: string;
+
+    isManaChoice?: boolean;
+    isManaChoiceToggle?: boolean;
+    hybridGroups?: any;
+    paidManaValue?: number;
+
+    // --- Component: Batch & Sequencing ---
+    lookingCards?: GameObject[];
+    involvedIds?: string[];
+    lastDiscardedIds?: string[];
+    lastMilledIds?: string[];
+    nextPlayerIds?: string[];
+    triggers?: any[];
+    isChoiceSequence?: boolean;
+    isSacrificeSequence?: boolean;
+
+    canSkip?: boolean;
+    optional?: boolean;
+    isOptional?: boolean;
+
+    // --- Component: Modes & Choices ---
+    isModeSelection?: boolean;
+
+    remainingCosts?: import('./abilities').AbilityCost[];
+    sequencedEffect?: import('./effects').EffectDefinition;
+    onFailureEffects?: import('./effects').EffectDefinition[];
+
+    // --- Legacy / Transition ---
+
+    ids?: string[];
 }
 
 export interface TargetingActionData extends BaseActionData {
-    declaredTargets?: string[];
-    isTargetingModal?: boolean;
-    targets?: string[];
+    _backupTargets?: string[];
+    nextTriggersToStack?: any[];
+    prompt?: string;
+    stackId?: string;
+}
+
+export interface ModalActionData extends BaseActionData {
+    allowDuplicates?: boolean;
+    reveal?: boolean;
+}
+
+export interface XChoiceActionData extends BaseActionData {
+    choiceCosts?: any[];
+    isResolutionX: boolean; // Overridden to be required
 }
 
 export interface BatchActionData extends BaseActionData {
-    discardAmount?: number | string;
-    lookingCards?: GameObject[];
-    nextPlayerIds?: PlayerId[];
-    onFailureEffects?: any[];
+    isOptionalDiscard?: boolean;
 }
 
-export type ActionData = ModalActionData | XChoiceActionData | TargetingActionData | BatchActionData | BaseActionData;
+export interface CostActionData extends BaseActionData {
+    // Typed definitions for cost resolution
+}
+
+export type ActionData = ModalActionData | XChoiceActionData | TargetingActionData | BatchActionData | CostActionData | BaseActionData;
 
 export interface PendingAction {
     count?: number;

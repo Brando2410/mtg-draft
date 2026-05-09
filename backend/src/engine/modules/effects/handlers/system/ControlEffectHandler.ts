@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhaseOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhaseOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, EngineFrame, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -12,7 +12,7 @@ export class ControlEffectHandler {
     public static handle(
         state: GameState,
         effect: EffectDefinition,
-        context: ResolutionContext
+        context: EngineFrame
     ) {
         const { logger, action: AP, trigger: TrP, effect: EP } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
@@ -42,7 +42,7 @@ export class ControlEffectHandler {
                     // LKI: If spell is gone, use LKI
                     if (!stackObj) {
                         const processors = getProcessors(state);
-                        stackObj = processors.lki.getLki(state, tid, Zone.Stack) as any;
+                        stackObj = processors.lki.getLki(state, tid, Zone.Stack) as StackObject;
                         if (stackObj) logger.info(state, LogCategory.ACTION, `[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
                     }
 
@@ -135,7 +135,9 @@ export class ControlEffectHandler {
                                 controllerId: copy.controllerId,
                                 stackObject: copy,
                                 targetDefinitions: targetDefinitions,
-                                targetIndex: 0
+                                targetIndex: 0,
+                                effects: [],
+                                targets: []
                             }, tid));
 
                             if (legalTargetIds.length > 0) {
@@ -145,7 +147,11 @@ export class ControlEffectHandler {
                                     sourceId: copy.id,
                                     data: {
                                         label: "ChooseNewTargets",
-                                        isCopyTargeting: true,
+                                        metadata: {
+                                            isCopyTargeting: true,
+                                            stackObj: copy,
+                                            parentContext: context
+                                        },
                                         stackId: copy.id,
                                         targetDefinitions: targetDefinitions,
                                         targets: legalTargetIds,
@@ -153,7 +159,6 @@ export class ControlEffectHandler {
                                         declaredTargets: [], // Ensure this is also empty
                                         optional: true,
                                         _backupTargets: backupTargets, // Internal prefix to hide from UI
-                                        stackObj: copy
                                     }
                                 };
                             }
@@ -176,7 +181,9 @@ export class ControlEffectHandler {
                         ? { type: trigDuration as DurationType }
                         : (trigDuration || { type: DurationType.UntilEndOfTurn }),
                     ...rest,
-                    type: AbilityType.Triggered
+                    type: AbilityType.Triggered,
+                    effects: rest.effects || [],
+                    targets: []
                 });
                 break;
             }
@@ -248,6 +255,7 @@ export class ControlEffectHandler {
         }
     }
 }
+
 
 
 

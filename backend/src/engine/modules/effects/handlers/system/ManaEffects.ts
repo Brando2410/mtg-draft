@@ -1,4 +1,4 @@
-import { AddManaEffect, EffectType, PlayerId } from "@shared/engine_types";
+import { AddManaEffect, EffectType, PlayerId, ManaPool } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
@@ -34,7 +34,7 @@ export const ManaHandler: IEffectHandler = {
 
           state.pendingAction = ChoiceGenerator.createModalChoice(state, {
             label: "Choose a color of mana to add",
-            playerId: tid as PlayerId,
+            playerId: tid,
             sourceId: sourceId || "",
             stackObj: stackObject,
             parentContext: parentContext
@@ -43,8 +43,8 @@ export const ManaHandler: IEffectHandler = {
         return;
       }
 
-      effectiveTargets.forEach((tid: string) => {
-        const p = state.players[tid as PlayerId];
+      effectiveTargets.forEach(tid => {
+        const p = state.players[tid];
         if (p) {
           const amount = RuleUtils.resolveAmount(state, manaEffect.amount, context) || 1;
           // Ensure braces if missing
@@ -56,9 +56,9 @@ export const ManaHandler: IEffectHandler = {
           if (restrictionList) {
             const newRestricted = [...(p.restrictedMana || [])];
             Object.entries(res.colored).forEach(([s, a]) => {
-              const total = (a as number) * amount;
+              const total = a * amount;
               if (total > 0) {
-                newRestricted.push({ color: s as any, amount: total, restrictions: restrictionList });
+                newRestricted.push({ color: s as keyof ManaPool, amount: total, restrictions: restrictionList });
                 logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
               }
             });
@@ -74,7 +74,7 @@ export const ManaHandler: IEffectHandler = {
             Object.entries(res.colored).forEach(([s, a]) => {
               const total = (a as number) * amount;
               if (total > 0) {
-                (newPool as any)[s] += total;
+                newPool[s as keyof ManaPool] += total;
                 logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total}`);
               }
             });

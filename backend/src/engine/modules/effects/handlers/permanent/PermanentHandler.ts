@@ -8,7 +8,7 @@ import {
     GameObject,
     GameState,
     PlayerId,
-    ResolutionContext,
+    EngineFrame,
     TokenEffect,
     Zone
 } from '@shared/engine_types';
@@ -25,7 +25,7 @@ import { TriggerProcessor } from '../../triggers/TriggerProcessor';
  */
 export class PermanentHandler {
 
-    public static handleDestroy(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleDestroy(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
@@ -42,7 +42,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleSacrifice(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleSacrifice(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { targets, sourceId, stackObject } = context;
         if (targets.length === 0) return;
 
@@ -54,7 +54,9 @@ export class PermanentHandler {
             let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TP.matchesRestrictions(state, o, resList, {
                 sourceId,
                 controllerId: tid,
-                stackObject
+                stackObject,
+                effects: [],
+                targets: []
             }));
 
             // Apply GreatestPower restriction (Professor Onyx)
@@ -102,7 +104,7 @@ export class PermanentHandler {
         }
     }
 
-    public static handleUntap(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleUntap(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
@@ -115,7 +117,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handlePrepare(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handlePrepare(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
@@ -128,7 +130,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleUnprepare(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleUnprepare(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
@@ -140,7 +142,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleTap(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleTap(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
@@ -153,7 +155,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleFight(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleFight(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger, damage: DP } = getProcessors(state);
         const { targets } = context;
         if (targets.length < 2) return;
@@ -172,7 +174,7 @@ export class PermanentHandler {
         DP.dealDamage(state, c2.id, c1.id, p2, false);
     }
 
-    public static handleAddCounters(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleAddCounters(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger, effect: EP } = getProcessors(state);
         const { targets } = context;
         const counterEff = effect as CounterEffect;
@@ -199,7 +201,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleDoubleCounters(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleDoubleCounters(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         const counterEff = effect as CounterEffect;
@@ -224,7 +226,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleMoveCounters(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleMoveCounters(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger, effect: EP } = getProcessors(state);
         const { targets, sourceId } = context;
         const counterEff = effect as CounterEffect;
@@ -271,7 +273,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleCreateToken(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleCreateToken(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger, effect: EP } = getProcessors(state);
         const { targets } = context;
         const tokenEff = effect as TokenEffect;
@@ -307,7 +309,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleCreateTokenCopy(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleCreateTokenCopy(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets } = context;
         const tokenEff = effect as TokenEffect;
@@ -345,7 +347,7 @@ export class PermanentHandler {
             const { effect: EP_LOCAL } = getProcessors(state);
             const pOverride = tokenEff.powerOverride !== undefined ? EP_LOCAL.resolveAmount(state, tokenEff.powerOverride, context) : undefined;
             const tOverride = tokenEff.toughnessOverride !== undefined ? EP_LOCAL.resolveAmount(state, tokenEff.toughnessOverride, context) : undefined;
-            const token = this.createToken(state, blueprint, pid as PlayerId, pOverride, tOverride, effect);
+            const token = this.createToken(state, blueprint as any, pid as PlayerId, pOverride, tOverride, effect);
 
             if (tokenEff.storeLinkedId) {
                 if (!token.data) token.data = {};
@@ -358,7 +360,7 @@ export class PermanentHandler {
         });
     }
 
-    public static handleAttach(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleAttach(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger } = getProcessors(state);
         const { targets, sourceId } = context;
         const source = RuleUtils.findObject(state, sourceId) as GameObject | undefined;
@@ -426,7 +428,7 @@ export class PermanentHandler {
         return token;
     }
 
-    public static handleCreateEmblem(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    public static handleCreateEmblem(state: GameState, effect: EffectDefinition, context: EngineFrame) {
         const { logger, effect: EP } = getProcessors(state);
         const { controllerId, sourceId, stackObject } = context;
         const emblemEff = effect as EmblemEffect;
@@ -453,6 +455,7 @@ export class PermanentHandler {
     }
 
 }
+
 
 
 

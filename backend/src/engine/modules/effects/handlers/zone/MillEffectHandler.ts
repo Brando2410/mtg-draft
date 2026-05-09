@@ -1,4 +1,4 @@
-import { DrawEffect, EffectDefinition, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { DrawEffect, EffectDefinition, GameState, PlayerId, EngineFrame, Zone } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { IEffectHandler } from '../../IEffectHandler';
@@ -18,7 +18,7 @@ export const MillEffectHandler: IEffectHandler<DrawEffect> = {
     }
 };
 
-function millCards(state: GameState, playerId: PlayerId, amount: number, context: ResolutionContext, originalEffect: EffectDefinition) {
+function millCards(state: GameState, playerId: PlayerId, amount: number, context: EngineFrame, originalEffect: EffectDefinition) {
     const player = state.players[playerId];
     if (!player) return;
 
@@ -38,12 +38,14 @@ function millCards(state: GameState, playerId: PlayerId, amount: number, context
         const { effect: EP } = getProcessors(state);
         EP.resolveEffects({
             state,
-            effects: originalEffect.effects,
-            sourceId: context.sourceId || context.stackObject?.id || playerId,
-            targets: milledIds,
-            startIndex: 0,
-            stackObject: context.stackObject,
-            parentContext: context,
+            context: EP.createEngineFrame(state, {
+                sourceId: context.sourceId || context.stackObject?.id || playerId,
+                effects: originalEffect.effects,
+                targets: milledIds,
+                stackObject: context.stackObject,
+                parentContext: context,
+            })
         });
     }
 }
+

@@ -90,7 +90,7 @@ export class LayerProcessor {
       });
 
       // 2. STAGE 1: Printed values and Layer 1 (Copiable Values - Rule 707)
-      let currentDefinition = { ...obj.definition };
+      let currentDefinition = { ...obj.definition } as any;
       const supertypes = new Set<string>(currentDefinition.supertypes || []);
 
       // Pre-group effects by layer to avoid filtering in every iteration
@@ -119,9 +119,9 @@ export class LayerProcessor {
             state.battlefield.find((o) => o.id === effect.copyFromId) ||
             RuleUtils.findObject(state, effect.copyFromId);
           if (sourceObj && RuleUtils.isEntity(sourceObj)) {
-            currentDefinition = { ...sourceObj.definition };
+            currentDefinition = { ...sourceObj.definition } as any;
             supertypes.clear();
-            (currentDefinition.supertypes || []).forEach((s) =>
+            (currentDefinition.supertypes || []).forEach((s: string) =>
               supertypes.add(s),
             );
             if (effect.isNotLegendary) {
@@ -374,6 +374,7 @@ export class LayerProcessor {
         effectSourceId: effect.sourceId,
         controllerId: effect.controllerId,
         stackObject: state.stack.find(s => s.id === effect.id) as any,
+        effects: [],
         targets: [objId]
       })) {
         return false;
@@ -418,7 +419,7 @@ export class LayerProcessor {
               state,
               obj,
               effect.restrictions || [],
-              { sourceId: effect.sourceId, controllerId: effect.controllerId }
+              { sourceId: effect.sourceId, controllerId: effect.controllerId, effects: [], targets: [] }
             )
           );
         case TargetMapping.MatchingPermanents:
@@ -427,7 +428,7 @@ export class LayerProcessor {
             state,
             obj,
             effect.restrictions || [],
-            { sourceId: effect.sourceId, controllerId: effect.controllerId }
+            { sourceId: effect.sourceId, controllerId: effect.controllerId, effects: [], targets: [] }
           );
         case TargetMapping.AllCreaturesOpponentsControl:
         case "OPPONENTS_CREATURES":
@@ -449,7 +450,7 @@ export class LayerProcessor {
             state,
             obj,
             effect.restrictions || [],
-            { sourceId: effect.sourceId, controllerId: effect.controllerId }
+            { sourceId: effect.sourceId, controllerId: effect.controllerId, effects: [], targets: [] }
           );
         case TargetMapping.EnchantedCreature:
         case TargetMapping.EnchantedPermanent: {
@@ -469,7 +470,7 @@ export class LayerProcessor {
               state,
               obj,
               effect.restrictions || [],
-              { sourceId: effect.sourceId, controllerId: effect.controllerId }
+              { sourceId: effect.sourceId, controllerId: effect.controllerId, effects: [], targets: [] }
             )
           );
         default:
@@ -546,7 +547,7 @@ export class LayerProcessor {
 
     allObjects.forEach(o => {
       if (!o.typeMask) {
-        o.typeMask = this.calculateTypeMask(o.definition.types);
+        o.typeMask = this.calculateTypeMask(o.definition.types || []);
       }
       cacheMap.set(o.id, o);
     });
@@ -612,6 +613,7 @@ export class LayerProcessor {
             ConditionProcessor.matchesCondition(state, e.condition, {
               sourceId: e.sourceId,
               controllerId: e.controllerId,
+              effects: [],
               targets: []
             })),
       );
@@ -779,9 +781,7 @@ export class LayerProcessor {
         ) ||
         (obj.definition.keywords || []).some(
           (k: string) => k.toLowerCase() === "flashback",
-        ) ||
-        obj.definition.oracleText?.toLowerCase().includes("flashback");
-
+        );
       const graveyardAbility = (obj.definition.abilities || []).find(
         (a): a is any => {
           if (typeof a === 'string') return false;
@@ -798,7 +798,6 @@ export class LayerProcessor {
       if (isFlashback) {
         displayCost =
           obj.definition.flashbackCost ||
-          (obj.definition as any).flashback_cost ||
           obj.definition.manaCost;
       } else if (isActivation && graveyardAbility) {
         displayCost =

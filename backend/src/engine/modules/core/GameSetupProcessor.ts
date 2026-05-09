@@ -48,10 +48,10 @@ export class GameSetupProcessor {
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = oracle.getCard(cardRef.name);
     let typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
-    
+
     // Normalize legacy "Enchant Creature" to "Enchantment — Aura"
     if (typeLine.toLowerCase().trim() === 'enchant creature') {
-        typeLine = 'Enchantment — Aura';
+      typeLine = 'Enchantment — Aura';
     }
     const colorMap: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
     const rawColors = cardRef.colors || cardRef.card_colors || (cardRef as any).color || logicData?.colors || [];
@@ -63,7 +63,7 @@ export class GameSetupProcessor {
     const knownSupertypes = ['basic', 'legendary', 'snow', 'world', 'ongoing'];
     const parts = typeLine ? typeLine.split('//')[0].split(/[-—]/) : [];
     const typePart = parts[0] ? parts[0].trim().split(/\s+/) : [];
-    
+
     const supertypes = typePart.filter((t: string) => knownSupertypes.includes(t.toLowerCase()));
     const types = typePart.filter((t: string) => !knownSupertypes.includes(t.toLowerCase()));
     const subtypes = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
@@ -83,20 +83,21 @@ export class GameSetupProcessor {
         oracleText: cardRef.oracleText || logicData?.oracleText || '',
         type_line: typeLine,
         image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large || logicData?.image_url,
-        scryfall_id: (cardRef as any).scryfall_id || (cardRef as any).id || logicData?.scryfall_id,
-        power: (cardRef as any).power || logicData?.power,
-        toughness: (cardRef as any).toughness || logicData?.toughness,
-        loyalty: (cardRef as any).loyalty || logicData?.loyalty,
+        scryfall_id: cardRef.scryfall_id || cardRef.id || logicData?.scryfall_id,
+        power: cardRef.power || logicData?.power,
+        toughness: cardRef.toughness || logicData?.toughness,
+        loyalty: cardRef.loyalty || logicData?.loyalty,
         keywords: baseKeywords,
         abilities: logicData?.abilities || [],
-        flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost || (cardRef as any).flashback_cost,
-        entersWithXCounters: (logicData as any)?.entersWithXCounters,
-        entersTapped: (logicData as any)?.entersTapped,
-        entersTappedCondition: (logicData as any)?.entersTappedCondition,
-        entersPrepared: (logicData as any)?.entersPrepared,
-        preparedFace: (logicData as any)?.preparedFace,
-        faces: (logicData as any)?.faces,
-        cannotBeCopied: (logicData as any)?.cannotBeCopied
+        flashbackCost: logicData?.flashbackCost || cardRef.flashbackCost || cardRef.flashback_cost,
+        entersWithXCounters: logicData?.entersWithXCounters,
+        entersTapped: logicData?.entersTapped,
+        entersTappedCondition: logicData?.entersTappedCondition,
+        entersPrepared: logicData?.entersPrepared,
+        preparedFace: logicData?.preparedFace,
+        faces: logicData?.faces,
+        cannotBeCopied: logicData?.cannotBeCopied,
+        exileOnResolution: logicData?.exileOnResolution
       },
       isTapped: false,
       damageMarked: 0,
@@ -106,8 +107,8 @@ export class GameSetupProcessor {
       faceDown: false,
       isPrepared: false,
       keywords: [...baseKeywords],
-      counters: ((cardRef as any).loyalty || logicData?.loyalty)
-        ? { loyalty: parseInt((cardRef as any).loyalty || logicData?.loyalty) }
+      counters: (cardRef.loyalty || logicData?.loyalty)
+        ? { loyalty: parseInt(String(cardRef.loyalty || logicData?.loyalty)) }
         : {}
     };
   }

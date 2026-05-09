@@ -3,6 +3,7 @@ import { LayerProcessor } from "../../../state/LayerProcessor";
 import { IRestrictionHandler } from "../IRestrictionHandler";
 import { Targetable, Zone, StackObject, PlayerState, GameState, GameObject } from "@shared/engine_types";
 import { gameObjectRestriction, isGameObject, isStackObject } from "./HandlerUtils";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 
 const evaluateNumeric = (
     state: GameState,
@@ -36,14 +37,14 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
         if (valPart.match(/^\d+$/)) {
             val = parseInt(valPart);
         } else if (valPart === 'x') {
-            val = context.xValue || 0;
+            val = RuleUtils.resolveAmount(state, 'X', context);
         } else if (valPart === 'power' || valPart === 'source_power') {
             const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
             val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
         } else if (valPart === 'source_mv' || valPart === 'source_cmc') {
-            const source = state.battlefield.find(o => o.id === sourceId) || 
-                           state.exile.find(o => o.id === sourceId) ||
-                           state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
+            const source = state.battlefield.find(o => o.id === sourceId) ||
+                state.exile.find(o => o.id === sourceId) ||
+                state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
             if (source) {
                 const effectiveObj = source;
                 val = ManaProcessor.getEffectiveManaValue(effectiveObj);
@@ -53,7 +54,10 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
             val = source?.convergeAmount || 0;
         }
 
-        return evaluateNumeric(state, obj, field as any, op, val);
+        const normalizedField = field === 'cmc' ? 'mv' : field;
+        if (normalizedField !== 'mv' && normalizedField !== 'power' && normalizedField !== 'toughness') return true;
+
+        return evaluateNumeric(state, obj, normalizedField, op, val);
     }),
 
     "MV_LE_POWER": gameObjectRestriction((state, obj, r, context) => {
@@ -63,8 +67,10 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
         return evaluateNumeric(state, obj, 'mv', '<=', sourcePower);
     }),
     "MV_LE_X": gameObjectRestriction((state, obj, r, context) => {
-        const xValue = context.xValue || 0;
-        return evaluateNumeric(state, obj, 'mv', '<=', xValue);
+        const xValue = RuleUtils.resolveAmount(state, 'X', context);
+        const mv = ManaProcessor.getEffectiveManaValue(obj);
+        const result = mv <= xValue;
+        return result;
     }),
     "MV_LE_LIFE_GAINED": gameObjectRestriction((state, obj, r, context) => {
         const { controllerId } = context;

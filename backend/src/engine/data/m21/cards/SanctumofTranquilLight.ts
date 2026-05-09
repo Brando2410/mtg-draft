@@ -15,9 +15,8 @@ export const SanctumofTranquilLight: CardDefinition = {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{5}{W}' }],
             costReduction: {
-                type: 'ManaReduction',
-                amount: DynamicAmount.ShrinesYouControlCount,
-                manaType: 'Generic'
+                type: EffectType.CostReduction,
+                reductionAmount: DynamicAmount.ShrinesYouControlCount,
             },
             targetDefinitions: [{
                 type: TargetType.Creature,

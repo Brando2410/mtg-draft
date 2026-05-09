@@ -1,7 +1,13 @@
 import { memo } from 'react';
 
+export interface HybridGroup {
+    symbol: string;
+    idx: number;
+    options: string[];
+}
+
 interface ManaChoiceToggleViewProps {
-    hybridGroups: any[];
+    hybridGroups: HybridGroup[];
     toggleState: Record<number, string>;
     setToggleState: (state: Record<number, string>) => void;
 }
@@ -23,13 +29,13 @@ export const ManaChoiceToggleView = memo(({
         <div className="flex flex-col gap-6 w-full max-w-3xl mx-auto py-8">
             <h4 className="text-white/60 text-sm font-black uppercase tracking-[0.3em] text-center mb-2">Toggle Payment Options</h4>
             <div className="flex flex-wrap justify-center gap-8">
-                {hybridGroups.map((group, gIdx) => (
+                {hybridGroups?.map((group, gIdx) => (
                     <div key={`hybrid-group-${gIdx}`} className="flex flex-col items-center gap-4 p-6 bg-black/40 border border-white/5 rounded-[2rem] shadow-xl">
                         <div className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-1">
                             Symbol {gIdx + 1}
                         </div>
                         <div className="flex items-center gap-3 bg-black/60 p-2 rounded-full border border-white/10 relative overflow-hidden">
-                            {group.options.map((opt: string) => {
+                            {group.options?.map((opt: string) => {
                                 const isSelected = toggleState[gIdx] === opt;
                                 const isGeneric = !isNaN(parseInt(opt));
                                 const label = isGeneric ? opt : opt;

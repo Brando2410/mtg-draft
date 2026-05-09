@@ -1,5 +1,5 @@
 import { GameState, PlayerId, Zone } from '@shared/engine_types';
-import { Room } from '@shared/types';
+import { Room, Card } from '@shared/types';
 import * as jsonpatch from 'fast-json-patch';
 import { Server, Socket } from 'socket.io';
 import { BotLogic } from '../../bots/BotLogic';
@@ -39,7 +39,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const playerNames: Record<string, string> = {};
       room.players.forEach(p => playerNames[p.playerId] = p.name);
 
-      const engine = new GameEngine(playerIds as any, {}, playerNames);
+      const engine = new GameEngine(playerIds, {}, playerNames);
       engine.setState(gameState);
 
       // Take a snapshot for delta calculation
@@ -49,11 +49,11 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       callback(engine, room, matchIndex);
 
       const newState = engine.getState();
-      
+
       // CR 704: Handle losing/winning conditions automatically
       const players = Object.values(newState.players);
       const lostPlayer = players.find(p => p.hasLost);
-      
+
       if (lostPlayer && room.status === 'tournament' && matchIndex !== undefined) {
         const match = room.matches![matchIndex];
         if (match.status === 'active') {
@@ -74,7 +74,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       // 4. DELTA SYNC: Calculate and emit patch instead of full state
       const patch = jsonpatch.compare(previousRoomSnapshot, room);
-      
+
       if (patch.length > 0) {
         // We only send the patch to save bandwidth
         io.to(roomId).emit('room_patch', patch);
@@ -82,7 +82,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         // Fallback for cases where no delta was detected but update was requested
         io.to(roomId).emit('room_update', room);
       }
-      
+
       PersistenceService.saveRooms(rooms).catch(e => LoggerService.error('SAVE', `Save failed: ${e.message}`));
     } catch (err: any) {
       LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });
@@ -92,16 +92,16 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   };
 
-  socket.on('ready_with_deck', async ({ roomId, playerId, deck }: { roomId: string, playerId: string, deck: any }) => {
+  socket.on('ready_with_deck', async ({ roomId, playerId, deck }: { roomId: string, playerId: string, deck: Card[] }) => {
     const room = rooms.get(roomId);
     if (!room) return;
     const player = room.players.find(p => p.playerId === playerId);
     if (player) {
-      (player as any).deck = deck;
-      (player as any).isReady = true;
+      player.deck = deck as Card[];
+      player.isReady = true;
 
-      const allReady = room.players.length >= (room.rules.playerCount || 2) && 
-                       room.players.every(p => (p as any).isReady || p.isBot);
+      const allReady = room.players.length >= (room.rules.playerCount || 2) &&
+        room.players.every(p => p.isReady || p.isBot);
 
       if (allReady && !room.isNormalMatch) {
         startTournamentMatches(io, room);
@@ -123,10 +123,10 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         const p1 = players[i];
         const p2 = players[i + 1];
 
-        const playerIds = [p1.playerId, p2.playerId] as any;
-        const decksByPlayer = {
-          [p1.playerId]: (p1 as any).deck,
-          [p2.playerId]: (p2 as any).deck
+        const playerIds = [p1.playerId, p2.playerId];
+        const decksByPlayer: Record<string, Card[]> = {
+          [p1.playerId]: p1.deck ? (Array.isArray(p1.deck) ? p1.deck : (p1.deck.mainEntry || p1.deck.cards || [])) : [],
+          [p2.playerId]: p2.deck ? (Array.isArray(p2.deck) ? p2.deck : (p2.deck.mainEntry || p2.deck.cards || [])) : []
         };
         const playerNames = {
           [p1.playerId]: p1.name,
@@ -151,7 +151,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     io.to(room.id).emit('match_started', room);
   };
 
-  socket.on('start_draft', async ({ roomId, deck }: { roomId: string, deck?: any }) => {
+  socket.on('start_draft', async ({ roomId, deck }: { roomId: string, deck?: Card[] }) => {
     const room = rooms.get(roomId);
     if (!room) return;
 
@@ -165,12 +165,12 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       }
 
       const playerIds = room.players.map(p => p.playerId as PlayerId);
-      const decksByPlayer: Record<string, any[]> = {};
+      const decksByPlayer: Record<string, Card[]> = {};
       const playerNames: Record<string, string> = {};
       const playerAvatars: Record<string, string> = {};
 
       for (const p of room.players) {
-        const pDeck = (p as any).deck || finalDeck;
+        const pDeck = p.deck || finalDeck;
         let cards = [];
         if (Array.isArray(pDeck)) {
           cards = pDeck;
@@ -179,7 +179,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         }
         decksByPlayer[p.playerId] = cards;
         playerNames[p.playerId] = p.name;
-        playerAvatars[p.playerId] = (p as any).avatar || 'ajani.png';
+        playerAvatars[p.playerId] = p.avatar || 'ajani.png';
       }
 
       const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
@@ -320,7 +320,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     room.status = 'waiting';
     room.gameState = undefined;
     room.players.forEach(p => {
-      (p as any).deck = undefined;
+      p.deck = undefined;
     });
 
     LoggerService.info('DRAFT', `Room ${roomId} returned to lobby by host.`);
@@ -352,15 +352,15 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     if (!room) return;
 
     const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const decksByPlayer: Record<string, any[]> = {};
+    const decksByPlayer: Record<string, Card[]> = {};
     const playerNames: Record<string, string> = {};
     const playerAvatars: Record<string, string> = {};
 
     const defaultDeck = await PersistenceService.getDeck('m21_test_deck.json');
 
     for (const p of room.players) {
-      const pDeck = (p as any).deck || defaultDeck;
-      let cards = [];
+      const pDeck = p.deck || defaultDeck;
+      let cards: Card[] = [];
       if (Array.isArray(pDeck)) {
         cards = pDeck;
       } else {
@@ -368,7 +368,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       }
       decksByPlayer[p.playerId] = cards;
       playerNames[p.playerId] = p.name;
-      playerAvatars[p.playerId] = (p as any).avatar || 'ajani.png';
+      playerAvatars[p.playerId] = p.avatar || 'ajani.png';
     }
 
     const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);

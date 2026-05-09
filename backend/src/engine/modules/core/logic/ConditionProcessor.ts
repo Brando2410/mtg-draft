@@ -1,4 +1,4 @@
-import { ConditionContext, ConditionType, GameState } from "@shared/engine_types";
+import { EngineFrame, ConditionType, GameState } from "@shared/engine_types";
 import { ConditionRegistry } from "./ConditionRegistry";
 
 export class ConditionProcessor {
@@ -12,7 +12,7 @@ export class ConditionProcessor {
   public static matchesCondition(
     state: GameState,
     condition: ConditionType | string | Function | { matches: Function } | undefined,
-    context: ConditionContext,
+    context: EngineFrame,
   ): boolean {
     if (!condition) return true;
 
@@ -116,3 +116,4 @@ export class ConditionProcessor {
     return true;
   }
 }
+

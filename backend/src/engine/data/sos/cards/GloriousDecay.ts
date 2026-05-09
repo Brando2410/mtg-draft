@@ -5,12 +5,8 @@ export const GloriousDecay: CardDefinition = {
     scryfall_id: "a335f396-1004-4fee-842a-a35ff6ba17f2",
     rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["G"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Choose one —\n• Destroy target artifact.\n• Glorious Decay deals 4 damage to target creature with flying.\n• Exile target card from a graveyard. Draw a card.",
@@ -48,7 +44,6 @@ export const GloriousDecay: CardDefinition = {
                 },
                 {
                     label: "Exile target card from a graveyard. Draw a card",
-                    type: EffectType.Choice,
                     targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1

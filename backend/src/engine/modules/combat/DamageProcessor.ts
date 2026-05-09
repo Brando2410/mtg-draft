@@ -111,7 +111,7 @@ export class DamageProcessor {
         state.turnState.lifeGainedThisTurn[controllerId] =
           (state.turnState.lifeGainedThisTurn[controllerId] || 0) + amount;
         state.turnState.lastLifeGainedAmount = amount;
-        EngineLogger.info(state, LogCategory.ACTION, 
+        EngineLogger.info(state, LogCategory.ACTION,
           `[LIFELINK] ${player.name} gains ${amount} life (Total: ${player.life}).`,
         );
         const { trigger: TrP } = getProcessors(state);
@@ -160,14 +160,14 @@ export class DamageProcessor {
       );
 
       target.damageMarked += amount;
-      EngineLogger.info(state, LogCategory.ACTION, 
+      EngineLogger.info(state, LogCategory.ACTION,
         `[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`,
       );
 
       // Rule 702.2: Deathtouch
       if (RuleUtils.hasDeathtouch(sourceObj)) {
         target.deathtouchMarked = true;
-        EngineLogger.info(state, LogCategory.ACTION, 
+        EngineLogger.info(state, LogCategory.ACTION,
           `[DEATHTOUCH] ${target.definition.name} is marked by lethal poison.`,
         );
       }
@@ -197,7 +197,7 @@ export class DamageProcessor {
   ) {
     const { trigger: TrP } = getProcessors(state);
     player.life -= amount;
-    EngineLogger.info(state, LogCategory.ACTION, 
+    EngineLogger.info(state, LogCategory.ACTION,
       `[DAMAGE] Player ${player.name} takes ${amount} damage (Life: ${player.life}).`,
     );
 
@@ -270,7 +270,7 @@ export class DamageProcessor {
           controllerId: eff.controllerId,
           targets: [],
           effects: [],
-        } as any,
+        },
         eff,
       );
       if (validIds.includes(targetId)) return true;

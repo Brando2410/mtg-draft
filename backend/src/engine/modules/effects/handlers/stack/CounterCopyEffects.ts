@@ -138,7 +138,9 @@ export const CopySpellHandler: IEffectHandler = {
                         controllerId: copy.controllerId,
                         stackObject: copy,
                         targetDefinitions,
-                        targetIndex: 0
+                        targetIndex: 0,
+                        effects: [],
+                        targets: []
                     }, tid));
 
                     if (legalTargetIds.length > 0) {
@@ -158,7 +160,7 @@ export const CopySpellHandler: IEffectHandler = {
                         const targetingResult = TargetingDispatcher.dispatchTargetingStep({
                             state,
                             playerId: controllerId,
-                            sourceObj: copy as any,
+                            sourceObj: copy,
                             targetDefinitions,
                             existingTargets: [],
                             xValue: copy.xValue || 0,
@@ -172,7 +174,8 @@ export const CopySpellHandler: IEffectHandler = {
                             copy.targets = targetingResult;
                         } else if (state.pendingAction && state.pendingAction.data) {
                             // Ensure the engine knows this targeting is for a copy to avoid ID mismatch blocks
-                            state.pendingAction.data.isCopyTargeting = true;
+                            if (!state.pendingAction.data.metadata) state.pendingAction.data.metadata = {};
+                            state.pendingAction.data.metadata.isCopyTargeting = true;
                         }
                     }
                 }
@@ -211,7 +214,9 @@ export const CopyAbilityHandler: IEffectHandler = {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
                         stackObject: copy,
-                        targetDefinitions
+                        targetDefinitions,
+                        effects: [],
+                        targets: []
                     }, tid));
 
                     if (legalTargetIds.length > 0) {
@@ -221,15 +226,17 @@ export const CopyAbilityHandler: IEffectHandler = {
                             sourceId: copy.id,
                             data: {
                                 label: "ChooseNewTargets",
-                                isCopyTargeting: true,
+                                metadata: {
+                                    isCopyTargeting: true,
+                                    stackObj: copy,
+                                    parentContext: context
+                                },
                                 stackId: copy.id,
                                 targetDefinitions: targetDefinitions,
                                 targets: legalTargetIds,
                                 selectedTargets: [],
                                 optional: true,
                                 originalTargets: [...copy.targets],
-                                stackObj: copy,
-                                parentContext: context
                             }
                         };
                     }

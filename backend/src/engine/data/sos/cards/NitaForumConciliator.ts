@@ -50,7 +50,7 @@ export const NitaForumConciliator: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1,
                     canPlayExiled: true,
                     spendAnyMana: true,

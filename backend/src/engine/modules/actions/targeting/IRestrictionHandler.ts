@@ -1,4 +1,4 @@
-import { GameState, Targetable, TargetingContext, TargetRestriction } from "@shared/engine_types";
+import { GameState, Targetable, EngineFrame, TargetRestriction } from "@shared/engine_types";
 
 export interface IRestrictionHandler {
     /**
@@ -7,5 +7,6 @@ export interface IRestrictionHandler {
      * @param restriction The specific restriction being checked
      * @param context Targeting context (sourceId, controllerId, etc.)
      */
-    matches(state: GameState, targetObj: Targetable, restriction: TargetRestriction | string, context: TargetingContext): boolean;
+    matches(state: GameState, targetObj: Targetable, restriction: TargetRestriction | string, context: EngineFrame): boolean;
 }
+

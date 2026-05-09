@@ -1,7 +1,7 @@
 import {
   AbilityCost,
   AbilityDefinition,
-  EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject, TargetDefinition
+  EffectDefinition, GameObject, GameState, PlayerId, EngineFrame, StackObject, TargetDefinition
 } from '@shared/engine_types';
 import { ProcessorRegistry } from '../modules/ProcessorRegistry';
 
@@ -14,7 +14,7 @@ export interface PlayCardOptions {
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
     isAbilitySelectionBypassed?: boolean;
 }
 
@@ -29,7 +29,7 @@ export interface ActivateAbilityOptions {
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
 }
 
 export interface FinalizeCastOptions {
@@ -43,7 +43,7 @@ export interface FinalizeCastOptions {
     isFirstInstantOrSorcery?: boolean;
     isInstantOrSorcery?: boolean;
     isFreeCast?: boolean;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
 }
 
 export interface FinalizeAbilityOptions {
@@ -54,7 +54,7 @@ export interface FinalizeAbilityOptions {
     declaredTargets: string[];
     xValue?: number;
     preSelectedChoice?: number;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
     exileOnResolution?: boolean;
 }
 
@@ -65,35 +65,20 @@ export interface InteractiveAbilityOptions {
     abilityIndex: number;
     declaredTargets: string[];
     preSelectedChoice?: number;
-    parentContext?: ResolutionContext;
+    parentContext?: EngineFrame;
     exileOnResolution?: boolean;
 }
 
 export interface EffectExecutionOptions {
     state: GameState;
+    context: EngineFrame;
     effect: EffectDefinition;
-    sourceId: string;
-    validTargetIds: string[];
-    stackObject?: StackObject;
-    parentContext?: ResolutionContext;
-    controllerIdOverride?: PlayerId;
-    lookingCards?: GameObject[];
-    lastMilledIds?: string[];
-    lastDiscardedIds?: string[];
-    currentIndex?: number;
-    nextEffectIndex?: number;
 }
 
 export interface ResolveEffectsOptions {
     state: GameState;
-    effects: EffectDefinition[];
-    sourceId: string;
-    targets: string[];
-    startIndex?: number;
-    stackObject?: StackObject;
-    parentContext?: ResolutionContext;
-    controllerIdOverride?: PlayerId;
-    lookingCards?: GameObject[];
+    context: EngineFrame;
+    skipFizzleCheck?: boolean;
 }
 
 export interface EngineContext {

@@ -1,13 +1,12 @@
 import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, AddManaEffect, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone, TriggeredAbility } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
-import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { RuleUtils } from "../../utils/RuleUtils";
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { getProcessors, getEngine } from '../ProcessorRegistry';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 import { LayerProcessor } from '../state/LayerProcessor';
-import { m21 as m21Data } from '../../data/m21/index';
 import { ResolutionManager } from '../core/stack/ResolutionManager';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
@@ -43,7 +42,7 @@ export class PlayerActionProcessor {
 
     const obj = state.battlefield.find(c => c.id === cardId);
     if (!obj) {
-        return false;
+      return false;
     }
 
     if (obj.controllerId !== playerId) return false;
@@ -59,10 +58,7 @@ export class PlayerActionProcessor {
       const stackEmpty = state.stack.length === 0;
       const isMyTurn = state.activePlayerId === playerId;
 
-      const logic = oracle.getCard(obj.definition.name);
-      if (!logic || !logic.abilities) return false;
-
-      const canActivateAnyTime = (logic.abilities as AbilityDefinition[]).some((a) => a.type === AbilityType.Static && String(a.id || "").includes('any_turn'));
+      const canActivateAnyTime = (obj.definition.abilities || []).some((a: any) => a.type === AbilityType.Static && String(a.id || "").includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
         logger.warn(state, LogCategory.ACTION, `Cannot activate Planeswalker: Sorcery speed only.`);
@@ -74,14 +70,14 @@ export class PlayerActionProcessor {
         return false;
       }
 
-      const abilities = (logic.abilities as AbilityDefinition[]);
+      const abilities = (obj.definition.abilities || []) as AbilityDefinition[];
       const filteredEntries = abilities
         .map((a, idx) => ({ ability: a, originalIndex: idx }))
         .filter((entry) => {
           const a = entry.ability;
           const typeStr = String(a.type || "").toLowerCase();
           const isActivated = typeStr.includes('activated');
-          const hasLoyalty = a.costs?.some((c) => String(c.type || "").toLowerCase().includes('loyalty'));
+          const hasLoyalty = a.costs?.some((c: any) => String(c.type || "").toLowerCase().includes('loyalty'));
 
           return isActivated && hasLoyalty;
         });
@@ -115,12 +111,7 @@ export class PlayerActionProcessor {
     }
 
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
-    const logic = oracle.getCard(obj.definition.name);
-
-    const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
-    const isLand = typeLine.includes('land');
-
-    const allActivated = [...(logic?.abilities || [])];
+    const allActivated = [...(obj.definition.abilities || [])];
 
     const stats = LayerProcessor.getEffectiveStats(obj, state);
     if (stats.abilities) {
@@ -240,13 +231,11 @@ export class PlayerActionProcessor {
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
 
     // We use a simplified check for the first mana ability to ensure synchronous tapping
-    const logic = oracle.getCard(obj.definition.name);
-    if (!logic || !logic.abilities) return false;
-
-    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : (logic.abilities as AbilityDefinition[]).findIndex((a) => a.isManaAbility);
+    const abilities = (obj.definition.abilities || []) as AbilityDefinition[];
+    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : abilities.findIndex((a) => a.isManaAbility);
     if (manaAbilityIdx === -1) {
       // Fallback for cases where index might be wrong or wasn't provided accurately
-      manaAbilityIdx = (logic.abilities as AbilityDefinition[]).findIndex((a) => a.isManaAbility);
+      manaAbilityIdx = abilities.findIndex((a) => a.isManaAbility);
     }
     if (manaAbilityIdx === -1) return false;
 
@@ -276,11 +265,9 @@ export class PlayerActionProcessor {
     // We only handle "Undo" here now. Tapping for mana is handled via ActivateAbility (Step 3 above)
     if (!card.isTapped) return false;
 
-    const logic = m21Data[card.definition.name];
-    if (!logic) return false;
-
+    const abilities = (card.definition.abilities || []) as AbilityDefinition[];
     // GENERIC UNDO LOGIC: If a land has exactly one mana ability, we can try to undo it
-    const manaAbilities = (logic.abilities as AbilityDefinition[]).filter((a) => a.isManaAbility);
+    const manaAbilities = abilities.filter((a) => a.isManaAbility);
     if (manaAbilities.length !== 1) return false;
 
     const ability = manaAbilities[0];
@@ -484,9 +471,10 @@ export class PlayerActionProcessor {
         logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
 
         // Handle sequential discards (Next players)
+        const meta = getActionMeta(state.pendingAction);
         const nextPlayerIds = state.pendingAction.data?.nextPlayerIds || [];
         if (nextPlayerIds.length > 0 && (!state.pendingAction.data?.count || state.pendingAction.data.count <= 0)) {
-          const discardAmount = state.pendingAction.data?.discardAmount || 1;
+          const discardAmount = meta.discardAmount || 1;
           const label = state.pendingAction.data?.label || "Discard";
           const currentPlayerId = nextPlayerIds.shift()!;
           const onFailureEffects = state.pendingAction.data?.onFailureEffects;
@@ -497,8 +485,8 @@ export class PlayerActionProcessor {
             state.pendingAction.sourceId || "",
             discardAmount,
             label,
-            state.pendingAction.data?.stackObj,
-            state.pendingAction.data?.parentContext,
+            meta.stackObj,
+            meta.parentContext,
             onFailureEffects
           );
           return { finished: false, success: true };

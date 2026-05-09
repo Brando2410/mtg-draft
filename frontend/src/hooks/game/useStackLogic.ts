@@ -55,8 +55,8 @@ export const useStackLogic = (
     const filteredStack = stack.filter(s => s.sourceId || s.name || s.sourceObject || s.definition);
     const result = [...filteredStack];
 
-    if (pendingAction?.data?.stackObj) {
-      const pObj = pendingAction.data.stackObj;
+    if (pendingAction?.data?.metadata?.stackObj || pendingAction?.data?.stackObj) {
+      const pObj = pendingAction?.data?.metadata?.stackObj || pendingAction?.data?.stackObj;
       if (pObj.sourceId || pObj.name || pObj.sourceObject || pObj.definition) {
         const isAlreadyOnStack = filteredStack.some(s => 
           s.id === pObj.id || 

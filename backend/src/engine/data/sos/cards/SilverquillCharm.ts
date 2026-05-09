@@ -11,7 +11,6 @@ export const SilverquillCharm: CardDefinition = {
             type: AbilityType.Spell,
             modes: [
                 {
-                    type: EffectType.Choice,
                     targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
                     label: "Put two +1/+1 counters on target creature",
                     effects: [

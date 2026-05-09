@@ -7,7 +7,7 @@ export * from './combat/DamageProcessor';
 export * from './core/GameSetupProcessor';
 export * from './core/logic/ConditionProcessor';
 export * from './core/stack/StackProcessor';
-export * from './core/stack/StackResolver';
+export * from './core/stack/ResolutionManager';
 export * from './core/turn/PriorityProcessor';
 export * from './core/turn/TurnProcessor';
 export * from './effects/EffectProcessor';

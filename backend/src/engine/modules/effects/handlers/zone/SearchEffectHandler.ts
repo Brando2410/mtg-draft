@@ -1,4 +1,4 @@
-import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, PlayerId, ResolutionContext, SearchEffect, SelectionType, TargetDefinition, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, PlayerId, EngineFrame, SearchEffect, SelectionType, TargetDefinition, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
@@ -47,7 +47,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
         ];
 
         const validCandidates = pool.filter(c =>
-            TP.matchesRestrictions(state, c, searchRestrictions, { sourceId, controllerId, stackObject })
+            TP.matchesRestrictions(state, c, searchRestrictions, { sourceId, controllerId, stackObject, effects: [], targets: [] })
         );
 
         if (validCandidates.length === 0) {
@@ -72,7 +72,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
             minChoices: effect.selectionType === SelectionType.ANY || effect.amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
             maxChoices: effect.selectionType === SelectionType.ANY || effect.amount === "ANY"
                 ? pool.length
-                : (effect.amount as number) || TP.calculateTotalCounts(effect.targetDefinitions, 0).maxCount || 1,
+                : (effect.amount as number) || TP.calculateTotalCounts(effect.targetDefinitions || [], 0).maxCount || 1,
             actionType: effect.optional || effect.selectionType === SelectionType.ANY
                 ? ActionType.OptionalAction
                 : ActionType.ResolutionChoice,
@@ -105,3 +105,4 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
         }
     }
 };
+

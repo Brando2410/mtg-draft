@@ -250,7 +250,7 @@ export class TurnProcessor {
           return false;
         }
         if (eff.duration?.type === DurationType.UntilNextUntapStep) {
-          const targets = (eff as any).targetIds || [];
+          const targets = eff.targetIds || [];
           const hasActiveTarget = targets.some((tid: string) => state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
           if (hasActiveTarget) return false;
         }

@@ -262,6 +262,8 @@ export class StateBasedActionsProcessor {
             sourceId: attach.id,
             controllerId: attach.controllerId,
             targetDefinitions,
+            effects: [],
+            targets: []
           },
           targetId,
         )

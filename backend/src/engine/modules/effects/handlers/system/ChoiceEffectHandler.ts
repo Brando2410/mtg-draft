@@ -5,9 +5,9 @@ import {
   GameState,
   ModalEffect,
   PlayerId,
-  ResolutionContext,
   Restriction,
-  TargetMapping
+  TargetMapping,
+  EngineFrame
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
@@ -21,7 +21,7 @@ export class ChoiceEffectHandler {
   public static handleChoice(
     state: GameState,
     effect: ModalEffect,
-    context: ResolutionContext,
+    context: EngineFrame,
   ): void {
     const { logger } = getProcessors(state);
     const { sourceId, controllerId, stackObject, parentContext } =
@@ -44,7 +44,8 @@ export class ChoiceEffectHandler {
           sourceId,
           controllerId,
           stackObject,
-          targets: []
+          targets: [],
+          effects: []
         });
       });
     }
@@ -90,11 +91,13 @@ export class ChoiceEffectHandler {
 
         EP.resolveEffects({
           state,
-          effects: allEffects,
-          sourceId,
-          targets,
-          stackObject,
-          parentContext,
+          context: EP.createEngineFrame(state, {
+            sourceId,
+            effects: allEffects,
+            targets,
+            stackObject,
+            parentContext
+          })
         });
         return;
       }
@@ -258,7 +261,9 @@ export class ChoiceEffectHandler {
           {
             sourceId,
             controllerId: workingMappingPlayerId as PlayerId,
-            stackObject
+            stackObject,
+            targets: [],
+            effects: []
           }
         );
         logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Card ${c.definition?.name} (${c.id}) matches restrictions ${JSON.stringify(restrictions)}: ${matched}`);
@@ -323,11 +328,13 @@ export class ChoiceEffectHandler {
       logger.info(state, LogCategory.ACTION, `[AUTO-SEQUENCE] Sequential resolution for target: ${firstTargetId}`);
       EP.resolveEffects({
         state,
-        effects: effect.effects,
-        sourceId,
-        targets: [firstTargetId],
-        stackObject,
-        parentContext,
+        context: EP.createEngineFrame(state, {
+          sourceId,
+          effects: effect.effects,
+          targets: [firstTargetId],
+          stackObject,
+          parentContext
+        })
       });
 
       if (!state.pendingAction && nextTargets.length > 0) {

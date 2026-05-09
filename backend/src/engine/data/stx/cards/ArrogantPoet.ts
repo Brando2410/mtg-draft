@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
 
 export const ArrogantPoet: CardDefinition = {
     name: 'Arrogant Poet',
@@ -14,7 +14,7 @@ export const ArrogantPoet: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
+            eventMatch: TriggerEvent.Attack,
             condition: 'SelfAttacking',
             effects: [{
                 type: EffectType.Choice,
@@ -22,12 +22,15 @@ export const ArrogantPoet: CardDefinition = {
                 optional: true,
                 choices: [{
                     label: "Pay 2 Life",
-                    costs: [{ type: 'Life', value: 2 }],
-                    effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Flying'] }]
+                    costs: [{ type: CostType.PayLife, value: 2 }],
+                    effects: [{
+                        type: EffectType.ApplyContinuousEffect,
+                        targetMapping: TargetMapping.Self,
+                        duration: { type: DurationType.UntilEndOfTurn },
+                        abilitiesToAdd: ['Flying']
+                    }]
                 }]
             }]
         }
     ]
-  };
-
-
+};

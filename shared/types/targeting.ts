@@ -5,7 +5,7 @@ import type { GameObjectId, PlayerId, RestrictionType } from './core';
 import { Zone } from './core';
 import type { EffectDuration } from './effects';
 import type { GameObject, PlayerState, StackObject, GameState } from './state';
-import type { TargetingContext } from './effects';
+import type { EngineFrame } from './effects';
 
 /**
  * Targetable - Union of all entities that can be targeted or affected by restrictions.
@@ -256,7 +256,7 @@ export const Restriction: Record<string, string> & typeof _Restriction = new Pro
 
 
 export type StringRestriction = (typeof Restriction)[keyof typeof Restriction] | string;
-export type FunctionRestriction = (state: GameState, target: GameObject, context: TargetingContext) => boolean;
+export type FunctionRestriction = (state: GameState, target: GameObject, context: EngineFrame) => boolean;
 
 export interface BaseObjectRestriction {
     type: string;

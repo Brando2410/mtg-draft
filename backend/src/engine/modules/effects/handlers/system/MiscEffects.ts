@@ -1,4 +1,4 @@
-import { ActionType, PlayerId, Zone } from "@shared/engine_types";
+import { ActionType, PlayerId, Zone, PendingActionEffect, EffectType } from "@shared/engine_types";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
@@ -12,7 +12,7 @@ export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
         const targetPlayerId = targets[0] as PlayerId;
         const player = state.players[targetPlayerId];
         if (!player) return;
-        
+
         const oldHand = [...player.hand];
         const oldGrave = [...player.graveyard];
 
@@ -20,10 +20,10 @@ export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
         player.graveyard = [];
 
         oldHand.forEach((c) =>
-          AP.moveCard(state, c, Zone.Graveyard, player.id),
+            AP.moveCard(state, c, Zone.Graveyard, player.id),
         );
         oldGrave.forEach((c) =>
-          AP.moveCard(state, c, Zone.Hand, player.id),
+            AP.moveCard(state, c, Zone.Hand, player.id),
         );
         logger.info(state, LogCategory.ACTION, `[EXCHANGE] ${player.name} exchanged hand and graveyard.`);
     }
@@ -37,9 +37,9 @@ export const DisableDamagePreventionHandler: IEffectHandler = {
     }
 };
 
-export const PendingActionHandler: IEffectHandler = {
+export const PendingActionHandler: IEffectHandler<PendingActionEffect> = {
     handle(state, effect, context) {
-        state.pendingAction = (effect as any).action;
+        state.pendingAction = effect.action;
     }
 };
 
@@ -51,7 +51,7 @@ export const NecromentiaHandler: IEffectHandler = {
         if (!targetOpponent) return;
 
         const { logger, action: AP, trigger: TrP } = getProcessors(state);
-        const chosenName = stackObject?.chosenName || stackObject?.data?.chosenName;
+        const chosenName = stackObject?.chosenName;
 
         if (!chosenName) {
             state.pendingAction = ChoiceGenerator.createCardChoice(
@@ -64,10 +64,9 @@ export const NecromentiaHandler: IEffectHandler = {
                     restrictions: ["NonbasicLand"],
                     optional: false,
                     actionType: ActionType.ResolutionChoice,
-                    onSelected: (c: any) => {
+                    onSelected: (c) => {
                         if (stackObject) {
                             stackObject.chosenName = c.definition.name;
-                            if (stackObject.data) stackObject.data.chosenName = c.definition.name;
                         }
                         return [{ type: "Necromentia", targetMapping: "TARGET_1" }];
                     },
@@ -79,7 +78,7 @@ export const NecromentiaHandler: IEffectHandler = {
         }
 
         if (!chosenName) return;
-        
+
         const zones = [Zone.Graveyard, Zone.Hand, Zone.Library];
         let exiledCount = 0;
 
@@ -91,22 +90,22 @@ export const NecromentiaHandler: IEffectHandler = {
                         ? targetOpponent.hand
                         : targetOpponent.library;
             const toExile = pool.filter(
-                (c: any) => c.definition.name.toLowerCase() === chosenName.toLowerCase(),
+                (c) => c.definition.name.toLowerCase() === chosenName.toLowerCase(),
             );
             if (zone === Zone.Hand) exiledCount = toExile.length;
 
-            toExile.forEach((c: any) => {
+            toExile.forEach((c) => {
                 const from = c.zone as Zone;
                 AP.moveCard(state, c, Zone.Exile, c.ownerId);
                 TrP.onEvent(
                     state,
-                    { 
-                        type: "ON_EXILE", 
-                        payload: { 
-                            sourceId, 
-                            targetIds: [c.id], 
-                            sourceZone: from 
-                        } 
+                    {
+                        type: "ON_EXILE",
+                        payload: {
+                            sourceId,
+                            targetIds: [c.id],
+                            sourceZone: from
+                        }
                     }
                 );
             });
@@ -116,15 +115,18 @@ export const NecromentiaHandler: IEffectHandler = {
             PermanentHandler.handleCreateToken(
                 state,
                 {
-                    name: "Zombie",
-                    power: "2",
-                    toughness: "2",
-                    colors: ["B"],
-                    types: ["Creature"],
-                    subtypes: ["Zombie"],
-                    image_url: "https://cards.scryfall.io/large/front/d/e/ded254ec-1d94-4458-944c-329a4305ee4c.jpg",
+                    type: EffectType.CreateToken,
+                    tokenBlueprint: {
+                        name: "Zombie",
+                        power: "2",
+                        toughness: "2",
+                        colors: ["B"],
+                        types: ["Creature"],
+                        subtypes: ["Zombie"],
+                        image_url: "https://cards.scryfall.io/large/front/d/e/ded254ec-1d94-4458-944c-329a4305ee4c.jpg",
+                    },
                     amount: exiledCount
-                } as any,
+                },
                 { ...context, targets: [targetOpponentId] }
             );
         }

@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const MindfulBiomancer: CardDefinition = {
+export const MindfulBiomancer: CardDefinition = {
     name: "Mindful Biomancer",
     manaCost: "{1}{G}",
     scryfall_id: "2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53",
@@ -20,7 +20,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.GainLife,
@@ -31,7 +31,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Mana, value: '{2}{G}' } as any],
+            costs: [{ type: CostType.Mana, value: '{2}{G}' }],
             limitPerTurn: 1,
             effects: [
                 {
@@ -47,4 +47,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     power: "2",
     toughness: "2"
 };
-    
+

@@ -8,9 +8,9 @@ const _PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { sourceId, controllerId, stackObject } = context;
-            const targetingContext = { sourceId, controllerId, stackObject };
+            const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
             return state.battlefield.some((obj) =>
-                TargetingProcessor.matchesRestrictions(state, obj, params, targetingContext)
+                TargetingProcessor.matchesRestrictions(state, obj, params, EngineFrame)
             );
         }
     },
@@ -23,14 +23,14 @@ const _PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { sourceId, controllerId, stackObject } = context;
-            const targetingContext = { sourceId, controllerId, stackObject };
+            const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
 
             const threshold = parseInt(params[params.length - 1]);
             const realRestrictions = params.slice(0, -1);
 
             const count = state.battlefield.filter((obj) =>
                 String(obj.controllerId) === String(controllerId) &&
-                TargetingProcessor.matchesRestrictions(state, obj, realRestrictions, targetingContext)
+                TargetingProcessor.matchesRestrictions(state, obj, realRestrictions, EngineFrame)
             ).length;
 
             return count >= threshold;
@@ -112,10 +112,10 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
         if (prop in target) return target[prop];
 
         return {
-            matches(state: import('@shared/engine_types').GameState, params: string[], context: import('@shared/engine_types').ResolutionContext) {
+            matches(state: import('@shared/engine_types').GameState, params: string[], context: import('@shared/engine_types').EngineFrame) {
                 const { targeting: TargetingProcessor } = getProcessors(state);
                 const { sourceId, controllerId, stackObject, event } = context;
-                const targetingContext = { sourceId, controllerId, stackObject };
+                const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
 
                 // 1. Parse Subject and Action
                 const parts = prop.split('_');
@@ -157,14 +157,14 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
                         String(obj.controllerId) === String(subjectControllerId || obj.controllerId) &&
                         (RuleUtils.isType(obj, filterToken) || RuleUtils.isType(obj, singular) ||
                             RuleUtils.hasSubtype(obj, filterToken) || RuleUtils.hasSubtype(obj, singular) ||
-                            TargetingProcessor.matchesRestrictions(state, obj, restrictions, targetingContext))
+                            TargetingProcessor.matchesRestrictions(state, obj, restrictions, EngineFrame))
                     );
                 }
 
                 if (action === 'HAS') {
                     const obj = subjectId ? RuleUtils.findObject(state, subjectId) : undefined;
                     if (!obj) return false;
-                    return TargetingProcessor.matchesRestrictions(state, obj, restrictions, targetingContext);
+                    return TargetingProcessor.matchesRestrictions(state, obj, restrictions, EngineFrame);
                 }
 
                 if (action === 'EXISTS') {
@@ -176,3 +176,4 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
         } as IConditionHandler;
     }
 });
+

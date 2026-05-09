@@ -1,10 +1,11 @@
-import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone, TargetDefinition, TargetRestriction } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, EngineFrame, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone, TargetDefinition, TargetRestriction } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { SpellProcessor } from './SpellProcessor';
 import { TargetingDispatcher } from '../targeting/TargetingDispatcher';
+import { ActionBuilder } from '../../../utils/ActionBuilder';
 
 /**
  * SpellInteractiveManager - Creates and injects pendingAction modals for player input.
@@ -26,19 +27,11 @@ export class SpellInteractiveManager {
      * The player must choose a numeric value before mana can be calculated (Rule 107.3b).
      * @returns Always true (flow is paused for UI input).
      */
-    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: ResolutionContext, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
-        state.pendingAction = {
-            type: ActionType.ChooseX,
-            playerId: playerId,
-            sourceId: cardToPlay.id,
-            data: {
-                label: `Choose a value for X for ${cardToPlay.definition.name}`,
-                declaredTargets: declaredTargets || [],
-                parentContext,
-                isFreeCast,
-                exileOnResolution
-            }
-        };
+    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: EngineFrame, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
+        state.pendingAction = ActionBuilder.chooseX(playerId, cardToPlay.id, `Choose a value for X for ${cardToPlay.definition.name}`)
+            .withContext({ parentContext, isFreeCast, exileOnResolution })
+            .withData({ declaredTargets: declaredTargets || [] })
+            .build();
         const { logger } = getProcessors(state);
         logger.info(state, LogCategory.ACTION, `[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
         return true;
@@ -66,7 +59,7 @@ export class SpellInteractiveManager {
         totalMana: string,
         cardInstanceId: string,
         engine: any,
-        parentContext?: ResolutionContext,
+        parentContext?: EngineFrame,
         isFreeCast?: boolean,
         exileOnResolution?: boolean,
         existingTargets: string[] = []
@@ -76,7 +69,7 @@ export class SpellInteractiveManager {
         cardToPlay.controllerId = cardToPlay.controllerId || playerId;
         logger.debug(state, LogCategory.ACTION, `[INTERACTIVE-TARGETING-START] ${cardToPlay.definition.name} entry. Existing targets: ${existingTargets.length}`);
 
-        if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
+        if (!ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, cardToPlay)) {
             logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
             cardToPlay.xValue = undefined; // Cleanup for next attempt
             return false;
@@ -121,7 +114,7 @@ export class SpellInteractiveManager {
         additionalCosts: AbilityCost[],
         declaredTargets: string[],
         cardInstanceId: string,
-        parentContext?: ResolutionContext,
+        parentContext?: EngineFrame,
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | null {
@@ -144,19 +137,11 @@ export class SpellInteractiveManager {
                 };
             }) || [];
 
-            state.pendingAction = {
-                type: ActionType.Choice,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: choiceCost.label || "Choose an additional cost",
-                    hideUndo: false,
-                    isCostChoice: true,
-                    isSpellCasting: true,
-                    sourceObject: cardToPlay,
-                    choices: choices
-                }
-            };
+            state.pendingAction = ActionBuilder.choice(playerId, cardToPlay.id, choiceCost.label || "Choose an additional cost")
+                .asCost('Choice')
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withData({ sourceObject: cardToPlay, choices: choices })
+                .build();
             logger.info(state, LogCategory.ACTION, `[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
             return true;
         }
@@ -170,7 +155,7 @@ export class SpellInteractiveManager {
                 .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    xValue: cardToPlay.xValue || 0
+                    xValue: cardToPlay.xValue || 0, effects: [], targets: []
                 }))
                 .map(o => o.id);
 
@@ -181,26 +166,15 @@ export class SpellInteractiveManager {
                 return null; // FAILURE
             }
 
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: "Sacrifice a creature to cast " + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Sacrifice',
-                    declaredTargets: declaredTargets || [],
-                    minChoices: amount,
-                    maxChoices: amount,
-                    choices: legalSacrificeIds.map(id => {
-                        const obj = state.battlefield.find(o => o.id === id)!;
-                        return { label: `Sacrifice ${obj.definition.name}`, value: id, cardData: obj, selectable: true }
-                    }),
-                    isFreeCast,
-                    parentContext
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Sacrifice a creature to cast " + cardToPlay.definition.name)
+                .asCost('Sacrifice')
+                .withContext({ isFreeCast, parentContext })
+                .withChoices(legalSacrificeIds.map(id => {
+                    const obj = state.battlefield.find(o => o.id === id)!;
+                    return { label: `Sacrifice ${obj.definition.name}`, value: id, cardData: obj, selectable: true }
+                }), amount, amount)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice.`);
             return true;
         }
@@ -215,7 +189,7 @@ export class SpellInteractiveManager {
                 .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    xValue: cardToPlay.xValue || 0
+                    xValue: cardToPlay.xValue || 0, effects: [], targets: []
                 }))
                 .map(c => c.id);
 
@@ -226,26 +200,15 @@ export class SpellInteractiveManager {
                 return null; // FAILURE
             }
 
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: "Discard a card to cast " + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Discard',
-                    minChoices: amount,
-                    maxChoices: amount,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalDiscardIds.map(id => {
-                        const c = player.hand.find(o => o.id === id)!;
-                        return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
-                    }),
-                    isFreeCast,
-                    parentContext
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Discard a card to cast " + cardToPlay.definition.name)
+                .asCost('Discard')
+                .withContext({ isFreeCast, parentContext })
+                .withChoices(legalDiscardIds.map(id => {
+                    const c = player.hand.find(o => o.id === id)!;
+                    return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
+                }), amount, amount)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[DISCARD] ${state.players[playerId].name} must choose a card to discard.`);
             return true;
         }
@@ -268,7 +231,7 @@ export class SpellInteractiveManager {
                 .filter((c: GameObject) => TargetingProcessor.matchesRestrictions(state, c, (exileCost as ExileCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    xValue: cardToPlay.xValue || 0
+                    xValue: cardToPlay.xValue || 0, effects: [], targets: []
                 }))
                 .map((c: GameObject) => c.id);
 
@@ -279,26 +242,15 @@ export class SpellInteractiveManager {
                 return null; // FAILURE
             }
 
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: `Exile ${amount} card(s) to cast ` + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Exile',
-                    minChoices: amount,
-                    maxChoices: amount,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalExileIds.map((id: string) => {
-                        const obj = pool.find((o: GameObject) => o.id === id);
-                        return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
-                    }),
-                    isFreeCast,
-                    parentContext
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Exile ${amount} card(s) to cast ` + cardToPlay.definition.name)
+                .asCost('Exile')
+                .withContext({ isFreeCast, parentContext })
+                .withChoices(legalExileIds.map((id: string) => {
+                    const obj = pool.find((o: GameObject) => o.id === id);
+                    return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
+                }), amount, amount)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
             return true;
         }
@@ -314,7 +266,7 @@ export class SpellInteractiveManager {
                 TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    xValue: cardToPlay.xValue || 0
+                    xValue: cardToPlay.xValue || 0, effects: [], targets: []
                 })
             ).map(o => o.id);
 
@@ -324,26 +276,15 @@ export class SpellInteractiveManager {
                 return null; // FAILURE
             }
 
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: `Tap ${amount} permanents to cast ` + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'TapSelection',
-                    minChoices: amount,
-                    maxChoices: amount,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalTapIds.map(id => {
-                        const sObj = state.battlefield.find(o => o.id === id);
-                        return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
-                    }),
-                    isFreeCast,
-                    parentContext
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Tap ${amount} permanents to cast ` + cardToPlay.definition.name)
+                .asCost('TapSelection')
+                .withContext({ isFreeCast, parentContext })
+                .withChoices(legalTapIds.map(id => {
+                    const sObj = state.battlefield.find(o => o.id === id);
+                    return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
+                }), amount, amount)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[TAP] ${state.players[playerId].name} must choose ${amount} objects to tap.`);
             return true;
         }
@@ -357,10 +298,10 @@ export class SpellInteractiveManager {
      * Also assigns the selected X value to the object after the player chooses.
      * @returns true if a ChooseX pendingAction was injected, false if X is not needed or already set.
      */
-    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: ResolutionContext): boolean {
+    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: EngineFrame): boolean {
         const ability = obj.definition.abilities?.[abilityIndex];
         if (!ability || typeof ability === 'string') return false;
-        const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && (e.costs as any[]).some((c: any) => c.value === 'X')));
+        const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => c.value === 'X')));
         const xValue = state.interaction?.lastChoiceX;
 
         if (needsX && xValue === undefined) {
@@ -369,10 +310,13 @@ export class SpellInteractiveManager {
                 playerId: playerId,
                 sourceId: obj.id,
                 data: {
-                    abilityIndex: abilityIndex,
+                    metadata: {
+                        abilityIndex: abilityIndex,
+                        parentContext
+                    },
                     label: `Choose a value for X for ${obj.definition.name}'s ability`,
                     declaredTargets: declaredTargets || [],
-                    parentContext
+                    isResolutionX: false
                 }
             };
             const { logger } = getProcessors(state);
@@ -395,20 +339,22 @@ export class SpellInteractiveManager {
      *
      * @returns true (pendingAction injected), false (can't pay), or null (no interactive costs needed).
      */
-    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: ResolutionContext): boolean | null {
+    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: EngineFrame): boolean | null {
         const { logger, targeting: TargetingProcessor } = getProcessors(state);
         const player = state.players[playerId];
         const additionalCosts = ability.costs || [];
+        const isFreeCast = false;
+        const exileOnResolution = obj.exileOnResolution || ability.exileOnResolution || false;
 
         // Sacrifice Cost
         const sacrificeCost = additionalCosts.find((cost) => cost.type === CostType.Sacrifice);
         const hasChosenSacrifice = state.interaction?.lastSelections['Sacrifice'] !== undefined;
         if (sacrificeCost && !hasChosenSacrifice) {
-            const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === TargetMapping.Self || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => r === Restriction.Self);
+            const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === TargetMapping.Self || ((sacrificeCost as SacrificeCost).restrictions || []).some(r => r === Restriction.Self);
             const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId,
-                xValue: obj.xValue || 0
+                xValue: obj.xValue || 0, effects: [], targets: []
             })).map(o => o.id);
 
             if (legalSacrificeIds.length === 0 && !isSelfSac) {
@@ -422,23 +368,15 @@ export class SpellInteractiveManager {
             } else if (legalSacrificeIds.length === 1) {
                 if (state.interaction) state.interaction.lastSelections['Sacrifice'] = [legalSacrificeIds[0]];
             } else {
-                state.pendingAction = {
-                    type: ActionType.ModalSelection,
-                    playerId: playerId,
-                    sourceId: obj.id,
-                    data: {
-                        label: "Sacrifice a creature to activate " + obj.definition.name,
-                        hideUndo: false,
-                        isCostChoice: true,
-                        costType: 'Sacrifice',
-                        abilityIndex: abilityIndex,
-                        declaredTargets: declaredTargets || [],
-                        choices: legalSacrificeIds.map(id => {
-                            const sObj = state.battlefield.find(o => o.id === id);
-                            return { label: `Sacrifice ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
-                        })
-                    }
-                };
+                state.pendingAction = ActionBuilder.modal(playerId, obj.id, "Sacrifice a creature to activate " + obj.definition.name)
+                    .asCost('Sacrifice')
+                    .withContext({ abilityIndex, isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                    .withChoices(legalSacrificeIds.map(id => {
+                        const sObj = state.battlefield.find(o => o.id === id);
+                        return { label: `Sacrifice ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
+                    }))
+                    .withData({ declaredTargets: declaredTargets || [] })
+                    .build();
                 logger.info(state, LogCategory.ACTION, `[SACRIFICE] ${player.name} must choose an object to sacrifice to activate ${obj.definition.name}.`);
                 return true;
             }
@@ -451,31 +389,21 @@ export class SpellInteractiveManager {
             const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId,
-                xValue: obj.xValue || 0
+                xValue: obj.xValue || 0, effects: [], targets: []
             })).map(c => c.id);
             if (legalDiscardIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
                 return false;
             }
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    label: "Discard a card to activate " + obj.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Discard',
-                    abilityIndex: abilityIndex,
-                    minChoices: 1,
-                    maxChoices: 1,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalDiscardIds.map(id => {
-                        const c = player.hand.find(o => o.id === id)!;
-                        return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
-                    })
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, obj.id, "Discard a card to activate " + obj.definition.name)
+                .asCost('Discard')
+                .withContext({ abilityIndex, isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withChoices(legalDiscardIds.map(id => {
+                    const c = player.hand.find(o => o.id === id)!;
+                    return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
+                }))
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[DISCARD] ${player.name} must choose a card to discard to activate ${obj.definition.name}.`);
             return true;
         }
@@ -487,32 +415,22 @@ export class SpellInteractiveManager {
             const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, (tapSelectionCost as TapSelectionCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId,
-                xValue: obj.xValue || 0
+                xValue: obj.xValue || 0, effects: [], targets: []
             })).map(o => o.id);
             const amount = Number((tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;
             }
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    label: `Tap ${amount} creatures to activate ` + obj.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'TapSelection',
-                    abilityIndex: abilityIndex,
-                    minChoices: amount,
-                    maxChoices: amount,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalTapIds.map(id => {
-                        const sObj = state.battlefield.find(o => o.id === id);
-                        return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
-                    })
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, obj.id, `Tap ${amount} creatures to activate ` + obj.definition.name)
+                .asCost('TapSelection')
+                .withContext({ abilityIndex, isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withChoices(legalTapIds.map(id => {
+                    const sObj = state.battlefield.find(o => o.id === id);
+                    return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
+                }), amount, amount)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[TAP] ${player.name} must choose ${amount} objects to tap to activate ${obj.definition.name}.`);
             return true;
         }
@@ -533,32 +451,21 @@ export class SpellInteractiveManager {
             const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, (exileCost as ExileCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId,
-                xValue: obj.xValue || 0
+                xValue: obj.xValue || 0, effects: [], targets: []
             })).map((o: GameObject) => o.id);
             if (legalExileIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
                 return false;
             }
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    label: "Exile a card to activate " + obj.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Exile',
-                    abilityIndex: abilityIndex,
-                    minChoices: 1,
-                    maxChoices: 1,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalExileIds.map((id: string) => {
-                        const c = pool.find((o: GameObject) => o.id === id)!;
-                        return { label: `Exile ${c.definition.name}`, value: id, cardData: c, selectable: true }
-                    }),
-                    parentContext
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, obj.id, "Exile a card to activate " + obj.definition.name)
+                .asCost('Exile')
+                .withContext({ abilityIndex, isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withChoices(legalExileIds.map((id: string) => {
+                    const c = pool.find((o: GameObject) => o.id === id)!;
+                    return { label: `Exile ${c.definition.name}`, value: id, cardData: c, selectable: true }
+                }))
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.info(state, LogCategory.ACTION, `[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
             return true;
         }
@@ -575,7 +482,7 @@ export class SpellInteractiveManager {
      *
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
-    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext, exileOnResolution?: boolean): boolean {
+    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, engine: any, preSelectedChoice?: number, parentContext?: EngineFrame, exileOnResolution?: boolean): boolean {
         const targetDefs = ability.targetDefinitions || [];
         const existingTargets = parentContext?.targets || state.pendingAction?.data?.selectedTargets || [];
 
@@ -584,7 +491,7 @@ export class SpellInteractiveManager {
             playerId,
             sourceObj: obj,
             targetDefinitions: targetDefs,
-            existingTargets,
+            existingTargets: (existingTargets as (string | null)[]).filter((t): t is string => t !== null),
             xValue: obj.xValue || 0,
             isSpellCasting: false,
             isFreeCast: false,
@@ -612,3 +519,4 @@ export class SpellInteractiveManager {
         });
     }
 }
+

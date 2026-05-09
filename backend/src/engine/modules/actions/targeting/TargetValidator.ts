@@ -1,4 +1,4 @@
-import { AbilityType, BaseEntity, EffectDefinition, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone, PlayerId } from '@shared/engine_types';
+import { AbilityType, BaseEntity, EffectDefinition, GameObject, GameState, Restriction, StackObject, Targetable, EngineFrame, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone, PlayerId } from '@shared/engine_types';
 import { TargetMapper } from './TargetMapper';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -7,14 +7,15 @@ import { RestrictionRegistry, isNumericRestriction } from './RestrictionRegistry
 
 export class TargetValidator {
 
-    public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
+    public static isLegalTarget(state: GameState, context: EngineFrame, targetId: string): boolean {
         const { targetDefinitions, targetIndex } = context;
+        const { logger } = getProcessors(state);
         const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDefinitions || [], targetIndex || 0, context.xValue);
 
         // 1. UNIFIED OBJECT LOOKUP
         const targetObj = RuleUtils.findObject(state, targetId);
         if (!targetObj) return false;
-        
+
         // Phased out check (Rule 702.26)
         if (RuleUtils.isEntity(targetObj) && targetObj.isPhasedOut) return false;
 
@@ -26,12 +27,15 @@ export class TargetValidator {
         // 3. ZONE CHECK
         if (RuleUtils.isEntity(targetObj)) {
             const expectedZone = this.getExpectedZone(targetObj as GameObject, targetDefForIndex);
-            if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
+            if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) {
+                logger.debug(state, LogCategory.TARGETING, `[ZONE-FAIL] Target ${targetId} is in ${targetObj.zone}, expected ${expectedZone}. TypeLine: ${targetDefForIndex?.type}`);
+                return false;
+            }
         }
 
         // 4. PROTECTION / HEXPROOF / SHROUD (Rule 702)
         if (!this.checkKeywords(state, context, targetObj as GameObject)) return false;
-        
+
         // 5. RESTRICTION REGISTRY CHECK
         const restrictions = this.normalizeRestrictions(targetDefForIndex);
         return !!this.matchesRestrictions(state, targetObj, restrictions, context);
@@ -41,7 +45,7 @@ export class TargetValidator {
      * CR 608.2b: A spell or ability is countered if all its targets, for every instance 
      * of the word 'target', have become illegal.
      */
-    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: EffectDefinition[]): boolean {
+    public static shouldFizzle(state: GameState, context: EngineFrame, targets: string[], effects: EffectDefinition[]): boolean {
         if (targets.length === 0) return false;
 
         const { sourceId, controllerId, stackObject } = context;
@@ -55,7 +59,9 @@ export class TargetValidator {
                 controllerId,
                 stackObject,
                 targetDefinitions,
-                targetIndex: index
+                targetIndex: index,
+                effects: [],
+                targets: []
             }, tid);
         });
 
@@ -66,7 +72,7 @@ export class TargetValidator {
         return fizzle;
     }
 
-    private static isPlayerTargetLegal(state: GameState, context: TargetingContext, targetId: string, targetDefinitions: TargetDefinition | null): boolean {
+    private static isPlayerTargetLegal(state: GameState, context: EngineFrame, targetId: string, targetDefinitions: TargetDefinition | null): boolean {
         const { controllerId } = context;
         const restrictions = targetDefinitions?.restrictions || [];
 
@@ -97,12 +103,14 @@ export class TargetValidator {
 
         if (targetZone === Zone.Stack) return Zone.Stack;
         if (([Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, Restriction.Spell] as string[]).includes(typeLineCheck)) return Zone.Stack;
+        if ([TargetType.CardInHand.toLowerCase()].includes(typeLineCheck)) return Zone.Hand;
         if ([TargetType.CardInGraveyard.toLowerCase()].includes(typeLineCheck)) return Zone.Graveyard;
         if ([TargetType.CardInExile.toLowerCase()].includes(typeLineCheck)) return Zone.Exile;
 
         const restrictions = (targetDefinitions?.restrictions || []);
         if (restrictions.some((r) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
         if (restrictions.some((r) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
+        if (restrictions.some((r) => typeof r === 'string' && [Restriction.FromHand, TargetType.CardInHand.toLowerCase()].includes(r.toLowerCase()))) return Zone.Hand;
 
         if (typeLineCheck === TargetType.Player.toLowerCase() ||
             typeLineCheck === TargetType.Opponent.toLowerCase() ||
@@ -112,7 +120,7 @@ export class TargetValidator {
         return targetDefinitions ? Zone.Battlefield : 'Any';
     }
 
-    private static checkKeywords(state: GameState, context: TargetingContext, targetObj: GameObject): boolean {
+    private static checkKeywords(state: GameState, context: EngineFrame, targetObj: GameObject): boolean {
         const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
         const keywords = stats.keywords;
@@ -148,15 +156,16 @@ export class TargetValidator {
     private static normalizeRestrictions(targetDefinitions: TargetDefinition | null): (string | any)[] {
         const restrictions = [...(targetDefinitions?.restrictions || [])];
         const primaryType = (targetDefinitions?.type || '').toUpperCase();
-        if (primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== TargetType.AnyTarget) {
-            if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
-                restrictions.push(primaryType);
+        if (primaryType && primaryType !== 'ANY') {
+            const lr = primaryType.toLowerCase();
+            if (!restrictions.some(r => typeof r === 'string' && r.toLowerCase() === lr)) {
+                restrictions.push(lr);
             }
         }
         return restrictions;
     }
 
-    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
+    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: EngineFrame): boolean {
         if (!target) return false;
 
         // 1. Unify the input into ID and Object (if available)
@@ -166,10 +175,10 @@ export class TargetValidator {
         // 2. Player Fast Path (Handles both PlayerState object or PlayerId string)
         const isPlayer = state.players[targetId as PlayerId] !== undefined;
         if (isPlayer) {
-            return !!(restrictions.includes(Restriction.Player) || 
-                     restrictions.includes(Restriction.AnyTarget) || 
-                     restrictions.includes(Restriction.Opponent) ||
-                     restrictions.includes(Restriction.You));
+            return !!(restrictions.includes(Restriction.Player) ||
+                restrictions.includes(Restriction.AnyTarget) ||
+                restrictions.includes(Restriction.Opponent) ||
+                restrictions.includes(Restriction.You));
         }
 
         // 3. Object-based validation (Cards, Spells, Abilities)
@@ -183,8 +192,8 @@ export class TargetValidator {
                 return !!restrictions.some(r => {
                     const resObj = r as { value?: string };
                     const rv = (typeof r === 'string' ? r : (resObj.value || '')).toLowerCase();
-                    return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || 
-                           (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
+                    return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) ||
+                        (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
                 });
             }
             return false;
@@ -217,7 +226,7 @@ export class TargetValidator {
             }
 
             // 4. Name / Quality Fallback
-            const targetName = (definition.name || (targetObj as BaseEntity).name || (targetObj as any).name || "").toLowerCase();
+            const targetName = (definition.name || targetObj.name || "").toLowerCase();
             if (targetName !== lr && !RuleUtils.matchesQuality(targetObj, lr, state)) return false;
         }
 
@@ -235,7 +244,7 @@ export class TargetValidator {
         return true;
     }
 
-    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: TargetingContext, log?: (msg: string) => void): boolean {
+    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: EngineFrame, log?: (msg: string) => void): boolean {
         if (typeof r === 'string') {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
@@ -325,6 +334,7 @@ export class TargetValidator {
         if (expectedZone === Zone.Stack || expectedZone === 'Any') poolIds.push(...state.stack.map(o => o.id));
         if (expectedZone === 'Any') poolIds.push(...Object.keys(state.players));
 
-        return poolIds.filter(id => this.isLegalTarget(state, { sourceId, controllerId, targetDefinitions, targetIndex, xValue }, id));
+        return poolIds.filter(id => this.isLegalTarget(state, { sourceId, controllerId, targetDefinitions, targetIndex, xValue, effects: [], targets: [] }, id));
     }
 }
+

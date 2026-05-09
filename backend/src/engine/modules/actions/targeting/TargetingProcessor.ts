@@ -2,8 +2,7 @@ import {
     GameObject,
     GameState,
     PlayerId,
-    TargetingContext,
-    ResolutionContext,
+    EngineFrame,
     Zone,
     CostType,
     TargetType,
@@ -17,8 +16,12 @@ import {
     ReplacementEffect,
     PreventionEffect,
     AbilityType,
-    StackObject
+    StackObject,
+    AbilityDefinition,
+    AbilityCost,
+    TargetingActionData
 } from '@shared/engine_types';
+import { isTargetingData } from '../../../utils/ActionTypeGuards';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
@@ -29,6 +32,8 @@ import { TargetMapper } from './TargetMapper';
 import { TargetValidator } from './TargetValidator';
 import { oracle } from '../../../OracleLogicMap';
 import { ResolutionManager } from '../../core/stack/ResolutionManager';
+import { StackProcessor } from '../../core/stack/StackProcessor';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -40,15 +45,15 @@ export class TargetingProcessor {
     public static calculateTotalCounts(targetDefinitions: TargetDefinition[], xValue: number = 0) { return TargetMapper.calculateTotalCounts(targetDefinitions, xValue); }
     public static getCountsForDefinition(d: TargetDefinition | null, xValue: number = 0) { return TargetMapper.getCountsForDefinition(d, xValue); }
     public static generateTargetPrompt(targetDefinitions: TargetDefinition[], selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDefinitions, selectedCount, xValue, isSpellCasting); }
-    public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
+    public static isLegalTarget(state: GameState, context: EngineFrame, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[] | undefined, controllerId: string, xValue: number = 0): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDefinitions || [], controllerId, xValue); }
-    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, target, restrictions, context); }
+    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: EngineFrame): boolean { return TargetValidator.matchesRestrictions(state, target, restrictions, context); }
     public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
     public static getColors(obj: Targetable, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, targetIndex, xValue); }
-    public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
+    public static resolveTargetMapping(state: GameState, mapping: string, context: EngineFrame, effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDefinitions: TargetDefinition[], targetIndex: number, xValue: number = 0): TargetDefinition | null { return TargetMapper.getDefinitionForIndex(targetDefinitions, targetIndex, xValue); }
-    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: EffectDefinition[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
+    public static shouldFizzle(state: GameState, context: EngineFrame, targets: string[], effects: EffectDefinition[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
 
     /**
      * Checks if there are any optional targeting slots remaining that haven't been filled.
@@ -79,9 +84,11 @@ export class TargetingProcessor {
         }
 
         const action = state.pendingAction;
-        const actionData = action.data!;
+        if (!action.data || !isTargetingData(action.data)) return false;
+        const actionData = action.data;
+        const meta = getActionMeta(action);
         const targetDefinitions = actionData.targetDefinitions as TargetDefinition[];
-        const xValue = (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0));
+        const xValue = (meta.xValue !== undefined ? meta.xValue : (meta.stackObj?.xValue || 0));
         const counts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
         const { maxCount, minCount, count } = counts;
 
@@ -90,7 +97,8 @@ export class TargetingProcessor {
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm' || targetId === 'done';
         const isUndoing = targetId === 'undo' || targetId === 'back';
 
-        actionData.selectedTargets = actionData.selectedTargets || [];
+        const selectedTargets = actionData.selectedTargets || [];
+        actionData.selectedTargets = selectedTargets;
         actionData.maxCount = maxCount;
         actionData.minCount = minCount;
         actionData.count = count;
@@ -99,19 +107,19 @@ export class TargetingProcessor {
         const updatePrompt = () => {
             actionData.prompt = TargetingProcessor.generateTargetPrompt(
                 targetDefinitions,
-                actionData.selectedTargets.length,
+                selectedTargets.length,
                 xValue,
-                actionData.isSpellCasting
+                meta.isSpellCasting
             );
         };
         updatePrompt();
 
         if (isUndoing) {
-            if (actionData.selectedTargets.length > 0) {
-                const removed = actionData.selectedTargets.pop();
+            if (selectedTargets.length > 0) {
+                const removed = selectedTargets.pop();
 
                 // Refresh prompt and pool for the NEW index after removing
-                const nextIndex = actionData.selectedTargets.length;
+                const nextIndex = selectedTargets.length;
                 const currentDef = this.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
                 if (currentDef?.label) {
                     actionData.label = currentDef.label;
@@ -126,10 +134,12 @@ export class TargetingProcessor {
                 actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
                     sourceId: action.sourceId || "",
                     controllerId: playerId,
-                    stackObject: actionData.stackObj,
+                    stackObject: meta.stackObj,
                     targetDefinitions: targetDefinitions,
                     targetIndex: nextIndex,
-                    xValue: xValue
+                    xValue: xValue,
+                    effects: [],
+                    targets: []
                 }, tid));
 
                 updatePrompt();
@@ -139,7 +149,7 @@ export class TargetingProcessor {
                 logger.info(state, LogCategory.ACTION, `Targeting cancelled.`);
                 const sourceId = action.sourceId;
                 const stackId = actionData.stackId;
-                const stackObj = actionData.stackObj;
+                const stackObj = meta.stackObj;
 
                 if (stackObj && stackObj.sourceObject) {
                     const player = state.players[stackObj.controllerId];
@@ -160,15 +170,14 @@ export class TargetingProcessor {
 
                 const sourceOnField = state.battlefield.find(o => o.id === sourceId);
                 if (sourceOnField) {
-                    const abilityIndex = actionData.abilityIndex;
+                    const abilityIndex = meta.abilityIndex;
                     // ONLY refund and decrement usage if the ability was actually finalized (paid for)
                     // increments happen in SpellProcessor.finalizeAbilityActivation
                     if (sourceOnField.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
                         sourceOnField.abilitiesUsedThisTurn--;
-                        const logic = oracle.getCard(sourceOnField.definition.name);
-                        const ability = logic?.abilities?.[abilityIndex];
+                        const ability = (sourceOnField.definition.abilities as AbilityDefinition[])?.[abilityIndex];
                         if (ability && typeof ability !== 'string' && ability.type === AbilityType.Activated) {
-                            const lCost = ability.costs?.find(c => c.type === CostType.Loyalty)?.value;
+                            const lCost = ability.costs?.find((c: AbilityCost) => c.type === CostType.Loyalty)?.value;
                             if (lCost !== undefined) {
                                 const val = parseInt(String(lCost));
                                 sourceOnField.counters.loyalty = (sourceOnField.counters.loyalty || 0) - val;
@@ -200,10 +209,12 @@ export class TargetingProcessor {
             actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
-                stackObject: actionData.stackObj,
+                stackObject: meta.stackObj,
                 targetDefinitions: targetDefinitions,
                 targetIndex: firstIndex,
-                xValue: xValue
+                xValue: xValue,
+                effects: [],
+                targets: []
             }, tid));
             updatePrompt();
             logger.info(state, LogCategory.ACTION, `Targeting selection cleared.`);
@@ -257,10 +268,12 @@ export class TargetingProcessor {
                     actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                         sourceId: action.sourceId || "",
                         controllerId: playerId,
-                        stackObject: actionData.stackObj,
+                        stackObject: meta.stackObj,
                         targetDefinitions: targetDefinitions,
                         targetIndex: newNextIndex,
-                        xValue: xValue
+                        xValue: xValue,
+                        effects: [],
+                        targets: []
                     }, tid));
 
                     logger.info(state, LogCategory.ACTION, `Skipped optional target slot ${newNextIndex}.`);
@@ -272,7 +285,7 @@ export class TargetingProcessor {
                 logger.info(state, LogCategory.ACTION, `Targeting requirement not met: ${actionData.selectedTargets?.filter((t: any) => t !== null).length || 0}/${minCount}. Please select more targets.`);
                 return false;
             }
-            return engine.finaliseTargeting(playerId, actionData.selectedTargets);
+            return engine.finaliseTargeting(playerId, actionData.selectedTargets.filter((t): t is string => t !== null));
         }
 
         const validTargets = actionData.targets || [];
@@ -337,19 +350,21 @@ export class TargetingProcessor {
             }
             const pool = [
                 ...Object.keys(state.players),
-                ...state.battlefield.map((o: any) => o.id),
-                ...state.exile.map((o: any) => o.id),
-                ...state.stack.map((o: any) => o.id),
-                ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+                ...state.battlefield.map((o) => o.id),
+                ...state.exile.map((o) => o.id),
+                ...state.stack.map((o) => o.id),
+                ...(Object.values(state.players).flatMap(p => p.graveyard.map((c) => c.id)))
             ];
 
             actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
-                stackObject: actionData.stackObj,
+                stackObject: meta.stackObj,
                 targetDefinitions: targetDefinitions,
                 targetIndex: nextIndex,
-                xValue: xValue
+                xValue: xValue,
+                effects: [],
+                targets: []
             }, tid));
 
             // ENHANCEMENT: Consecutive Zone Shift
@@ -374,7 +389,7 @@ export class TargetingProcessor {
 
                 const choices = actionData.targets.map((tid: string) => {
                     const obj = RuleUtils.findObject(state, tid);
-                    const label = RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
+                    const label = RuleUtils.isEntity(obj) ? (obj.definition.name || 'Unknown') : (RuleUtils.isPlayer(obj) ? obj.name : tid);
                     return {
                         label,
                         value: tid,
@@ -392,7 +407,7 @@ export class TargetingProcessor {
                 actionData.maxChoices = consecutiveCount;
 
                 // Ensure we keep existing targets for ChoiceProcessor to append to
-                actionData.declaredTargets = actionData.selectedTargets;
+                actionData.declaredTargets = selectedTargets.filter((t): t is string => t !== null);
                 return true;
             }
         }
@@ -405,18 +420,19 @@ export class TargetingProcessor {
      */
     public static finaliseTargeting(state: GameState, playerId: PlayerId, resolvedTargets: string[], engine: EngineContext): boolean {
         const action = state.pendingAction;
-        if (!action || !action.data) return false;
-        const actionData = action.data;
+        if (!action || !action.data || !isTargetingData(action.data)) return false;
+        const actionData = action.data as TargetingActionData;
+        const meta = getActionMeta(action);
         const sourceId = action.sourceId;
-        const abilityIndex = actionData.abilityIndex;
-        const stackObj = (actionData.spellCopyRef || actionData.stackObj) as StackObject;
+        const abilityIndex = meta.abilityIndex;
+        const stackObj = (meta.spellCopyRef || meta.stackObj) as StackObject;
 
         const { logger, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
-        console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
+        console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${meta.isFreeCast}, hasParent=${!!meta.parentContext}, hasStackObj=${!!meta.stackObj}`);
 
-        if (actionData?.isCostChoice) {
-            state.interaction.lastSelections[actionData.costType] = resolvedTargets;
-            
+        if (actionData?.isCostChoice && actionData.costType) {
+            state.interaction.lastSelections[actionData.costType as string] = resolvedTargets;
+
             // Reconstruct the original choice action to resume resolution
             state.pendingAction = {
                 type: ActionType.ResolutionChoice,
@@ -424,12 +440,12 @@ export class TargetingProcessor {
                 sourceId: sourceId!,
                 data: actionData.originalActionData || actionData
             };
-            
+
             logger.info(state, LogCategory.ACTION, `[COST-FINAL] Cost paid. Resuming original choice resolution for ${sourceId}.`);
             return getProcessors(state).choice.resolveChoice(state, playerId, 'confirm', engine);
         }
 
-        if (actionData?.isCostTargeting) {
+        if (meta.isCostTargeting) {
             if (actionData.costType === 'Sacrifice') {
                 state.interaction.lastSelections['Sacrifice'] = [resolvedTargets[0]];
             }
@@ -440,18 +456,18 @@ export class TargetingProcessor {
                 cardId: sourceId!,
                 targets: actionData.declaredTargets || [],
                 bypassPriority: false,
-                isFreeCast: actionData.isFreeCast,
-                parentContext: actionData.parentContext
+                isFreeCast: meta.isFreeCast,
+                parentContext: meta.parentContext
             });
         }
 
         // --- CASE 1: Standard Spell/Ability Cast (isSpellCasting) ---
         // We MUST go through playCard/activateAbility to ensure the object reaches the stack 
         // and all ETB/Cast triggers fire correctly.
-        if (actionData.isSpellCasting && !actionData.isCopyTargeting) {
+        if (meta.isSpellCasting && !meta.isCopyTargeting) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            
+
             let success = false;
             if (abilityIndex !== undefined) {
                 success = engine.activateAbility({
@@ -459,39 +475,42 @@ export class TargetingProcessor {
                     cardId: sourceId!,
                     abilityIndex,
                     targets: resolvedTargets,
-                    xValue: actionData?.xValue,
+                    xValue: meta.xValue,
                     bypassPriority: true,
                     bypassTargeting: true,
-                    parentContext: actionData?.parentContext
+                    parentContext: meta.parentContext
                 });
             } else {
                 success = engine.playCard({
                     playerId,
                     cardId: sourceId!,
                     targets: resolvedTargets,
-                    xValue: actionData?.xValue,
+                    xValue: meta.xValue,
                     bypassPriority: true,
                     bypassTargeting: true,
-                    parentContext: actionData?.parentContext,
-                    isFreeCast: actionData?.isFreeCast,
-                    exileOnResolution: actionData?.exileOnResolution
+                    parentContext: meta.parentContext,
+                    isFreeCast: meta.isFreeCast,
+                    exileOnResolution: meta.exileOnResolution
                 });
             }
 
             // If the cast was successful and didn't trigger a new suspension, 
             // and we have a parent resolution waiting, resume it now.
-            if (success && !state.pendingAction && actionData.parentContext && actionData.nextEffectIndex !== undefined) {
-                logger.info(state, LogCategory.ACTION, `[TARGET-FINAL] Spell cast finished, resuming parent resolution for ${actionData.parentContext.sourceId}`);
+            if (success && !state.pendingAction && meta.parentContext && actionData.nextEffectIndex !== undefined) {
+                logger.info(state, LogCategory.ACTION, `[TARGET-FINAL] Spell cast finished, resuming parent resolution for ${meta.parentContext.sourceId}`);
                 EffectProcessor.resolveEffects({
                     state,
-                    effects: actionData.effects || [],
-                    sourceId: actionData.parentContext.sourceId,
-                    targets: actionData.targets || [],
-                    startIndex: actionData.nextEffectIndex,
-                    stackObject: actionData.parentContext.stackObject,
-                    parentContext: actionData.parentContext.parentContext,
+                    context: EffectProcessor.createEngineFrame(state, {
+                        sourceId: meta.parentContext.sourceId,
+                        effects: actionData.effects || [],
+                        targets: actionData.targets || [],
+                        startIndex: actionData.nextEffectIndex,
+                        stackObject: meta.parentContext.stackObject,
+                        parentContext: meta.parentContext.parentContext,
+                        exileOnResolution: meta.exileOnResolution
+                    }),
                 });
-                
+
                 if (!state.pendingAction) {
                     return ResolutionManager.resume(state, engine);
                 }
@@ -506,31 +525,17 @@ export class TargetingProcessor {
         if (actionData?.nextEffectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            
-            const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
+
+            const finalTargets = (meta.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
 
             const savedTargets = [...(actionData.targets || []), ...finalTargets];
             const savedEffects = actionData.effects || [];
-            
+
             // If this is a copy, we update the spell copy on the stack
-            if (stackObj && actionData.isCopyTargeting) {
-                stackObj.targets = finalTargets;
-                
-                // UI METADATA REFRESH
-                if (!stackObj.data) stackObj.data = {};
-                stackObj.data.targetsControllers = finalTargets.map((tid: string) => {
-                    const obj = RuleUtils.findObject(state, tid);
-                    return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
-                });
-                const targetNames = finalTargets.map((tid: string) => {
-                    const obj = RuleUtils.findObject(state, tid);
-                    return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
-                });
-                if (targetNames.length > 0) {
-                    stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
-                }
+            if (stackObj && meta.isCopyTargeting) {
+                StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
                 logger.info(state, LogCategory.TARGETING, `[COPY-TARGETING] Updated targets for copy ${stackObj.id}: ${finalTargets.join(', ')}`);
             }
 
@@ -538,31 +543,29 @@ export class TargetingProcessor {
             if (actionData.stackId) {
                 const existingObject = state.stack.find(s => s.id === actionData.stackId);
                 if (existingObject) {
-                    existingObject.targets = finalTargets;
-                    if (!existingObject.data) existingObject.data = {};
-                    existingObject.data.targetsControllers = finalTargets.map((tid: string) => {
-                        const obj = RuleUtils.findObject(state, tid);
-                        return obj ? obj.controllerId : null;
-                    });
+                    StackProcessor.refreshTargetMetadata(state, existingObject, finalTargets);
                 }
             }
 
             // Resume the current resolution
-            const resumeSourceId = actionData.isCopyTargeting ? (actionData.parentContext?.sourceId || sourceId!) : (actionData.sourceId || sourceId!);
-            const resumeStackObj = actionData.isCopyTargeting ? (actionData.parentContext?.stackObject || stackObj) : stackObj;
+            const resumeSourceId = meta.isCopyTargeting ? (meta.parentContext?.sourceId || sourceId!) : (actionData.sourceId || sourceId!);
+            const resumeStackObj = meta.isCopyTargeting ? (meta.parentContext?.stackObject || stackObj) : stackObj;
 
             EffectProcessor.resolveEffects({
                 state,
-                effects: savedEffects,
-                sourceId: resumeSourceId,
-                targets: savedTargets,
-                startIndex: actionData.nextEffectIndex,
-                stackObject: resumeStackObj,
-                parentContext: actionData.parentContext,
+                context: EffectProcessor.createEngineFrame(state, {
+                    sourceId: resumeSourceId,
+                    effects: savedEffects,
+                    targets: savedTargets,
+                    startIndex: actionData.nextEffectIndex,
+                    stackObject: resumeStackObj,
+                    parentContext: meta.parentContext,
+                    exileOnResolution: meta.exileOnResolution
+                }),
             });
 
             if (!state.pendingAction) {
-                if (actionData.parentContext) {
+                if (meta.parentContext) {
                     return ResolutionManager.resume(state, engine);
                 }
                 engine.resetPriorityToActivePlayer();
@@ -572,37 +575,22 @@ export class TargetingProcessor {
 
         // --- CASE 3: Specialized Stack Object Updates (e.g. Copying/Retargeting Spells) ---
         if (stackObj) {
-            const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
+            const finalTargets = (meta.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
 
             stackObj.targets = finalTargets;
 
-            // UI METADATA REFRESH: Update controllers and summary for frontend arrows/labels
-            if (!stackObj.data) stackObj.data = {};
-            stackObj.data.targetsControllers = finalTargets.map((tid: string) => {
-                const obj = RuleUtils.findObject(state, tid);
-                return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
-            });
-            
-            const targetNames = finalTargets.map((tid: string) => {
-                const obj = RuleUtils.findObject(state, tid);
-                return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
-            });
-            if (targetNames.length > 0) {
-                stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
-            }
+            // UI METADATA REFRESH via centralized helper
+            StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
 
-            const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
-            if (!isAlreadyOnStack) {
-                state.stack.push(stackObj);
-            }
+            StackProcessor.ensureOnStack(state, stackObj);
 
             state.consecutivePasses = 0;
 
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
             logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.sourceObject?.definition.name || stackObj.type}`);
-            logger.info(state, LogCategory.STACK, `[STACK] Target(s): ${targetNames.join(', ')}`);
+            logger.info(state, LogCategory.STACK, `[STACK] Target(s): ${stackObj.summary || finalTargets.join(', ')}`);
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
 
             state.pendingAction = undefined;
@@ -613,16 +601,16 @@ export class TargetingProcessor {
                 if (state.pendingAction) return true; // Still more interactions needed
             }
 
-            if (actionData.parentContext) {
+            if (meta.parentContext) {
                 // BUG FIX: If this was targeting for a COPY (created by a trigger/spell), 
                 // we should resume the parent resolution (the trigger) rather than resolving the copy itself.
                 // The copy should remain on the stack to be resolved later.
-                const isCopy = !!actionData.isCopyTargeting;
-                const resumeObj = isCopy ? actionData.parentContext.stackObject : stackObj;
-                const resumeSourceId = isCopy ? (actionData.parentContext.stackObject?.id || sourceId!) : (sourceId || stackObj.sourceId);
+                const isCopy = !!meta.isCopyTargeting;
+                const resumeObj = isCopy ? meta.parentContext.stackObject : stackObj;
+                const resumeSourceId = isCopy ? (meta.parentContext.stackObject?.id || sourceId!) : (sourceId || stackObj.sourceId);
 
                 if (resumeObj) {
-                    return ResolutionManager.resume(state, engine, resumeObj as any, resumeSourceId, actionData.parentContext);
+                    return ResolutionManager.resume(state, engine, resumeObj, resumeSourceId, meta.parentContext);
                 }
             }
 
@@ -639,10 +627,10 @@ export class TargetingProcessor {
                 cardId: sourceId!,
                 abilityIndex,
                 targets: resolvedTargets,
-                xValue: actionData?.xValue,
+                xValue: meta.xValue,
                 bypassPriority: true,
                 bypassTargeting: true,
-                parentContext: actionData?.parentContext
+                parentContext: meta.parentContext
             });
             engine.checkAutoPass(playerId);
             return success;
@@ -653,12 +641,12 @@ export class TargetingProcessor {
                 playerId,
                 cardId: sourceId!,
                 targets: resolvedTargets,
-                xValue: actionData?.xValue,
+                xValue: meta.xValue,
                 bypassPriority: true,
                 bypassTargeting: true,
-                parentContext: actionData?.parentContext,
-                isFreeCast: actionData?.isFreeCast,
-                exileOnResolution: actionData?.exileOnResolution
+                parentContext: meta.parentContext,
+                isFreeCast: meta.isFreeCast,
+                exileOnResolution: meta.exileOnResolution
             });
             engine.checkAutoPass(playerId);
             return success;

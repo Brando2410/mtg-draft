@@ -106,6 +106,13 @@ export class ActionProcessor {
     const { logger, lki: LkiProcessor, trigger: TrP } = getProcessors(state);
     const fromZone = card.zone;
 
+    // CR 111.8: A token that has left the battlefield can't move to another zone 
+    // or come back onto the battlefield.
+    if (RuleUtils.isToken(card) && fromZone !== Zone.Battlefield && fromZone !== Zone.None) {
+      logger.info(state, LogCategory.ACTION, `[RULE 111.8] Token ${card.definition.name} (${card.id}) has already left the battlefield and cannot move to ${to}.`);
+      return { success: false, affectedIds: [card.id], actualAmount: 0, stoppedBy: 'Rule 111.8' };
+    }
+
     // Rule 400.3: Objects move to their OWNER'S hand/graveyard/library, not the controller's.
     const destinationPlayerId =
       to === Zone.Hand || to === Zone.Graveyard || to === Zone.Library
@@ -177,8 +184,8 @@ export class ActionProcessor {
     // Clear all transient casting/targeting metadata.
     delete card.isFreeCast;
     delete card.isSpellCasting;
-    delete (card as any).isCopyTargeting;
-    delete (card as any).bypassTargeting;
+    delete card.isCopyTargeting;
+    delete card.bypassTargeting;
 
     // Rule 400.7: Objects leaving the battlefield lose memory of their state
     if (to !== Zone.Battlefield) {
@@ -345,7 +352,7 @@ export class ActionProcessor {
       }
       p.library = p.library.filter((c) => c.id !== cid);
       if (p.virtualHand) {
-        p.virtualHand = p.virtualHand.filter((c) => c.id !== cid && (c as any).sourceCreatureId !== cid);
+        p.virtualHand = p.virtualHand.filter((c) => c.id !== cid && c.sourceCreatureId !== cid);
       }
     }
     if (!state.limbo) state.limbo = [];
@@ -382,6 +389,7 @@ export class ActionProcessor {
               controllerId: targetPlayerId,
               event: { type: TriggerEvent.EnterBattlefield, playerId: targetPlayerId, payload: { xValue: card.xValue, object: card } },
               sourceObject: card,
+              effects: [],
               targets: []
             },
           )
@@ -699,9 +707,11 @@ export class ActionProcessor {
     EffectProcessor.executeEffect({
       state,
       effect: { type: EffectType.GainLife, amount },
-      sourceId: "system",
-      validTargetIds: [playerId],
-      controllerIdOverride: playerId,
+      context: EffectProcessor.createEngineFrame(state, {
+        sourceId: "system",
+        targets: [playerId],
+        controllerIdOverride: playerId,
+      })
     });
   }
 
@@ -710,9 +720,11 @@ export class ActionProcessor {
     EffectProcessor.executeEffect({
       state,
       effect: { type: EffectType.LoseLife, amount },
-      sourceId: "system",
-      validTargetIds: [playerId],
-      controllerIdOverride: playerId,
+      context: EffectProcessor.createEngineFrame(state, {
+        sourceId: "system",
+        targets: [playerId],
+        controllerIdOverride: playerId,
+      })
     });
   }
 }

@@ -5,6 +5,7 @@ import {
     ActionType,
     BaseEntity,
     ContinuousEffect,
+    ChoiceOption,
     EffectDefinition,
     EffectType,
     GameObject,
@@ -13,9 +14,10 @@ import {
     TargetMapping,
     TriggerEvent,
     Zone,
-    PlayerId
+    PlayerId,
+    TargetDefinition
 } from '@shared/engine_types';
-import { ModalEffect, ResolutionContext } from '@shared/types/effects';
+import { ModalEffect, EngineFrame } from '@shared/types/effects';
 import { LogCategory } from '../../../utils/EngineLogger';
 import {
     ActivateAbilityOptions,
@@ -33,6 +35,7 @@ import { SpellValidator } from './SpellValidator';
 import { getProcessors } from '../../ProcessorRegistry';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { ResolutionManager } from '../../core/stack/ResolutionManager';
+import { ActionBuilder } from '../../../utils/ActionBuilder';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -96,11 +99,11 @@ export class SpellProcessor {
             delete cardToPlay.isFreeCast;
         }
 
-        if (exileOnResolution) {
-            console.log(`[PLAY-DEBUG] Setting exileOnResolution=true for ${cardToPlay.definition.name}`);
+        if (exileOnResolution !== undefined) {
+            if (exileOnResolution) cardToPlay.exileOnResolution = true;
+            else delete cardToPlay.exileOnResolution;
+        } else if (cardToPlay.definition.exileOnResolution) {
             cardToPlay.exileOnResolution = true;
-        } else {
-            delete cardToPlay.exileOnResolution;
         }
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
@@ -155,14 +158,14 @@ export class SpellProcessor {
         // we must prompt the user to choose.
         if (cardToPlay.zone === Zone.Hand && !bypassPriority && !options.isAbilitySelectionBypassed) {
             const { priority: PriorityProcessor } = getProcessors(state);
-            
+
             // 1. Find all activated abilities that can be played from hand
-            const activatableAbilities = (cardToPlay.definition.abilities || []).map((a, idx) => ({ a, idx })).filter(({ a }) => 
+            const activatableAbilities = (cardToPlay.definition.abilities || []).map((a, idx) => ({ a, idx })).filter(({ a }) =>
                 typeof a !== 'string' && a.type === AbilityType.Activated && (a.activeZone === Zone.Hand || (Array.isArray(a.activeZone) && a.activeZone.includes(Zone.Hand)))
             );
 
             // Filter for actually activatable ones (mana check, etc)
-            const validAbilities = activatableAbilities.filter(({ idx }) => 
+            const validAbilities = activatableAbilities.filter(({ idx }) =>
                 PriorityProcessor.canAbilityBeActivated(state, playerId, cardToPlay.id, idx, bypassPriority)
             );
 
@@ -171,16 +174,16 @@ export class SpellProcessor {
             // CASE A: Multiple valid abilities OR (1+ abilities AND spell is playable) -> Show Modal
             if (validAbilities.length > 1 || (validAbilities.length > 0 && isSpellPlayable)) {
                 const { choiceGenerator: ChoiceGenerator, action: ActionProcessor } = getProcessors(state);
-                const choices: any[] = [];
-                
+                const choices: ChoiceOption[] = [];
+
                 if (isSpellPlayable) {
                     choices.push({ label: `Cast ${cardToPlay.definition.name} (${currentDefinition.manaCost || '0'})`, value: 'PLAY_ACTION_SPELL' });
                 }
 
                 choices.push(...validAbilities.map(({ a, idx }) => {
-                    const ability = a as import('@shared/engine_types').AbilityDefinition;
+                    const ability = a as AbilityDefinition;
                     return {
-                        label: `Activate Ability: ${ability.label || (ability as any).manaCost || 'Alternative Mode'}`,
+                        label: `Activate Ability: ${ability.label || ability.manaCost || 'Alternative Mode'}`,
                         value: `PLAY_ACTION_ABILITY_${idx}`
                     };
                 }));
@@ -336,10 +339,22 @@ export class SpellProcessor {
 
             if (modalAbility.chooseBothCondition) {
                 const { condition: ConditionProcessor } = getProcessors(state);
-                const met = ConditionProcessor.matchesCondition(state, (modalAbility as AbilityDefinition).chooseBothCondition, {
+                const met = ConditionProcessor.matchesCondition(state, modalAbility.chooseBothCondition, {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any as StackObject,
+                    stackObject: {
+                        id: cardToPlay.id,
+                        sourceId: cardToPlay.id,
+                        sourceObject: cardToPlay,
+                        controllerId: playerId,
+                        ownerId: cardToPlay.ownerId,
+                        definition: cardToPlay.definition,
+                        type: (modalAbility as AbilityDefinition).type,
+                        counters: {},
+                        effects: [],
+                        targets: []
+                    } as StackObject,
+                    effects: [],
                     targets: []
                 });
                 if (met) {
@@ -348,9 +363,9 @@ export class SpellProcessor {
                 }
             }
 
-            const choices = modalAbility.modes!.map((mode: any, idx: number) => {
-                const isSelectable = !mode.targetDefinitions ||
-                    mode.targetDefinitions.optional ||
+            const choices = modalAbility.modes!.map((mode, idx: number) => {
+                const isSelectable = !mode.targetDefinitions || mode.targetDefinitions.length === 0 || 
+                    mode.targetDefinitions.every((td: TargetDefinition) => td.optional) ||
                     TargetingProcessor.hasLegalTargets(state, cardToPlay.id, mode.targetDefinitions, playerId);
 
                 return {
@@ -361,21 +376,11 @@ export class SpellProcessor {
             });
 
             const { action: ActionProcessor } = getProcessors(state);
-            state.pendingAction = ActionProcessor.prepareAction(state, {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: modalAbility.label || 'Choose options',
-                    choices: choices,
-                    minChoices: minChoices,
-                    maxChoices: maxChoices,
-                    isSpellCasting: true,
-                    isModeSelection: true,
-                    allowDuplicates: modalAbility.allowDuplicates,
-                    declaredTargets: declaredTargets || []
-                }
-            });
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, modalAbility.label || 'Choose options')
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext })
+                .withChoices(choices, minChoices, maxChoices)
+                .withData({ isModeSelection: true, allowDuplicates: modalAbility.allowDuplicates, declaredTargets: declaredTargets || [] })
+                .build();
             logger.debug(state, LogCategory.ACTION, `[MODAL] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
@@ -384,19 +389,11 @@ export class SpellProcessor {
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             // Trigger choice phase (targets are already in declaredTargets if we are here)
             const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: choiceEffect.label || 'Choose an option',
-                    choices: choiceEffect.choices,
-                    minChoices: choiceEffect.minChoices || 1,
-                    maxChoices: choiceEffect.maxChoices || 1,
-                    isSpellCasting: true,
-                    declaredTargets: declaredTargets || []
-                }
-            };
+            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, choiceEffect.label || 'Choose an option')
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext })
+                .withChoices(choiceEffect.choices as ChoiceOption[], (choiceEffect.minChoices as number) || 1, (choiceEffect.maxChoices as number) || 1)
+                .withData({ declaredTargets: declaredTargets || [] })
+                .build();
             logger.debug(state, LogCategory.ACTION, `[CHOICE] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
@@ -452,35 +449,20 @@ export class SpellProcessor {
         if (!RuleUtils.isEntity(obj)) return false;
         const definition = obj.definition;
 
-        const cardLogic = oracle.getCard(definition.name);
         const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
 
         let abilities: AbilityDefinition[] = [];
-        if (cardLogic?.abilities) {
-            cardLogic.abilities.forEach(a => {
-                if (typeof a !== 'string') abilities.push(a);
-            });
-        }
-        if (definition.abilities) {
+        if ('abilities' in definition && definition.abilities) {
             definition.abilities.forEach((a: AbilityDefinition | string) => {
                 if (typeof a === 'string') return;
-                const isDuplicate = abilities.some(existing => {
-                    if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
-                    // Fallback for abilities without IDs (check type and structural effects)
-                    return existing.type === a.type &&
-                        JSON.stringify(existing.effects) === JSON.stringify(a.effects) &&
-                        JSON.stringify(existing.costs) === JSON.stringify(a.costs);
-                });
-                if (!isDuplicate) {
-                    abilities.push(a);
-                }
+                abilities.push(a);
             });
         }
 
         // Include abilities from effectiveStats (Continuous Effects)
         if (stats.abilities) {
-            stats.abilities.forEach((a: any) => {
+            stats.abilities.forEach((a: AbilityDefinition | string) => {
                 if (typeof a === 'string') return;
                 const isDuplicate = abilities.some(existing => {
                     if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
@@ -516,7 +498,7 @@ export class SpellProcessor {
         }
 
         // Step 1.6: Speed/Timing Check
-        if (!SpellValidator.validateAbilitySpeed(state, playerId, obj as GameObject, ability, cardLogic)) {
+        if (!SpellValidator.validateAbilitySpeed(state, playerId, obj as GameObject, ability)) {
             return false;
         }
 
@@ -571,10 +553,14 @@ export class SpellProcessor {
                 sourceId: cardToPlay.id,
                 data: {
                     label: choiceEffect.label || 'Choose an option',
-                    choices: choiceEffect.choices,
-                    minChoices: choiceEffect.minChoices || 1,
-                    maxChoices: choiceEffect.maxChoices || 1,
-                    isSpellCasting: true,
+                    choices: choiceEffect.choices as import('@shared/engine_types').ChoiceOption[],
+                    minChoices: (choiceEffect.minChoices as number) || 1,
+                    maxChoices: (choiceEffect.maxChoices as number) || 1,
+                    metadata: {
+                        isSpellCasting: true,
+                        isFreeCast,
+                        parentContext
+                    },
                     declaredTargets: declaredTargets || []
                 }
             };
@@ -595,7 +581,7 @@ export class SpellProcessor {
         if (isFreeCast) {
             logger.debug(state, LogCategory.ACTION, `[DEBUG] Finalizing free cast for ${cardToPlay.definition.name}. Bypassing mana check.`);
         } else if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
-            if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
+            if (ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, cardToPlay)) {
                 if (hasConfirmedAutoTap) {
                     logger.debug(state, LogCategory.ACTION, `Using pre-confirmed auto-tap for ${totalMana}...`);
                     ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
@@ -606,32 +592,37 @@ export class SpellProcessor {
                     const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
 
                     if (tappedIds.length > 0) {
-                        state.pendingAction = {
-                            type: ActionType.ModalSelection,
-                            playerId: playerId,
-                            sourceId: cardToPlay.id,
-                            data: {
-                                label: `Confirm auto-tap for ${cardToPlay.definition.name}?`,
-                                choices: [
-                                    { label: `Confirm Cast (${totalMana})`, value: 'confirm' }
-                                ],
+                        state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
+                            .withChoices([{ label: `Confirm Cast (${totalMana})`, value: 'confirm' }])
+                            .ingest({
                                 isSpellCasting: true,
+                                isFreeCast: isFreeCast,
+                                parentContext,
                                 confirmedAutoTap: true,
-                                totalMana,
-                                declaredTargets: declaredTargets || [],
                                 tappedLandIds: tappedIds,
                                 producedMana,
                                 manaSnapshot,
-                                restrictedSnapshot
-                            }
-                        };
+                                restrictedSnapshot,
+                                totalMana,
+                                declaredTargets: declaredTargets || []
+                            })
+                            .build();
                         return true;
+                    } else {
+                        logger.info(state, LogCategory.ACTION, `[MANA] Auto-tap could not satisfy cost ${totalMana} for ${cardToPlay.definition.name}.`);
+                        return false;
                     }
                 }
             } else {
                 logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
                 return false;
             }
+        }
+
+        // Final sanity check: Can we actually pay now?
+        if (!isFreeCast && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+            logger.info(state, LogCategory.ACTION, `[MANA] Payment failed for ${cardToPlay.definition.name} even after auto-tap. (Effective Cost: ${totalMana})`);
+            return false;
         }
 
         logger.debug(state, LogCategory.ACTION, `[FINAL-DEBUG] Proceeding with finalization for ${cardToPlay.definition.name}.`);
@@ -737,7 +728,7 @@ export class SpellProcessor {
         const cardName = cardToPlay.definition.name;
         state.gameStats.castCounts[playerId][cardName] = (state.gameStats.castCounts[playerId][cardName] || 0) + 1;
 
-        const exileOnResolution = (state.ruleRegistry.continuousEffects.some((e: ContinuousEffect) =>
+        const exileOnResolutionFinal = (state.ruleRegistry.continuousEffects.some((e: ContinuousEffect) =>
             e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
         )) ||
             cardToPlay.isFlashbackCast ||
@@ -749,7 +740,6 @@ export class SpellProcessor {
                 (!e.zone || e.zone === Zone.Exile)
             ));
 
-        logger.debug(state, LogCategory.ACTION, `[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${cardToPlay.exileOnResolution}, final=${exileOnResolution}`);
 
         const targetsControllers = (declaredTargets || []).map((tid) => {
             const obj = RuleUtils.findObject(state, tid);
@@ -773,7 +763,7 @@ export class SpellProcessor {
             name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
             image_url: cardToPlay.definition.image_url,
-            exileOnResolution: cardToPlay.exileOnResolution || parentContext?.exileOnResolution,
+            exileOnResolution: exileOnResolutionFinal || parentContext?.exileOnResolution,
             xValue: cardToPlay.xValue,
             isCopy: cardToPlay.isCopy,
             isPreparedCopy: cardToPlay.isPreparedCopy,
@@ -858,6 +848,7 @@ export class SpellProcessor {
             (!e.zone || e.zone === Zone.Exile)
         ));
 
+
         const stackObj: StackObject = {
             id: stackId,
             controllerId: playerId,
@@ -897,7 +888,7 @@ export class SpellProcessor {
         if (manaCost) {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
             if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state, obj)) {
-                if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, effectiveMana, obj)) {
+                if (ManaProcessor.canPayWithTotal(state, playerObj, state.battlefield, effectiveMana, obj)) {
                     logger.info(state, LogCategory.MANA, `Auto-tapping lands to pay ability cost ${effectiveMana}...`);
                     ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
                 }
@@ -923,9 +914,11 @@ export class SpellProcessor {
                 EffectProcessor.executeEffect({
                     state,
                     effect: eff,
-                    sourceId: obj.id,
-                    validTargetIds: [],
-                    stackObject: stackObj as any
+                    context: EffectProcessor.createEngineFrame(state, {
+                        sourceId: obj.id,
+                        targets: [],
+                        stackObject: stackObj
+                    })
                 });
             });
             logger.info(state, LogCategory.ACTION, `Activated mana ability of ${obj.definition.name}`);
@@ -979,7 +972,7 @@ export class SpellProcessor {
         cardToPlay: GameObject,
         totalMana: string,
         declaredTargets: string[],
-        parentContext?: ResolutionContext,
+        parentContext?: EngineFrame,
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean {
@@ -993,8 +986,10 @@ export class SpellProcessor {
         if (hybridSymbols.length === 0) return false;
 
         state.interaction.manaChoices = state.interaction.manaChoices || {};
-        
+
         if (Object.keys(state.interaction.manaChoices).length > 0) {
+            const { logger } = getProcessors(state);
+            logger.debug(state, LogCategory.ACTION, `[MANA-CHOICE] Skipping hybrid prompt as choices already exist: ${JSON.stringify(state.interaction.manaChoices)}`);
             return false; // Already chosen
         }
 
@@ -1007,27 +1002,23 @@ export class SpellProcessor {
             };
         });
 
-        state.pendingAction = {
-            type: ActionType.ModalSelection,
-            playerId: playerId,
-            sourceId: cardToPlay.id,
-            data: {
-                label: `Choose exact payment for ${cardToPlay.definition.name}`,
-                hideUndo: false,
-                isManaChoice: true,
-                isManaChoiceToggle: true,
+        state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Choose exact payment for ${cardToPlay.definition.name}`)
+            .ingest({
                 isSpellCasting: true,
-                hybridGroups,
-                declaredTargets,
                 parentContext,
                 isFreeCast,
                 exileOnResolution,
-                choices: [] // Empty to prevent default button rendering
-            }
-        };
+                isManaChoice: true,
+                isManaChoiceToggle: true,
+                hybridGroups,
+                declaredTargets,
+                choices: []
+            })
+            .build();
 
         const { logger } = getProcessors(state);
         logger.info(state, LogCategory.ACTION, `[MANA-CHOICE] ${state.players[playerId].name} must toggle hybrid payment.`);
         return true;
     }
 }
+

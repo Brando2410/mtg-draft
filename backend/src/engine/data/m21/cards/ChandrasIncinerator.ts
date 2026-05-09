@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ChandrasIncinerator: CardDefinition = {
     name: "Chandra's Incinerator",
@@ -24,10 +24,7 @@ export const ChandrasIncinerator: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageDealtToPlayer,
-            condition: (state, event, source) => {
-                return event.data?.isCombat === false && event.data?.sourceControllerId === source.controllerId;
-            },
+            eventMatch: TriggerEvent.DamageDealtToPlayer, //missing condition
             targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,

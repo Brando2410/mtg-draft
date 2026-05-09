@@ -1,4 +1,4 @@
-import { CounterType, TriggerEvent, Zone } from "@shared/engine_types";
+import { CounterType, GameObject, TriggerEvent, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IConditionHandler } from "../IConditionHandler";
@@ -11,7 +11,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, sourceId, controllerId, stackObject } = context;
             const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
-            return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject });
+            return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject, effects: [], targets: [] });
         }
     },
     "EVENT_MANA_VALUE_GE": {
@@ -21,7 +21,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const obj = RuleUtils.getEventObject(event, state);
             if (!RuleUtils.isEntity(obj)) return false;
             const { mana: ManaProcessor } = getProcessors(state);
-            return ManaProcessor.getManaValue(obj.definition.manaCost) >= threshold;
+            return ManaProcessor.getManaValue(obj.definition.manaCost || "") >= threshold;
         }
     },
     "IS_FLASHBACK_CAST": {
@@ -112,7 +112,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
                 if (!obj) return false;
-                return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject });
+                return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject, effects: [], targets: [] });
             });
         }
     },
@@ -147,7 +147,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targetObj = RuleUtils.findObject(state, targetId);
             if (!targetObj) return false;
 
-            return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject });
+            return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject, effects: [], targets: [] });
         }
     },
     "TARGET_1_COUNTERS_P1P1": {
@@ -349,8 +349,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event } = context;
             const tId = RuleUtils.getTargets(event)[0];
             if (!tId) return false;
-            const obj = state.battlefield.find((o) => o.id === tId);
-            return (obj && obj.isTapped && RuleUtils.isCreature(obj)) || false;
+            const obj = RuleUtils.getEventObject(event, state) || state.battlefield.find((o) => o.id === tId);
+            return (RuleUtils.isGameObject(obj) && obj.isTapped && RuleUtils.isCreature(obj)) || false;
         }
     },
     "OWN_CREATURE_ENTERS": {
@@ -396,7 +396,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
             if (castFromZone) return castFromZone === Zone.Graveyard || castFromZone === Zone.Exile;
 
-            const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId;
             if (!objId) return false;
             const processors = getProcessors(state);
             const fromGY = processors.lki.getLki(state, objId, Zone.Graveyard);
@@ -420,11 +420,16 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TRIGGER_SOURCE_POW_OR_TOUGH_LE_1": {
         matches(state, params, context) {
             const { event } = context;
-            const tid = RuleUtils.getTargets(event)[0];
-            const obj = state.battlefield.find((o) => o.id === tid);
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
+
+            // If it's a snapshot (LKI), use its recorded stats
+            if (RuleUtils.isGameObject(obj) && obj.effectiveStats) {
+                return obj.effectiveStats.power <= 1 || obj.effectiveStats.toughness <= 1;
+            }
+
             const { layer: LayerProcessor } = getProcessors(state);
-            const stats = LayerProcessor.getEffectiveStats(obj, state);
+            const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
             return stats.power <= 1 || stats.toughness <= 1;
         }
     },
@@ -438,11 +443,9 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { sourceId, event } = context;
             const tId = RuleUtils.getTargets(event)[0] || sourceId;
-            const obj = state.battlefield.find((o) => o.id === tId);
+            const obj = RuleUtils.getEventObject(event, state) || RuleUtils.findObject(state, tId);
             if (!obj) return false;
-            const { layer: LayerProcessor } = getProcessors(state);
-            const stats = LayerProcessor.getEffectiveStats(obj, state);
-            return RuleUtils.isCreature(obj); // Using definition for now as types aren't modified in stats yet
+            return RuleUtils.isCreature(obj);
         }
     },
     "NOT_CREATURE": {

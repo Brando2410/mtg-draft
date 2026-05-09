@@ -19,7 +19,7 @@ export const MageTowerReferee: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
             condition: (state, event, ability) => {
-                if (event.playerId !== ability.controllerId) return false;
+                if (event?.playerId !== ability.controllerId) return false;
                 const card = RuleUtils.getEventObject(event, state);
                 if (!card) return false;
                 const uniqueColors = new Set(card.definition.colors || []);

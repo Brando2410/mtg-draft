@@ -1,7 +1,7 @@
 import { useMemo, memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EyeOff } from 'lucide-react';
-import { type GameObject, type PlayerState, ActionType, type StackObject } from '@shared/engine_types';
+import { type GameObject, type PlayerState, ActionType, type StackObject, type PendingAction, type ChoiceOption } from '@shared/engine_types';
 
 // Modular Components
 import { SourceObjectPreview } from './choice/SourceObjectPreview';
@@ -9,16 +9,16 @@ import { ScrySurveilView } from './choice/ScrySurveilView';
 import { TriggerOrderView } from './choice/TriggerOrderView';
 import { CardChoiceGrid } from './choice/CardChoiceGrid';
 import { ButtonChoiceList } from './choice/ButtonChoiceList';
-import { ManaChoiceToggleView } from './choice/ManaChoiceToggleView';
+import { ManaChoiceToggleView, type HybridGroup } from './choice/ManaChoiceToggleView';
 import { useChoiceModalLogic } from '../../../hooks/game/useChoiceModalLogic';
 
 interface ChoiceModalProps {
-  pendingAction: any;
+  pendingAction: PendingAction | null;
   me: PlayerState | undefined;
   opponent: PlayerState | null | undefined;
   battlefield: GameObject[];
   stack: StackObject[];
-  exile: any[];
+  exile: GameObject[];
   onTapCard: (id: string) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: (id: string) => void;
@@ -47,26 +47,28 @@ export const ChoiceModal = memo(({
       moveCard,
       choices,
       minChoices,
-      maxChoices
+      maxChoices,
+      meta
   } = useChoiceModalLogic(pendingAction, me, opponent, battlefield, stack, exile, onTapCard);
 
   const [manaToggleState, setManaToggleState] = useState<Record<number, string>>({});
 
   const isOrderTriggers = pendingAction?.type === ActionType.OrderTriggers;
   const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
-  const isManaToggle = pendingAction?.data?.isManaChoiceToggle;
+  const isManaToggle = pendingAction?.data?.isManaChoiceToggle || meta.isManaChoiceToggle;
 
   useEffect(() => {
-      if (isManaToggle && pendingAction?.data?.hybridGroups) {
+      const hybridGroups = pendingAction?.data?.hybridGroups || meta.hybridGroups;
+      if (isManaToggle && hybridGroups) {
           const initial: Record<number, string> = {};
-          pendingAction.data.hybridGroups.forEach((g: any, i: number) => {
+          hybridGroups.forEach((g: HybridGroup, i: number) => {
               initial[i] = g.options[0];
           });
           setManaToggleState(initial);
       }
-  }, [isManaToggle, pendingAction?.data?.hybridGroups]);
+  }, [isManaToggle, pendingAction?.data?.hybridGroups, meta.hybridGroups]);
 
-  const isChoiceAction = [
+  const isChoiceAction = pendingAction?.type && ([
     ActionType.Choice,
     ActionType.ModalSelection,
     ActionType.ResolutionChoice,
@@ -75,19 +77,19 @@ export const ChoiceModal = memo(({
     ActionType.Surveil,
     ActionType.LegendRule,
     ActionType.OrderTriggers
-  ].includes(pendingAction?.type);
+  ] as string[]).includes(pendingAction.type);
 
   const isCostChoice = pendingAction?.data?.isCostChoice;
-  const hasCards = choices.some((c: any) => c.cardData);
+  const hasCards = choices.some((c: ChoiceOption) => c.cardData);
   
-  const noneChoiceIdx = choices.findIndex((c: any) => c.value === 'none' || c.isNone === true);
-  const cardChoices = choices.filter((c: any) => c.cardData);
-  const buttonChoices = choices.filter((c: any, i: number) => !c.cardData && i !== noneChoiceIdx);
+  const noneChoiceIdx = choices.findIndex((c: ChoiceOption) => c.value === 'none' || c.isNone === true);
+  const cardChoices = choices.filter((c: ChoiceOption) => c.cardData);
+  const buttonChoices = choices.filter((c: ChoiceOption, i: number) => !c.cardData && i !== noneChoiceIdx);
   const noneChoice = noneChoiceIdx !== -1 ? choices[noneChoiceIdx] : null;
 
   const availablePlayerIds = useMemo(() => {
     const ids = new Set<string>();
-    cardChoices.forEach((c: any) => { if (c.cardData?.ownerId) ids.add(c.cardData.ownerId); });
+    cardChoices.forEach((c: ChoiceOption) => { if (c.cardData?.ownerId) ids.add(c.cardData.ownerId); });
     const sorted = Array.from(ids);
     if (me?.id && sorted.includes(me.id)) return [me.id, ...sorted.filter(id => id !== me.id)];
     return sorted;
@@ -96,10 +98,10 @@ export const ChoiceModal = memo(({
   const activeViewedPlayerId = viewedPlayerId || me?.id || availablePlayerIds[0];
   const filteredCardChoices = useMemo(() => {
     if (availablePlayerIds.length <= 1) return cardChoices;
-    return cardChoices.filter((c: any) => c.cardData?.ownerId === activeViewedPlayerId);
+    return cardChoices.filter((c: ChoiceOption) => c.cardData?.ownerId === activeViewedPlayerId);
   }, [cardChoices, availablePlayerIds, activeViewedPlayerId]);
 
-  if (!isChoiceAction || pendingAction?.playerId !== me?.id || pendingAction?.data?.isContextual) return null;
+  if (!isChoiceAction || !pendingAction || pendingAction?.playerId !== me?.id || pendingAction?.data?.isContextual) return null;
 
   const confirmSelection = () => {
       if (selectedIndices.length < minChoices) return;
@@ -113,9 +115,9 @@ export const ChoiceModal = memo(({
   
   const confirmScryResult = () => {
       const payload = JSON.stringify({
-          top: scryState.top.map((c: any) => c.id),
-          bottom: scryState.bottom.map((c: any) => c.id),
-          graveyard: scryState.graveyard.map((c: any) => c.id)
+          top: scryState.top.map((c: GameObject) => c.id),
+          bottom: scryState.bottom.map((c: GameObject) => c.id),
+          graveyard: scryState.graveyard.map((c: GameObject) => c.id)
       });
       onTapCard?.(`CHOICE_${payload}`);
   };
@@ -163,14 +165,14 @@ export const ChoiceModal = memo(({
                   </div>
 
                   <div className={`w-full custom-scrollbar overflow-x-auto overflow-y-auto max-h-[60vh] px-8 py-6 flex flex-col items-center ${hasCards || isOrderTriggers ? 'bg-black/30 rounded-[2.5rem] border border-white/5 shadow-inner mx-8' : ''}`}>
-                      {isScrySurveil && <ScrySurveilView scryState={scryState} setScryState={setScryState} moveCard={moveCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} type={pendingAction.type} />}
+                      {isScrySurveil && <ScrySurveilView scryState={scryState} setScryState={setScryState} moveCard={moveCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} type={pendingAction.type as ActionType} />}
                       {isOrderTriggers && <TriggerOrderView orderedTriggers={orderedTriggers} setOrderedTriggers={setOrderedTriggers} />}
-                      {isManaToggle && <ManaChoiceToggleView hybridGroups={pendingAction.data.hybridGroups} toggleState={manaToggleState} setToggleState={setManaToggleState} />}
+                      {isManaToggle && <ManaChoiceToggleView hybridGroups={pendingAction.data?.hybridGroups || meta.hybridGroups} toggleState={manaToggleState} setToggleState={setManaToggleState} />}
                       {!isOrderTriggers && !isScrySurveil && !isManaToggle && cardChoices.length > 0 && (
                           <CardChoiceGrid 
                               cardChoices={cardChoices} filteredCardChoices={filteredCardChoices} choices={choices} 
                               selectedIndices={selectedIndices} maxChoices={maxChoices} 
-                              allowDuplicates={pendingAction.data?.allowDuplicates} availablePlayerIds={availablePlayerIds} 
+                              allowDuplicates={!!pendingAction.data?.allowDuplicates} availablePlayerIds={availablePlayerIds} 
                               activeViewedPlayerId={activeViewedPlayerId} me={me} opponent={opponent} 
                               setViewedPlayerId={setViewedPlayerId} handleChoiceClick={handleChoiceClick} 
                               handleChoiceRightClick={handleChoiceRightClick} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} 
@@ -179,7 +181,7 @@ export const ChoiceModal = memo(({
                       {!isOrderTriggers && !isScrySurveil && !isManaToggle && buttonChoices.length > 0 && (
                           <ButtonChoiceList 
                               buttonChoices={buttonChoices} choices={choices} selectedIndices={selectedIndices} 
-                              allowDuplicates={pendingAction.data?.allowDuplicates} handleChoiceClick={handleChoiceClick} 
+                              allowDuplicates={!!pendingAction.data?.allowDuplicates} handleChoiceClick={handleChoiceClick} 
                               handleChoiceRightClick={handleChoiceRightClick} 
                           />
                       )}

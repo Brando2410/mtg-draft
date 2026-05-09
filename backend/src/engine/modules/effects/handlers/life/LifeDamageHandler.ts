@@ -1,4 +1,4 @@
-import { DamageEffect, EffectDefinition, GameState, LifeEffect, ResolutionContext } from '@shared/engine_types';
+import { DamageEffect, EffectDefinition, GameState, LifeEffect, EngineFrame } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 
@@ -7,7 +7,7 @@ import { getProcessors } from '../../../ProcessorRegistry';
  */
 export class LifeDamageHandler {
 
-  public static handleDamage(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+  public static handleDamage(state: GameState, effect: EffectDefinition, context: EngineFrame) {
     const { effect: EP, targeting: TP, damage: DP } = getProcessors(state);
     const { targets, sourceId } = context;
     const damageEff = effect as DamageEffect;
@@ -20,7 +20,7 @@ export class LifeDamageHandler {
     });
   }
 
-  public static handleGainLife(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+  public static handleGainLife(state: GameState, effect: EffectDefinition, context: EngineFrame) {
     const { logger, effect: EP, restriction: RV, trigger: TrP } = getProcessors(state);
     const { targets } = context;
     const lifeEff = effect as LifeEffect;
@@ -47,7 +47,7 @@ export class LifeDamageHandler {
     });
   }
 
-  public static handleLoseLife(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+  public static handleLoseLife(state: GameState, effect: EffectDefinition, context: EngineFrame) {
     const { logger, effect: EP, trigger: TrP } = getProcessors(state);
     const { targets } = context;
     const lifeEff = effect as LifeEffect;
@@ -62,6 +62,7 @@ export class LifeDamageHandler {
     });
   }
 }
+
 
 
 

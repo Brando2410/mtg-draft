@@ -29,8 +29,8 @@ export class ManaProcessor {
   /**
    * Checks if a player can pay a cost using both floating mana and untapped sources (greedy check).
    */
-  public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string, payingFor?: GameObject): boolean {
-    return ManaValidator.canPayWithTotal(player, battlefield, costStr, payingFor);
+  public static canPayWithTotal(state: GameState, player: PlayerState, battlefield: any[], costStr: string, payingFor?: GameObject): boolean {
+    return ManaValidator.canPayWithTotal(state, player, battlefield, costStr, payingFor);
   }
 
   /**

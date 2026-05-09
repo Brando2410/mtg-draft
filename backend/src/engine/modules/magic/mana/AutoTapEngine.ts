@@ -1,5 +1,5 @@
 // AutoTapEngine.ts
-import { GameObject, GameState, PlayerId } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, EffectType, AddManaEffect, SpecializedEffect } from '@shared/engine_types';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
@@ -7,6 +7,7 @@ import { ManaColor, ManaPoolRecord, ManaProductionYield, ManaSourceCandidate } f
 import { oracle } from './../../../OracleLogicMap';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
+import { getProcessors } from '../../ProcessorRegistry';
 
 export class AutoTapEngine {
     public static autoTapLandsForCost(
@@ -51,8 +52,8 @@ export class AutoTapEngine {
         });
 
         // 4b. Support for "Spend as any color"
-        const canSpendAsAnyColor = state?.ruleRegistry?.continuousEffects?.some((e: any) => 
-            (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
+        const canSpendAsAnyColor = state?.ruleRegistry?.continuousEffects?.some((e: any) =>
+            (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) &&
             e.controllerId === playerId &&
             (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
         );
@@ -71,7 +72,7 @@ export class AutoTapEngine {
                 // Check each mana ability
                 src.abilities.forEach((a, aIdx) => {
                     const abilityColors = this.getProduceableColors(a);
-                    
+
                     // CHECK RESTRICTIONS
                     const isLegalForSource = (restrictions: string[]) => {
                         if (!restrictions || restrictions.length === 0) return true;
@@ -87,25 +88,33 @@ export class AutoTapEngine {
 
                     if (!isLegalForSource(abilityColors.restrictions)) return;
 
-                    const satisfies = !effectiveReqs || 
+                    const satisfies = !effectiveReqs ||
                         effectiveReqs.some(c => abilityColors.colors.has(c as ManaColor) || abilityColors.choiceColors.includes(c));
-                    
+
                     if (satisfies) {
                         // Calculate potential yield for "Least Waste" heuristic
                         let yieldValue = 0;
-                        const anyAbility = a as any;
+                        const anyAbility = a;
                         if (anyAbility.effects) {
-                          anyAbility.effects.forEach((e: any) => {
-                             const v = e.value || e.manaType || e.mana || '{C}';
-                             yieldValue = Math.max(yieldValue, ManaParser.getManaValue(String(v)) * (e.amount || 1));
-                          });
+                            anyAbility.effects.forEach((e) => {
+                                let v: any = '{C}';
+                                if (e.type === EffectType.AddMana) {
+                                    v = (e as AddManaEffect).manaType || '{C}';
+                                } else if (e.type === EffectType.AdNauseam || e.type === EffectType.ChaosWarp) {
+                                    // Handle specialized mana effects if they use 'value'
+                                    v = (e as SpecializedEffect).value || '{C}';
+                                }
+
+                                const amount = typeof e.amount === 'number' ? e.amount : 1;
+                                yieldValue = Math.max(yieldValue, ManaParser.getManaValue(String(v)) * amount);
+                            });
                         }
 
-                        if (!canProduce || yieldValue < (src.currentYield || Infinity)) { 
+                        if (!canProduce || yieldValue < (src.currentYield || Infinity)) {
 
-                             canProduce = true;
-                             bestAIdx = aIdx;
-                             src.currentYield = yieldValue;
+                            canProduce = true;
+                            bestAIdx = aIdx;
+                            src.currentYield = yieldValue;
 
                             // Handle choices (e.g. "Add one mana of any color")
                             if (abilityColors.hasChoice) {
@@ -129,20 +138,20 @@ export class AutoTapEngine {
                     }
                 });
 
-                    if (canProduce) {
-                        // Calculate demand score: how many playables need colors this source can produce
-                        let demandScore = 0;
-                        src.allPossibleColors.forEach((c: ManaColor) => { demandScore += demandMap[c] || 0; });
+                if (canProduce) {
+                    // Calculate demand score: how many playables need colors this source can produce
+                    let demandScore = 0;
+                    src.allPossibleColors.forEach((c: ManaColor) => { demandScore += demandMap[c] || 0; });
 
-                        candidates.push({
-                            ...src,
-                            aIdx: bestAIdx,
-                            cIdx: bestCIdx,
-                            versatility: src.allPossibleColors.size,
-                            demandScore,
-                            yieldScore: src.currentYield || 1
-                        });
-                    }
+                    candidates.push({
+                        ...src,
+                        aIdx: bestAIdx,
+                        cIdx: bestCIdx,
+                        versatility: src.allPossibleColors.size,
+                        demandScore,
+                        yieldScore: src.currentYield || 1
+                    });
+                }
             });
 
             if (candidates.length === 0) return null;
@@ -159,7 +168,7 @@ export class AutoTapEngine {
                 const versA = a.versatility || 1;
                 const versB = b.versatility || 1;
                 if (versA !== versB) return versA - versB;
-                
+
                 const demandA = a.demandScore || 0;
                 const demandB = b.demandScore || 0;
                 if (demandA !== demandB) return demandA - demandB;
@@ -259,7 +268,7 @@ export class AutoTapEngine {
                 // We pass the calculated cIdx (Choice Index) into the engine.
                 // This informs the land exactly which color to produce, bypassing the manual modal.
                 engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
-                
+
                 // ARCHITECTURAL NOTE: Stealth Pending Action Clearance
                 if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE' || state.pendingAction.type === 'OPTIONAL_ACTION')) {
                     state.pendingAction = undefined;
@@ -307,7 +316,7 @@ export class AutoTapEngine {
 
             // See ARCHITECTURAL NOTE on Choice Propagation above.
             engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
-            
+
             // See ARCHITECTURAL NOTE on Stealth Pending Action Clearance above.
             if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE')) {
                 state.pendingAction = undefined;
@@ -334,12 +343,14 @@ export class AutoTapEngine {
     private static getAvailableManaSources(state: GameState, playerId: string, alreadyTapped: string[]): ManaSourceCandidate[] {
         const sources: ManaSourceCandidate[] = [];
 
+        const { layer: LayerProcessor } = getProcessors(state);
+
         state.battlefield.forEach((obj: GameObject) => {
             if (obj.controllerId !== playerId || obj.isTapped || alreadyTapped.includes(obj.id)) return;
 
-            const logic = oracle.getCard(obj.definition.name);
-            const abilities = logic?.abilities || obj.definition.abilities || [];
-            const manaAbilities = (abilities as any[]).filter((a: any) => a.isManaAbility);
+            const stats = LayerProcessor.getEffectiveStats(obj, state);
+            const abilities = stats.abilities || [];
+            const manaAbilities = (abilities as any[]).filter((a: any) => typeof a !== 'string' && a.isManaAbility);
             if (manaAbilities.length === 0) return;
 
             const allPossibleColors = new Set<ManaColor>();

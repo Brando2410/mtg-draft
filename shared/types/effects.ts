@@ -202,6 +202,7 @@ export interface ResolutionTransient {
     eventAmount?: number;
     exiledIds?: string[];
     isCopy?: boolean;
+    isFreeCast?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];
@@ -209,8 +210,10 @@ export interface ResolutionTransient {
     minChoices?: number;
     nextPlayerIds?: PlayerId[];
     onFailureEffects?: EffectDefinition[];
+    paidManaValue?: number;
     sourceName?: string;
     xValue?: number;
+    exileOnResolution?: boolean;
 }
 
 /**
@@ -251,6 +254,7 @@ export interface EngineFrame {
     eventAmount?: number;
     exiledIds?: string[];
     isCopy?: boolean;
+    isFreeCast?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];
@@ -258,54 +262,24 @@ export interface EngineFrame {
     minChoices?: number;
     nextPlayerIds?: PlayerId[];
     onFailureEffects?: EffectDefinition[];
+    paidManaValue?: number;
     sourceName?: string;
     xValue?: number;
     exileOnResolution?: boolean;
 
     // === References ===
-    sourceObject?: GameObject;
-    stackObject?: StackObject;
-
-    // === Hierarchy (legacy bridge, will be replaced by ResolutionState.parentFrameId) ===
-    parentContext?: ResolutionContext;
-}
-
-/**
- * ResolutionContext (CR 608): Standardized contract for passing state through
- * the effect resolution chain.
- * @deprecated Use EngineFrame for new code. This is kept as a superset for backward compatibility.
- */
-export interface ResolutionContext extends EngineFrame {
-    /** @deprecated Use state.players[controllerId] instead */
-    controller?: PlayerState;
-}
-
-/**
- * ConditionContext: Standardized contract for requirement checks in ConditionProcessor.
- */
-export interface ConditionContext {
-    controllerId: PlayerId;
-    cardToPlay?: GameObject;
-    effectSourceId?: GameObjectId;
-    event?: GameEvent;
-    sourceId: GameObjectId;
     sourceObject?: GameObject | StackObject | PlayerState;
     stackObject?: StackObject;
-    targets: string[];
-}
 
-/**
- * TargetingContext: Standardized contract for legality checks in TargetValidator.
- */
-export interface TargetingContext {
-    controllerId: PlayerId;
+    // === Hierarchy ===
+    parentContext?: EngineFrame;
+
+    // === Condition/Targeting Specific ===
+    cardToPlay?: GameObject;
+    effectSourceId?: GameObjectId;
     isSpellCasting?: boolean;
-    sourceId: GameObjectId;
-    stackObject?: StackObject;
     targetDefinitions?: TargetDefinition[];
     targetIndex?: number;
-    targets?: string[];
-    xValue?: number;
 }
 
 /**
@@ -317,7 +291,7 @@ export interface AmountResolver {
     baseValue?: number;
     multiplier?: number;
     offset?: number;
-    resolver?: (state: GameState, context: ResolutionContext) => number;
+    resolver?: (state: GameState, context: EngineFrame) => number;
     subtype?: string;
 }
 export type NumericProperty = 
@@ -325,7 +299,7 @@ export type NumericProperty =
     | string 
     | AmountResolver 
     | Record<string, number>
-    | ((state: GameState, context: ResolutionContext, targets: string[]) => number)
+    | ((state: GameState, context: EngineFrame, targets: string[]) => number)
     | { min: number; max: number }
     | undefined;
 
@@ -335,8 +309,8 @@ export type NumericProperty =
  */
 export type ConditionDefinition = 
     | string 
-    | ((state: GameState, event: GameEvent | undefined, context: ConditionContext) => boolean)
-    | { matches: (state: GameState, targets: string[], context: ConditionContext) => boolean };
+    | ((state: GameState, event: GameEvent | undefined, context: EngineFrame) => boolean)
+    | { matches: (state: GameState, targets: string[], context: EngineFrame) => boolean };
 
 /**
  * Base properties shared by all effects (Rule 608)
@@ -346,7 +320,7 @@ interface CoreProps {
     activeZones?: Zone[];
     condition?: ConditionDefinition;
     data?: Record<string, unknown>;
-    duration?: EffectDuration | DurationType;
+    duration?: EffectDuration;
     effects?: EffectDefinition[];
     image_url?: string;
     label?: string;
@@ -367,10 +341,11 @@ interface TargetingProps {
     target2Mapping?: TargetMapping;
     targetControllerId?: PlayerId;
     targetControllerMapping?: TargetMapping;
-    targetDefinitions?: any;
+    targetDefinitions?: TargetDefinition[];
     targetIds?: string[];
     targetMapping?: TargetMapping | string;
     targetOffset?: number;
+    sourceZones?: import('./core').Zone[];
 }
 
 interface NumericProps {
@@ -421,6 +396,7 @@ interface StateProps {
  */
 interface SpecializedAndLegacyProps {
     selectionType?: string;
+    linkKey?: string;
 }
 
 /**
@@ -523,7 +499,7 @@ export interface ContinuousEffectDefinition extends BaseEffect {
     colorsToAdd?: string[];
     condition?: any;
     copyFromIdMapping?: string;
-    duration?: EffectDuration | DurationType;
+    duration?: EffectDuration;
     exileOnMoveToGraveyard?: boolean;
     flashbackCostOverride?: any;
     isFreeCast?: boolean;
@@ -574,7 +550,7 @@ export interface ModalEffect extends BaseEffect {
         costs?: any[];
         effects?: EffectDefinition[];
         label: string;
-        targetDefinitions?: any;
+        targetDefinitions?: TargetDefinition[];
         value?: string | number;
     }[];
     isSpellCasting?: boolean;
@@ -626,6 +602,11 @@ export interface SpecializedEffect extends BaseEffect {
     type: typeof EffectType.AdNauseam | typeof EffectType.ChaosWarp | typeof EffectType.ApproachOfTheSecondSun | typeof EffectType.Learn | typeof EffectType.ExchangeHandAndGraveyard | typeof EffectType.Necromentia | typeof EffectType.Cascade | typeof EffectType.Dig | typeof EffectType.Prepare | typeof EffectType.Unprepare | typeof EffectType.GainAbilitiesOfTopCard | typeof EffectType.AllowCastFromGraveyard | typeof EffectType.AllowCastFromExile | typeof EffectType.AllowLookAtTop | typeof EffectType.AllowPlayFromTop | typeof EffectType.AllowPlayMilledCard;
     value?: unknown;
     additionalCosts?: AbilityCost[];
+}
+
+export interface PendingActionEffect extends BaseEffect {
+    type: typeof EffectType.PENDING_ACTION;
+    action: import('./state').PendingAction;
 }
 
 export interface SystemActionEffect extends BaseEffect {
@@ -728,6 +709,7 @@ export type EffectDefinition =
     | CostModifierEffect
     | EntersWithCountersEffect
     | FlipCoinEffect
+    | PendingActionEffect
     | SystemActionEffect;
 
 export interface FlipCoinEffect extends BaseEffect {

@@ -16,9 +16,8 @@ export class RegistryProcessor {
         state._triggerCache = undefined; // Invalidate trigger cache
         state._statsCache = undefined;   // Invalidate stats cache
         this.unregisterAbilities(state, card.id);
-        const logic = oracle.getCard(card.definition.name);
-        const abilities = (logic?.abilities || (card.definition as any).abilities || []);
-        if (!abilities || abilities.length === 0) return;
+        const abilities = (card.definition.abilities || []);
+        if (abilities.length === 0) return;
 
         abilities.forEach((ability: any, index: number) => {
             const id = `${card.id}_ability_${index}`;
@@ -107,7 +106,8 @@ export class RegistryProcessor {
             oneShot: ability.oneShot,
             payload: {
                 ...(ability.payload || {})
-            }
+            },
+            targets: []
         });
     }
 
@@ -123,7 +123,8 @@ export class RegistryProcessor {
             targetDefinitions: ability.targetDefinitions,
             abilityIndex: ability.abilityIndex !== undefined ? ability.abilityIndex : index,
             isManaAbility: ability.isManaAbility || false,
-            oracleText: ability.oracleText || card.definition.oracleText
+            oracleText: ability.oracleText || card.definition.oracleText,
+            targets: []
         });
     }
 
@@ -214,7 +215,9 @@ export class RegistryProcessor {
             activeZone,
             eventMatch: ability.eventMatch,
             condition: ability.condition,
-            data: ability.data
+            data: ability.data,
+            effects: [],
+            targets: []
         });
     }
 }

@@ -106,7 +106,7 @@ export const TurnConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { controllerId, sourceId, stackObject } = context;
-            const targetingContext = { sourceId, controllerId, stackObject };
+            const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
             return state.battlefield.some(o => 
                 o.controllerId === controllerId && 
                 RuleUtils.isPlaneswalker(o) && 
@@ -130,3 +130,4 @@ export const TurnConditions: Record<string, IConditionHandler> = {
         }
     }
 };
+

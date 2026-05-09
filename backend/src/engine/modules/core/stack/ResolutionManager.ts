@@ -1,66 +1,123 @@
 import {
     AbilityType,
+    EffectDefinition,
     GameState,
     PendingAction,
     PlayerId,
-    ResolutionContext,
+    EngineFrame,
     StackObject,
     Zone,
 } from '@shared/engine_types';
-import { LogCategory } from '../../../utils/EngineLogger';
+import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { EngineContext } from '../../../interfaces/EngineContext';
-import { oracle } from '../../../OracleLogicMap';
+import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
+import { EffectProcessor } from '../../effects/EffectProcessor';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 /**
  * ResolutionManager: Centralized module for resuming and completing stack object resolution.
- * 
- * This replaces the scattered resumption logic previously in:
- * - ChoiceProcessor.resumeResolution
- * - TargetingProcessor.finaliseTargeting
- * - PriorityProcessor.passPriority
- * - GameEngine.resumeResolution
- * 
- * The lifecycle is:
- * 1. StackProcessor pops an object and calls StackResolver.resolveObject
- * 2. If effects suspend (needing UI input), StackProcessor pushes it back
- * 3. After user input, the handler calls ResolutionManager.resume()
- * 4. ResolutionManager continues the effect loop via EffectProcessor.resolveEffects
- * 5. If all effects complete, ResolutionManager handles post-resolution cleanup
  */
 export class ResolutionManager {
+
+    /**
+     * CR 608.2: Primary entry point for resolving a spell or ability from the stack.
+     * Handles initial checks (fizzling, conditions) and effect execution.
+     */
+    public static resolve(
+        state: GameState,
+        stackObj: StackObject,
+        effects: EffectDefinition[],
+        engine: EngineContext,
+        startIndex: number = 0
+    ): boolean {
+        const { condition: ConditionProcessor, effect: EffectProcessor } = getProcessors(state);
+
+        const objectName = stackObj.name || stackObj.sourceObject?.definition.name || 'Effect';
+
+        if (startIndex === 0) {
+            EngineLogger.info(state, LogCategory.ACTION, `[Stack] Resolving: ${objectName}`);
+
+            // Rule 603.4: Intervening "if" clause re-check
+            if (stackObj.condition) {
+                const context = EffectProcessor.createEngineFrame(state, {
+                    sourceId: stackObj.sourceId,
+                    targets: stackObj.targets || [],
+                    stackObject: stackObj,
+                    effects: []
+                });
+                if (!ConditionProcessor.matchesCondition(state, stackObj.condition, context)) {
+                    EngineLogger.info(state, LogCategory.ACTION, `[Stack] ${objectName} failed to resolve: condition "${stackObj.condition}" no longer met.`);
+                    this.postResolutionCleanup(state, stackObj, undefined, engine, true);
+                    return true;
+                }
+            }
+
+            // Rule 608.2b: Target legality re-evaluation
+            if (this.areAllTargetsIllegal(state, stackObj)) {
+                EngineLogger.info(state, LogCategory.ACTION, `[Stack] ${objectName} fizzled (all targets illegal).`);
+                this.postResolutionCleanup(state, stackObj, undefined, engine, true);
+                return true;
+            }
+        } else {
+            EngineLogger.info(state, LogCategory.ACTION, `[Stack] Resuming: ${objectName}...`);
+        }
+
+        EngineLogger.info(state, LogCategory.ACTION, `[RESOLVE] ${objectName} resolving. Targets: ${stackObj.targets?.join(', ')}`);
+
+        const completed = EffectProcessor.resolveEffects({
+            state,
+            context: EffectProcessor.createEngineFrame(state, {
+                effects,
+                sourceId: stackObj.sourceId,
+                targets: stackObj.targets || [],
+                startIndex,
+                stackObject: stackObj
+            })
+        });
+
+        if (!completed) {
+            return false; // SUSPENDED
+        }
+
+        this.postResolutionCleanup(state, stackObj, undefined, engine);
+        return true;
+    }
 
     public static resume(
         state: GameState,
         engine: EngineContext,
         stackObjOverride?: StackObject,
         sourceIdOverride?: string,
-        contextOverride?: ResolutionContext,
+        contextOverride?: EngineFrame,
         actionOverride?: PendingAction
     ): boolean {
         const { logger } = getProcessors(state);
         const action = actionOverride || state.pendingAction;
 
-        // AUTOMATIC EXTRACTION: If we have a pending action, it is our source of truth for resumption.
         const sourceId = sourceIdOverride || action?.sourceId || "";
-        const stackObj = stackObjOverride || action?.data?.stackObj as StackObject || (action?.data?.parentContext?.stackObject as StackObject);
-        
-        // Reconstruct context from action data if not provided
-        let currentCtx: ResolutionContext | undefined = contextOverride;
+        const meta = getActionMeta(action);
+        const stackObj = stackObjOverride || meta.stackObj || meta.parentContext?.stackObject;
+
+        let currentCtx: EngineFrame | undefined = contextOverride;
         if (!currentCtx && action?.data) {
-            const data = action.data as any;
             currentCtx = {
-                effects: data.effects || [],
-                nextEffectIndex: data.nextEffectIndex || 0,
-                parentContext: data.parentContext,
-                targets: data.targets || [],
-                lookingCards: data.lookingCards || [],
-                sourceId: sourceId,
+                effects: meta.effects || [],
+                startIndex: meta.nextEffectIndex ?? meta.startIndex ?? 0, // Ensure we resume where we left off
+                nextEffectIndex: meta.nextEffectIndex ?? 0,
+                parentContext: meta.parentContext,
+                targets: meta.targets || [],
+                lookingCards: meta.lookingCards || [],
+                sourceId,
                 controllerId: action.playerId,
                 stackObject: stackObj,
-                lastMilledIds: data.lastMilledIds,
-                lastDiscardedIds: data.lastDiscardedIds,
+                lastMilledIds: meta.lastMilledIds,
+                lastDiscardedIds: meta.lastDiscardedIds,
+                isFreeCast: meta.isFreeCast,
+                paidManaValue: meta.paidManaValue,
+                xValue: meta.xValue,
+                exileOnResolution: meta.exileOnResolution ?? stackObj?.exileOnResolution ?? meta.parentContext?.exileOnResolution
             };
         }
 
@@ -70,7 +127,6 @@ export class ResolutionManager {
             currentCtx.stackObject = stackObj;
         }
 
-        // Clear action ONLY IF it was the global one we just processed
         if (action && state.pendingAction === action) {
             state.pendingAction = undefined;
         }
@@ -84,7 +140,7 @@ export class ResolutionManager {
         ) {
             const resumingCtx = currentCtx;
             const nextIdx = resumingCtx.nextEffectIndex!;
-            const effs = resumingCtx.effects;
+            const effs = resumingCtx.effects!;
             const parentTargets = resumingCtx.targets || [];
             const lookingCards = resumingCtx.lookingCards;
             const nextParentCtx = resumingCtx.parentContext;
@@ -95,32 +151,22 @@ export class ResolutionManager {
 
             const completed = getProcessors(state).effect.resolveEffects({
                 state,
-                effects: effs,
-                sourceId,
-                targets: parentTargets,
-                startIndex: nextIdx,
-                stackObject: stackObj,
-                parentContext: nextParentCtx,
-                lookingCards: lookingCards,
-                lastMilledIds: resumingCtx.lastMilledIds,
-                lastDiscardedIds: resumingCtx.lastDiscardedIds,
+                context: resumingCtx,
                 skipFizzleCheck: true,
             });
 
             if (stackObj && !completed && state.pendingAction) {
-                // Another suspension happened — sync the legacy index from the updated resolution state
                 stackObj.nextEffectIndex = stackObj.resolution?.effectIndex;
                 if (!stackObj.data) stackObj.data = {};
-                stackObj.data.nextEffectIndex = stackObj.nextEffectIndex; // Legacy sync
+                stackObj.data.nextEffectIndex = stackObj.nextEffectIndex;
             }
         }
 
-        // If we're done (no more pending actions), clean up
         if (!state.pendingAction) {
             logger.info(state, LogCategory.ACTION, `[RESOLUTION-MGR] Resolution complete for ${sourceId}. Starting cleanup.`);
             this.postResolutionCleanup(state, stackObj, rootContext, engine);
         } else if (state.pendingAction) {
-            const nextAction = state.pendingAction as any;
+            const nextAction = state.pendingAction;
             logger.debug(state, LogCategory.ACTION, `[RESOLUTION-MGR] Suspension during resumption. Next Action: ${nextAction.type}`);
             state.priorityPlayerId = nextAction.playerId || null;
         }
@@ -135,75 +181,103 @@ export class ResolutionManager {
     private static postResolutionCleanup(
         state: GameState,
         stackObj: StackObject,
-        parentContext: ResolutionContext | undefined,
-        engine: EngineContext
+        parentContext: EngineFrame | undefined,
+        engine: EngineContext,
+        fizzled: boolean = false
     ): void {
-        if (!stackObj) {
-            engine.resetPriorityToActivePlayer();
-            return;
-        }
+        if (!stackObj) return;
 
-        const fullStackObj = state.stack.find(s => s.id === stackObj.id);
-        if (!fullStackObj) {
-            engine.resetPriorityToActivePlayer();
-            return;
-        }
+        const { action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
 
-        const { logger } = getProcessors(state);
+        // 1. Resolve actual object from stack if necessary
+        const fullStackObj = state.stack.find(s => s.id === stackObj.id) || stackObj;
 
-        if (fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
+        if (fullStackObj && fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
             const card = fullStackObj.sourceObject;
             const isPermanent = RuleUtils.isPermanent(card);
 
-            if (card.zone === Zone.Stack) {
-                const freshDef = oracle.getCard(card.definition.name);
-                const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
-
+            if (fizzled) {
+                const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy;
                 if (shouldExile) {
-                    getProcessors(state).action.removeFromCurrentZone(state, card);
+                    EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
+                    ActionProcessor.removeFromCurrentZone(state, card);
                     if (!fullStackObj.isCopy) {
-                        getProcessors(state).action.moveCard(state, card, Zone.Exile, card.ownerId);
+                        ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
                     }
-                } else if (isPermanent) {
-                    getProcessors(state).action.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
                 } else {
-                    getProcessors(state).action.moveCard(state, card, Zone.Graveyard, card.ownerId);
+                    ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
+                }
+            } else {
+                if (isPermanent) {
+                    const isAura = RuleUtils.hasSubtype(card, 'aura');
+                    if (isAura && fullStackObj.targets && fullStackObj.targets.length > 0) {
+                        card.attachedTo = fullStackObj.targets[0];
+                        EngineLogger.info(state, LogCategory.ACTION, `[Stack] ${card.definition.name} enters attached to target ${card.attachedTo}.`);
+                    }
+
+                    card.xValue = fullStackObj.xValue;
+                    ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
+                } else if (card.zone === Zone.Stack) {
+                    const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || card.isPreparedCopy || card.definition.exileOnResolution;
+
+                    if (shouldExile) {
+                        const reason = card.isPreparedCopy ? 'Prepared spell' : (fullStackObj.isCopy ? 'Copy' : (card.definition.exileOnResolution ? 'Card Definition' : 'Effect'));
+                        EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (${reason}) ceases to exist after resolution.`);
+
+                        ActionProcessor.removeFromCurrentZone(state, card);
+                        if (!(fullStackObj.isCopy || card.isPreparedCopy)) {
+                            ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
+                        }
+                    } else {
+                        ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
+                    }
                 }
             }
+
+            // Fire ON_RESOLVE_SPELL event
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_RESOLVE_SPELL',
+                playerId: fullStackObj.controllerId,
+                payload: { object: card, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
+            });
+
         } else {
-            // Clean up ability/trigger from stack
-            const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id || (s.id === stackObj.id && s.type === fullStackObj.type));
+            const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id);
             if (stackIdx !== -1) {
                 state.stack.splice(stackIdx, 1);
             } else {
-                // Deep search fallback
                 const altIdx = state.stack.findIndex(s => s.sourceId === fullStackObj.sourceId && s.type === fullStackObj.type);
-                if (altIdx !== -1) {
-                    state.stack.splice(altIdx, 1);
-                }
+                if (altIdx !== -1) state.stack.splice(altIdx, 1);
             }
         }
 
-        // ROOT TRIGGER CLEANUP: If this was resumed from a parent context (like a trigger), clean up the parent too
-        if (parentContext?.stackObject && parentContext.stackObject.id !== stackObj.id) {
-            const parentStackObj = parentContext.stackObject;
+        const parentStackObj = parentContext?.stackObject;
+        if (parentStackObj && parentStackObj.id !== stackObj.id) {
             const pIdx = state.stack.findIndex(s => s.id === parentStackObj.id);
             if (pIdx !== -1) {
                 state.stack.splice(pIdx, 1);
             }
         }
 
-        // --- KEYWORD HOOK: ON RESOLUTION ---
-        if (fullStackObj.type === AbilityType.Spell) {
-            const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_RESOLVE_SPELL',
-                playerId: fullStackObj.controllerId,
-                payload: { object: fullStackObj.sourceObject, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
-            });
-        }
-
         engine.resetPriorityToActivePlayer();
+    }
+
+    private static areAllTargetsIllegal(state: GameState, stackObj: StackObject): boolean {
+        if (!stackObj.targets || stackObj.targets.length === 0) return false;
+
+        const definitions = stackObj.targetDefinitions;
+
+        return stackObj.targets.every((targetId, index) => {
+            return !TargetingProcessor.isLegalTarget(state, {
+                sourceId: stackObj.sourceId,
+                controllerId: stackObj.controllerId,
+                stackObject: stackObj,
+                targetDefinitions: definitions,
+                targetIndex: index,
+                effects: [],
+                targets: []
+            }, targetId);
+        });
     }
 
     /**
@@ -212,25 +286,22 @@ export class ResolutionManager {
      */
     public static stackTriggers(state: GameState, triggers: any[]): void {
         const { logger, trigger: TrP } = getProcessors(state);
-        
+
         for (let i = 0; i < triggers.length; i++) {
             const t = triggers[i];
             TrP.stackTrigger(state, t);
 
-            const pendingAfter = state.pendingAction as any;
-            // If stacking this trigger caused a targeting prompt or choice,
-            // save the REMAINING triggers to be stacked after that interaction is done.
+            const pendingAfter = state.pendingAction;
             if (pendingAfter && i < triggers.length - 1) {
                 const remaining = triggers.slice(i + 1);
-                const data: any = pendingAfter.data || {};
+                const data = (pendingAfter.data || {}) as Record<string, any>;
                 data.nextTriggersToStack = remaining;
-                pendingAfter.data = data;
+                pendingAfter.data = data as import('@shared/engine_types').ActionData;
                 return;
             }
         }
 
-        // If we finished stacking everything without suspending, check if there are 
-        // more triggers from other players that need to be ordered/stacked.
         TrP.processPendingTriggers(state);
     }
 }
+

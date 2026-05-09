@@ -1,4 +1,4 @@
-import { PlayerId, GameObject, StackObject, ResolutionContext } from '@shared/engine_types';
+import { PlayerId, GameObject, StackObject, EngineFrame } from '@shared/engine_types';
 import { EngineContext, PlayCardOptions, ActivateAbilityOptions } from './EngineContext';
 import { ProcessorRegistry } from '../modules/ProcessorRegistry';
 
@@ -33,13 +33,14 @@ export class NullEngineContext implements EngineContext {
     public confirmAttackers(pId: PlayerId): void { }
     public confirmBlockers(pId: PlayerId): void { }
     public finaliseTargeting(pId: PlayerId, targets: string[]): boolean { return false; }
-    public resumeResolution(sourceId: string, stackObj: StackObject, parentContext: ResolutionContext): boolean { return false; }
+    public resumeResolution(sourceId: string, stackObj: StackObject, parentContext: EngineFrame): boolean { return false; }
 
     /**
      * Null context uses the fallback processor locator.
      */
     public get processors(): ProcessorRegistry {
         // This will be resolved via the getProcessors utility which has its own fallback
-        return null as any; 
+        return null as any;
     }
 }
+

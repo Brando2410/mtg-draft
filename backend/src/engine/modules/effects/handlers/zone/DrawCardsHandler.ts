@@ -1,4 +1,4 @@
-import { DrawEffect, EffectDefinition, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { DrawEffect, EffectDefinition, GameState, PlayerId, EngineFrame, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
@@ -20,7 +20,7 @@ export const DrawCardsHandler: IEffectHandler<DrawEffect> = {
     }
 };
 
-function drawCards(state: GameState, playerId: PlayerId, amount: number, context: ResolutionContext, originalEffect: EffectDefinition) {
+function drawCards(state: GameState, playerId: PlayerId, amount: number, context: EngineFrame, originalEffect: EffectDefinition) {
     const { logger } = getProcessors(state);
     const player = state.players[playerId];
     if (!player) return;
@@ -47,12 +47,14 @@ function drawCards(state: GameState, playerId: PlayerId, amount: number, context
         const { effect: EP } = getProcessors(state);
         EP.resolveEffects({
             state,
-            effects: originalEffect.effects,
-            sourceId: context.sourceId || context.stackObject?.id || playerId,
-            targets: [playerId], // For draw, usually the player is the target of follow-up effects
-            startIndex: 0,
-            stackObject: context.stackObject,
-            parentContext: context,
+            context: EP.createEngineFrame(state, {
+                sourceId: context.sourceId || context.stackObject?.id || playerId,
+                effects: originalEffect.effects,
+                targets: [playerId],
+                stackObject: context.stackObject,
+                parentContext: context,
+            })
         });
     }
 }
+

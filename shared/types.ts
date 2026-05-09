@@ -21,6 +21,10 @@ export interface Card {
     keywords?: string[];
     typeLine?: string;
     colors?: string[];
+    loyalty?: string | number;
+    mana_cost?: string;
+    flashback_cost?: string;
+    flashbackCost?: string;
 }
 
 export interface Player {
@@ -33,6 +37,8 @@ export interface Player {
     lastSeen: number;
     pool: Card[];
     matchWins?: number;
+    deck?: Card[] | { name?: string; cards?: Card[]; mainEntry?: Card[] };
+    isReady?: boolean;
 }
 
 export interface Rules {

@@ -1,4 +1,4 @@
-import { EffectDefinition, GameState, ResolutionContext } from "@shared/engine_types";
+import { EffectDefinition, GameState, EngineFrame } from "@shared/engine_types";
 
 /**
  * IEffectHandler: Generic interface for MTG effect logic.
@@ -12,6 +12,6 @@ export interface IEffectHandler<T extends EffectDefinition = EffectDefinition> {
     handle(
         state: GameState, 
         effect: T, 
-        context: ResolutionContext
+        context: EngineFrame
     ): void | boolean;
 }

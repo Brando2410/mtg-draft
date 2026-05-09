@@ -1,6 +1,7 @@
-import { EffectType, GameState, ResolutionContext } from "@shared/engine_types";
+import { EffectType, GameState, EngineFrame } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 /**
  * Unified handler for permission-granting effects.
@@ -8,10 +9,10 @@ import { IEffectHandler } from "../../IEffectHandler";
  * to system-recognized Continuous Effects.
  */
 export const PermissionEffectHandler: IEffectHandler = {
-    handle(state: GameState, effect: any, context: ResolutionContext) {
+    handle(state: GameState, effect: any, context: EngineFrame) {
         const { logger, effect: EP } = getProcessors(state);
         const { sourceId, controllerId, targets } = context;
-        
+
         let targetIds = [...(targets || [])];
         let registeredType: string | undefined;
 
@@ -22,7 +23,7 @@ export const PermissionEffectHandler: IEffectHandler = {
                 }
                 registeredType = EffectType.AllowCastFromGraveyard;
                 break;
-                
+
             case EffectType.AllowPlayExiled:
                 if (targetIds.length === 0) {
                     targetIds = state.turnState.lastExiledIds || [];
@@ -43,7 +44,7 @@ export const PermissionEffectHandler: IEffectHandler = {
         }
 
         if (targetIds.length === 0 && effect.type !== EffectType.AllowPlayFromTop) {
-            logger.debug(state, "ACTION" as any, `[PermissionEffectHandler] No targets found for ${effect.type}. Skipping.`);
+            logger.debug(state, LogCategory.ACTION, `[PermissionEffectHandler] No targets found for ${effect.type}. Skipping.`);
             return;
         }
 
@@ -56,12 +57,15 @@ export const PermissionEffectHandler: IEffectHandler = {
                 registeredType: registeredType,
                 targetIds: targetIds,
             },
-            sourceId,
-            validTargetIds: [],
-            controllerIdOverride: controllerId,
-            parentContext: context
+            context: EP.createEngineFrame(state, {
+                sourceId,
+                targets: [],
+                controllerIdOverride: controllerId,
+                parentContext: context
+            })
         });
 
-        logger.info(state, "ACTION" as any, `[SYSTEM] Permission granted: ${registeredType} for ${targetIds.length} card(s).`);
+        logger.info(state, LogCategory.ACTION, `[SYSTEM] Permission granted: ${registeredType} for ${targetIds.length} card(s).`);
     }
 };
+

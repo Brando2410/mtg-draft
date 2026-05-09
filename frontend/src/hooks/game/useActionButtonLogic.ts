@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Phase, ActionType, Step } from '@shared/engine_types';
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 interface ActionButtonLogicProps {
   hasPriority: boolean;
@@ -39,12 +40,13 @@ export const useActionButtonLogic = ({
 
     if (pendingAction) {
       const isActionForMe = pendingAction.playerId === effectivePlayerId;
-      
+      const meta = getActionMeta(pendingAction);
+
       if (!isActionForMe) {
-        return { 
-          buttonText: "Waiting", 
-          subLabel: "Opponent's Action", 
-          isOrange: false, 
+        return {
+          buttonText: "Waiting",
+          subLabel: "Opponent's Action",
+          isOrange: false,
           isDisabled: true,
           isCancel: false
         };
@@ -65,7 +67,7 @@ export const useActionButtonLogic = ({
         orange = !isContextual;
         disabled = isContextual;
       } else if (pendingAction.type === ActionType.Discard) {
-        const isOptional = pendingAction.data?.isOptionalDiscard;
+        const isOptional = pendingAction.data?.isOptionalDiscard || meta.discardAmount === 'ANY';
         if (isOptional) {
           text = "Done Discarding";
           sub = "Click to finish";
@@ -83,12 +85,12 @@ export const useActionButtonLogic = ({
         const isOptional = targetDef?.optional || targetDef?.minCount === 0;
         const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
         const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
-        const isSpellCasting = pendingAction.data?.isSpellCasting;
-        const isAbility = pendingAction.data?.abilityIndex !== undefined;
+        const isSpellCasting = meta.isSpellCasting;
+        const isAbility = meta.abilityIndex !== undefined;
         const isInteractive = isSpellCasting || isAbility;
-        
+
         const canConfirm = selected.length >= minCount;
-        
+
         if (canConfirm) {
           text = "Confirm";
           orange = true;
@@ -101,20 +103,20 @@ export const useActionButtonLogic = ({
             cancel = true;
           }
         }
-        
+
         sub = `SELECT TARGETS: ${selected.length} / ${totalCount}`;
       }
     } else {
-      switch(currentStep) {
+      switch (currentStep) {
         case Step.Upkeep: sub = "To Draw"; break;
-        case Step.Draw: sub = "To Main 1"; break;
+        case Step.Draw: sub = "To Main"; break;
         case Step.Main: sub = currentPhase === Phase.PreCombatMain ? "To Combat" : "End Turn"; break;
         case Step.BeginningOfCombat: sub = "To Attackers"; break;
         case Step.DeclareAttackers: sub = "To Blockers"; break;
         case Step.DeclareBlockers: sub = "To Damage"; break;
         case Step.FirstStrikeDamage: sub = "To Damage"; break;
         case Step.CombatDamage: sub = "To End of Combat"; break;
-        case Step.EndOfCombat: sub = "To Main 2"; break;
+        case Step.EndOfCombat: sub = "To Main"; break;
         case Step.End: sub = "End Turn"; break;
       }
 

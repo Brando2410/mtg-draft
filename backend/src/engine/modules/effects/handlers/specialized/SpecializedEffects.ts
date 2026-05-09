@@ -125,12 +125,13 @@ export const ConditionalEffectHandler: IEffectHandler<EffectDefinition> = {
     const effects = effect.effects || [];
     return EP.resolveEffects({
       state,
-      effects,
-      sourceId,
-      targets,
-      startIndex: 0,
-      stackObject: context.stackObject,
-      parentContext: context.parentContext,
+      context: EP.createEngineFrame(state, {
+        sourceId,
+        effects,
+        targets,
+        stackObject: context.stackObject,
+        parentContext: context.parentContext,
+      })
     });
   }
 };

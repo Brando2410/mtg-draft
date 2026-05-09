@@ -9,7 +9,7 @@ import {
   MoveEffect,
   PlayerId,
   PlayerState,
-  ResolutionContext,
+  EngineFrame,
   SearchEffect,
   SelectionType,
   TargetMapping,
@@ -37,7 +37,7 @@ import { DrawCardsHandler } from "./DrawCardsHandler";
  * Strategy for CR 701: Keyword Actions (Zone Movement)
  */
 export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
-  public handle(state: GameState, effect: EffectDefinition, context: ResolutionContext): void | boolean {
+  public handle(state: GameState, effect: EffectDefinition, context: EngineFrame): void | boolean {
     const { logger } = getProcessors(state);
     const { targets = [], controllerId, stackObject, parentContext } = context || {};
     const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
@@ -45,7 +45,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     const targetMapping = effect.targetMapping || ((effect.targetDefinitions || effect.targetIds) ? undefined : TargetMapping.TargetAll);
     const processors = getProcessors(state);
-    
+
     let targetIds: string[] = effect.targetIds || [];
     if (targetMapping) {
       targetIds = processors.targeting.resolveTargetMapping(state, targetMapping, context, effect);
@@ -115,27 +115,26 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
-    context: ResolutionContext,
+    context: EngineFrame,
   ) {
     const { stackObject } = context;
     const parentContext = context;
-    const targetDefinitions = Array.isArray(effect.targetDefinitions)
-      ? effect.targetDefinitions[0]
-      : effect.targetDefinitions!;
-    if (!targetDefinitions) return;
+    const targetDefinitions = effect.targetDefinitions || [];
+    const firstDef = targetDefinitions[0];
+    if (!firstDef) return;
 
     const player = state.players[controllerId];
     if (!player) return;
 
     let pool: GameObject[] = [];
-    const expectedZone = targetDefinitions.zone;
+    const expectedZone = firstDef.zone;
 
-    if (expectedZone === Zone.Hand || targetDefinitions.type === TargetType.CardInHand) pool = player.hand;
-    else if (expectedZone === Zone.Graveyard || targetDefinitions.type === TargetType.CardInGraveyard) {
+    if (expectedZone === Zone.Hand || firstDef.type === TargetType.CardInHand) pool = player.hand;
+    else if (expectedZone === Zone.Graveyard || firstDef.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p: PlayerState) => p.graveyard);
-    } else if (expectedZone === Zone.Library || targetDefinitions.type === TargetType.CardInLibrary) {
+    } else if (expectedZone === Zone.Library || firstDef.type === TargetType.CardInLibrary) {
       pool = player.library;
-    } else if (expectedZone === Zone.Battlefield || targetDefinitions.type === TargetType.Permanent)
+    } else if (expectedZone === Zone.Battlefield || firstDef.type === TargetType.Permanent)
       pool = state.battlefield.filter((o: GameObject) => RuleUtils.getController(o) === controllerId);
     else return;
 
@@ -165,7 +164,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       return res;
     };
 
-    const restrictions = getRestrictions(targetDefinitions);
+    const restrictions = getRestrictions(firstDef);
     const validCandidates = pool.filter((c) =>
       TargetingProcessor.isLegalTarget(
         state,
@@ -173,8 +172,10 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           sourceId,
           controllerId,
           stackObject,
-          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
-          targetIndex: 0
+          targetDefinitions: effect.targetDefinitions || [],
+          targetIndex: 0,
+          effects: [],
+          targets: []
         },
         c.id
       ),
@@ -190,12 +191,12 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     const resolvedMin =
-      targetDefinitions.minCount !== undefined
-        ? EffectProcessor.resolveAmount(state, targetDefinitions.minCount, context)
-        : EffectProcessor.resolveAmount(state, targetDefinitions.count || 1, context);
+      firstDef.minCount !== undefined
+        ? EffectProcessor.resolveAmount(state, firstDef.minCount, context)
+        : EffectProcessor.resolveAmount(state, firstDef.count || 1, context);
     const resolvedMax = EffectProcessor.resolveAmount(
       state,
-      targetDefinitions.count || 1,
+      firstDef.count || 1,
       context,
     );
 
@@ -237,7 +238,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
-    context: ResolutionContext,
+    context: EngineFrame,
   ) {
     const { logger } = getProcessors(state);
     const { stackObject, parentContext } = context;
@@ -307,7 +308,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
   private resolveLookAtTopAndPick(
     state: GameState,
     effect: EffectDefinition,
-    context: ResolutionContext,
+    context: EngineFrame,
     targets: string[] = [],
   ) {
     const { controllerId } = context;
@@ -336,7 +337,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     );
   }
 
-  private resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+  private resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: EngineFrame) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const player = state.players[controllerId];
@@ -357,7 +358,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           state,
           card,
           effect.restrictions || [],
-          { sourceId: context.sourceId || stackObject?.id || "", controllerId },
+          { sourceId: context.sourceId || stackObject?.id || "", controllerId, effects: [], targets: [] },
         )
       ) {
         targetCard = card;
@@ -400,26 +401,22 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         // ARCHITECTURAL NOTE: Cascade Suspension (Rule 702.85)
         // Cascade requires the player to choose whether to cast the revealed card.
         // We set state.pendingAction to suspend the resolution loop until the player makes a choice.
-        if (
-          nextEffect.type === EffectType.Choice &&
-          ((nextEffect as ModalEffect).choices || (nextEffect as any).choice)
-        ) {
-          const choicesArr =
-            (nextEffect as ModalEffect).choices || (nextEffect as any).choice?.choices || [];
+        if (nextEffect.type === EffectType.Choice) {
+          const modalEffect = nextEffect as ModalEffect;
+          const choicesArr = modalEffect.choices || [];
 
           state.pendingAction = ChoiceGenerator.createCardChoice(
             state,
             [targetCard],
             {
               label:
-                (nextEffect as any).label ||
-                (nextEffect as any).choice?.label ||
+                modalEffect.label ||
                 `Cast ${targetCard.definition.name}?`,
               playerId: controllerId,
               sourceId: targetCard.id,
               optional: true,
-              isSpellCasting: true, // Force true for Cascade
-              isFreeCast: true,    // Force true for Cascade
+              isSpellCasting: modalEffect.isSpellCasting ?? effect.isSpellCasting,
+              isFreeCast: modalEffect.isFreeCast ?? effect.isFreeCast,
               onSelected: (c: GameObject) => {
                 const yesChoice = choicesArr.find(
                   (ch: any) => ch.label === "Yes" || ch.value === "yes",
@@ -443,9 +440,11 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         EP.executeEffect({
           state,
           effect: nextEffect,
-          sourceId: targetCard.id,
-          validTargetIds: [targetCard.id],
-          parentContext: context,
+          context: EP.createEngineFrame(state, {
+            sourceId: targetCard.id,
+            targets: [targetCard.id],
+            parentContext: context,
+          }),
         });
         if (state.pendingAction) return;
       }
@@ -472,7 +471,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     });
   }
 
-  private resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], context: EngineFrame) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
@@ -502,7 +501,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
         ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId!, moveEff.position as number | "top" | "bottom", false, isDiscard);
-        if (zone === Zone.Hand || zone === Zone.Library) {
+        if (moveEff.reveal) {
           obj.isRevealed = true;
         }
         if (zone === Zone.Battlefield && moveEff.tapped) {
@@ -577,19 +576,20 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           const { effect: EP_LOCAL } = getProcessors(state);
           EP_LOCAL.resolveEffects({
             state,
-            effects: effect.effects,
-            sourceId: context.sourceId || stackObject?.id || tid,
-            targets: [tid],
-            startIndex: 0,
-            stackObject,
-            parentContext: context,
+            context: EP_LOCAL.createEngineFrame(state, {
+              sourceId: context.sourceId || stackObject?.id || tid,
+              effects: effect.effects,
+              targets: [tid],
+              stackObject,
+              parentContext: context,
+            }),
           });
         }
       }
     });
   }
 
-  private resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, context: ResolutionContext) {
+  private resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, context: EngineFrame) {
     const { logger } = getProcessors(state);
     const { stackObject } = context;
     const parentContext = context;
@@ -633,7 +633,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             ? 0
             : 1,
         maxChoices: (() => {
-          const count = moveEff.pickCount || (moveEff as any).pickAmount || moveEff.amount || 1;
+          const count = moveEff.pickCount || moveEff.amount || 1;
           if (effect.selectionType === SelectionType.ANY || count === "ANY") {
             return cards.length;
           }
@@ -646,12 +646,13 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           effect.optional || effect.selectionType === SelectionType.ANY
             ? ActionType.OptionalAction
             : ActionType.ResolutionChoice,
+        hideUndo: true, // Revealing top cards is non-undoable in MTG
         onSelected: (selectedCard: GameObject) => {
           // Per-card movement response
           const subEffects: EffectDefinition[] = [];
 
-          if (typeof (moveEff as any).onSelected === "function") {
-            const custom = (moveEff as any).onSelected(selectedCard);
+          if (typeof moveEff.onSelected === "function") {
+            const custom = moveEff.onSelected(selectedCard);
             if (Array.isArray(custom)) subEffects.push(...custom);
           } else {
             subEffects.push({
@@ -710,7 +711,16 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         shuffle: effect.shuffleRemainder,
       } as MoveEffect;
 
-      EffectProcessor.injectPostEffect(context, remainderMove as EffectDefinition);
+      // Ensure we only inject the remainder move once
+      const alreadyHasRemainder = context.effects?.some(e => 
+        e.type === EffectType.MoveToZone && 
+        e.targetMapping === "REMAINDER_OF_POOL" &&
+        (e as MoveEffect).zone === (effect.remainderZone || Zone.Library)
+      );
+
+      if (!alreadyHasRemainder) {
+        EffectProcessor.injectPostEffect(context, remainderMove as EffectDefinition);
+      }
       return;
     }
 
@@ -789,18 +799,19 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const { effect: EP_LOCAL } = getProcessors(state);
       EP_LOCAL.resolveEffects({
         state,
-        effects: effect.effects,
-        sourceId: stackObject?.sourceId || controllerId,
-        targets: cards.map((c) => c.id),
-        startIndex: 0,
-        stackObject,
-        parentContext: context,
+        context: EP_LOCAL.createEngineFrame(state, {
+          sourceId: stackObject?.sourceId || controllerId,
+          effects: effect.effects,
+          targets: cards.map((c) => c.id),
+          stackObject,
+          parentContext: context,
+        }),
       });
     }
   }
 
 
-  private resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: EngineFrame) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const moveEff = effect as MoveEffect;
@@ -848,6 +859,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         TargetingProcessor.matchesRestrictions(state, o, effect.restrictions!, {
           sourceId: context.sourceId || stackObject?.id || "",
           controllerId,
+          effects: [],
+          targets: []
         })
       );
     }
@@ -871,17 +884,18 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const { effect: EP_LOCAL } = getProcessors(state);
       EP_LOCAL.resolveEffects({
         state,
-        effects: effect.effects,
-        sourceId: stackObject?.sourceId || controllerId,
-        targets: cardsToMove.map(c => c.id),
-        startIndex: 0,
-        stackObject,
-        parentContext: context,
+        context: EP_LOCAL.createEngineFrame(state, {
+          sourceId: stackObject?.sourceId || controllerId,
+          effects: effect.effects,
+          targets: cardsToMove.map(c => c.id),
+          stackObject,
+          parentContext: context,
+        }),
       });
     }
   }
 
-  private resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: EngineFrame) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
@@ -943,21 +957,23 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         const { effect: EP_LOCAL } = getProcessors(state);
         EP_LOCAL.resolveEffects({
           state,
-          effects: subEffects,
-          sourceId: stackObject?.sourceId || context.sourceId || "",
-          targets: targetIds,
-          stackObject,
-          parentContext: context,
+          context: EP_LOCAL.createEngineFrame(state, {
+            sourceId: stackObject?.sourceId || context.sourceId || "",
+            effects: subEffects,
+            targets: targetIds,
+            stackObject,
+            parentContext: context,
+          }),
         });
       }
     });
   }
 
-  private findObject(state: GameState, id: string, context: ResolutionContext): GameObject | undefined {
+  private findObject(state: GameState, id: string, context: EngineFrame): GameObject | undefined {
     const { stackObject, sourceObject } = context;
-    
+
     // Priority 1: Direct match with sourceObject (handles LKI correctly)
-    if (sourceObject && sourceObject.id === id) return sourceObject;
+    if (sourceObject && sourceObject.id === id && RuleUtils.isEntity(sourceObject)) return sourceObject as GameObject;
 
     if (stackObject && stackObject.id === id) {
       if (stackObject.sourceObject) return stackObject.sourceObject;
@@ -976,3 +992,4 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
   }
 }
 export const MovementHandler = new MovementHandlerClass();
+

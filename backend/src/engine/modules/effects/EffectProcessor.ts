@@ -5,7 +5,7 @@ import {
   EffectDefinition,
   EffectType, GameObject, GameState, PlayerId,
   NumericProperty,
-  ResolutionContext,
+  EngineFrame,
   StackObject,
   TargetDefinition,
   TargetMapping, TargetType, Zone
@@ -13,21 +13,24 @@ import {
 import { LogCategory } from "../../utils/EngineLogger";
 import { Targetable } from "@shared/types/targeting";
 import {
-  EffectExecutionOptions
+  EffectExecutionOptions,
+  ResolveEffectsOptions
 } from "../../interfaces/EngineContext";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
+import { ManaProcessor } from "../magic/ManaProcessor";
+import { getActionMeta } from '@shared/utils/ActionUtils';
 
 
 /**
  * Prunes a context to avoid infinite depth serialization issues in Socket.io
  */
-export const pruneContext = (ctx: ResolutionContext | undefined): ResolutionContext | undefined => {
+export const pruneContext = (ctx: EngineFrame | undefined): EngineFrame | undefined => {
   if (!ctx) return undefined;
   // If context is already 3 levels deep, we stop nesting to prevent "Max Call Stack" errors
   let depth = 0;
-  let curr: ResolutionContext | undefined = ctx;
+  let curr: EngineFrame | undefined = ctx;
   while (curr?.parentContext) {
     depth++;
     curr = curr.parentContext;
@@ -41,36 +44,97 @@ export const pruneContext = (ctx: ResolutionContext | undefined): ResolutionCont
   return ctx;
 };
 
-/**
- * Rules Engine Module: Effect Resolution (Rule 608/609)
- * Interprets EffectDefinitions and translates them into GameState mutations.
- *
- * DESIGN: Strategy-based architecture. Logic delegated to handlers/.
- */
-export interface ResolveEffectsOptions {
-  state: GameState;
-  effects: EffectDefinition[];
+export interface BaseResolveInputs {
   sourceId: string;
-  targets: string[];
-  startIndex?: number;
+  effects?: EffectDefinition[];
+  targets?: string[];
+  validTargetIds?: string[]; // Alias for executeEffect
   stackObject?: StackObject;
-  parentContext?: ResolutionContext;
+  parentContext?: EngineFrame;
   controllerIdOverride?: PlayerId;
   lookingCards?: GameObject[];
   lastMilledIds?: string[];
   lastDiscardedIds?: string[];
-  skipFizzleCheck?: boolean;
+  startIndex?: number;
+  currentIndex?: number;
+  nextEffectIndex?: number;
+  exileOnResolution?: boolean;
 }
 
 export class EffectProcessor {
 
-  public static injectPostEffect(context: ResolutionContext, effect: EffectDefinition) {
+  public static injectPostEffect(context: EngineFrame, effect: EffectDefinition) {
     if (!context.effects) {
       context.effects = [];
       context.currentIndex = -1;
     }
     const insertAt = (context.currentIndex ?? context.nextEffectIndex ?? 0) + 1;
     context.effects.splice(insertAt, 0, effect);
+  }
+
+  /**
+   * Factory: Builds a unified EngineFrame from various sources (Rule 608 context assembly).
+   * This is the ONLY place that should perform the "Lookup Ladder" for legacy/scattered data.
+   */
+  public static createEngineFrame(state: GameState, options: BaseResolveInputs): EngineFrame {
+    const {
+      sourceId,
+      stackObject,
+      parentContext,
+      controllerIdOverride,
+      lookingCards,
+      lastMilledIds,
+      lastDiscardedIds,
+    } = options;
+
+    const res = stackObject?.resolution;
+    const transient = res?.transient || {};
+
+    // Source Resolution: Find the object responsible for this frame
+    const sourceObj =
+      this.findObject(state, sourceId, stackObject, parentContext, lookingCards) ||
+      stackObject?.sourceObject ||
+      stackObject;
+
+    const controllerId =
+      (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
+
+    const targets = options.targets || options.validTargetIds || [];
+
+    return {
+      castFromZone: transient.castFromZone || stackObject?.castFromZone || parentContext?.castFromZone,
+      controllerId,
+      currentIndex: options.currentIndex,
+      discardAmount: transient.discardAmount || stackObject?.discardAmount || parentContext?.discardAmount,
+      effects: options.effects || stackObject?.effects || [],
+      event: stackObject?.event || parentContext?.event,
+      eventAmount: transient.eventAmount || stackObject?.eventAmount || parentContext?.eventAmount,
+      exiledIds: transient.exiledIds || stackObject?.exiledIds,
+      isCopy: transient.isCopy || stackObject?.isCopy || parentContext?.isCopy,
+      isFreeCast: transient.isFreeCast ?? stackObject?.isFreeCast ?? parentContext?.isFreeCast,
+      paidManaValue: transient.paidManaValue ?? stackObject?.paidManaValue ?? parentContext?.paidManaValue,
+      exileOnResolution: options.exileOnResolution ?? transient.exileOnResolution ?? stackObject?.exileOnResolution ?? parentContext?.exileOnResolution,
+      lastDiscardedIds: lastDiscardedIds || transient.lastDiscardedIds || stackObject?.lastDiscardedIds || parentContext?.lastDiscardedIds,
+      lastMilledIds: lastMilledIds || transient.lastMilledIds || stackObject?.lastMilledIds || parentContext?.lastMilledIds,
+      lookingCards: (lookingCards || transient.lookingCards || stackObject?.lookingCards || parentContext?.lookingCards) as GameObject[],
+      maxChoices: transient.maxChoices ?? stackObject?.maxChoices ?? parentContext?.maxChoices,
+      minChoices: transient.minChoices ?? stackObject?.minChoices ?? parentContext?.minChoices,
+      nextEffectIndex: (options.effects === stackObject?.effects)
+        ? (options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.nextEffectIndex)
+        : (options.nextEffectIndex ?? 0),
+      nextPlayerIds: transient.nextPlayerIds || stackObject?.nextPlayerIds || parentContext?.nextPlayerIds,
+      onFailureEffects: transient.onFailureEffects || stackObject?.onFailureEffects || parentContext?.onFailureEffects,
+      parentContext,
+      sourceId,
+      sourceName: transient.sourceName || stackObject?.sourceName || parentContext?.sourceName,
+      sourceObject: (sourceObj as GameObject),
+      stackObject,
+      startIndex: (options.effects === stackObject?.effects)
+        ? (options.startIndex ?? options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.startIndex ?? 0)
+        : (options.startIndex ?? 0),
+      targets,
+      xValue: transient.xValue ?? stackObject?.xValue ?? parentContext?.xValue,
+    };
   }
 
   /**
@@ -81,38 +145,21 @@ export class EffectProcessor {
   }
 
   public static resolveEffects(options: ResolveEffectsOptions): boolean {
-    const {
-      state,
-      effects,
-      sourceId,
-      targets,
-      startIndex = 0,
-      stackObject,
-      parentContext,
-      controllerIdOverride,
-      lookingCards,
-      lastMilledIds,
-      lastDiscardedIds,
-      skipFizzleCheck
-    } = options;
+    const { state, context, skipFizzleCheck } = options;
+    const { effects, sourceId, targets, stackObject, parentContext } = context;
+    const startIndex = context.startIndex ?? context.nextEffectIndex ?? 0;
     const { logger } = getProcessors(state);
-    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. Targets: ${targets.join(', ')}`);
+
+    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. Targets: ${targets.join(', ')}`);
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
-    // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
-    // If all its targets are now illegal, the spell or ability is countered.
-    // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
     if (startIndex === 0 && !parentContext && !skipFizzleCheck && targets.length > 0 && effects.some(e => {
       const tm = (e.targetMapping || "").toString();
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
       const { targeting: TP } = getProcessors(state);
 
-      const fizzle = TP.shouldFizzle(state, {
-        sourceId,
-        controllerId: controllerIdOverride || state.activePlayerId,
-        stackObject
-      }, targets, effects);
+      const fizzle = TP.shouldFizzle(state, context, targets, effects);
 
       if (fizzle) {
         logger.info(state, LogCategory.ACTION, `[FIZZLE] ${stackObject?.sourceObject?.definition.name || "Spell"}: All targets have become illegal.`);
@@ -124,34 +171,27 @@ export class EffectProcessor {
       const effect = effects[i];
       logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${effects.length}: Type=${effect.type} Source=${sourceId}`);
 
+      // ARCHITECTURAL FIX: Update the context's currentIndex so that nested calls 
+      // (like injectPostEffect) know exactly where they are in the sequence.
+      context.currentIndex = i;
+
       // CR 608.2: Advance index BEFORE execution so that any choices or sub-effects
       // capture the correct resumption point in their parentContext.
       // BUG FIX: Only update the stackObject's primary index if we are resolving its own effects list.
       // This prevents nested resolution calls (like inside a Choice) from overwriting the parent's index.
       if (stackObject && stackObject.effects === effects) {
         stackObject.nextEffectIndex = i + 1;
-        if (!stackObject.data) stackObject.data = {};
-        stackObject.data.nextEffectIndex = i + 1; // Sync for legacy
       }
 
       this.executeEffect({
         state,
-        effect,
-        sourceId,
-        validTargetIds: targets,
-        stackObject,
-        parentContext,
-        controllerIdOverride,
-        lookingCards,
-        lastMilledIds,
-        lastDiscardedIds,
-        currentIndex: i,
-        nextEffectIndex: i + 1,
+        context,
+        effect
       });
 
-      // Update lookingCards if it was modified during execution (for remainder effects)
-      if (state.pendingAction?.data?.lookingCards) {
-        options.lookingCards = state.pendingAction.data.lookingCards;
+      // Update lookingCards in the context if it was modified during execution (for remainder effects)
+      if (state.pendingAction?.data?.metadata?.lookingCards) {
+        context.lookingCards = state.pendingAction.data.metadata.lookingCards;
       }
 
       if (state.pendingAction) {
@@ -161,17 +201,18 @@ export class EffectProcessor {
           stackObject.resolution = {
             effectIndex: i + 1,
             transient: {
-              lookingCards: options.lookingCards,
-              lastMilledIds: options.lastMilledIds,
-              lastDiscardedIds: options.lastDiscardedIds,
+              lookingCards: context.lookingCards,
+              lastMilledIds: context.lastMilledIds,
+              lastDiscardedIds: context.lastDiscardedIds,
+              discardAmount: context.discardAmount,
+              xValue: context.xValue,
+              exileOnResolution: context.exileOnResolution,
             },
             parentFrameId: parentContext?.stackObject?.id
           };
 
-          // Sync legacy properties for now
+          // Sync typed root property for now
           stackObject.nextEffectIndex = i + 1;
-          if (!stackObject.data) stackObject.data = {};
-          stackObject.data.nextEffectIndex = i + 1;
         }
 
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
@@ -188,22 +229,31 @@ export class EffectProcessor {
         // If the pending action was created by a sub-effect for a DIFFERENT object
         // (e.g. CastSpell created targeting for the sub-spell), don't overwrite it.
         // EXCEPT for spell copies, where the mismatch is intentional for re-targeting.
-        if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId && !state.pendingAction.data?.isCopyTargeting) {
+        const pendingMeta = getActionMeta(state.pendingAction);
+        if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId && !pendingMeta.isCopyTargeting) {
           logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] SourceId mismatch, skipping injection. PendingSource: ${state.pendingAction.sourceId}, ResolvedSource: ${sourceId}`);
           return false;
         }
 
         logger.info(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Injecting ${effects.length - (i + 1)} remaining effects into ${state.pendingAction.type} for ${sourceId}. Next Index: ${i + 1}`);
 
-        const existingData = (state.pendingAction.data || {}) as any;
+        const existingData = (state.pendingAction.data || {}) as import('@shared/engine_types').BaseActionData;
+
+        // Build metadata container for EngineFrame persistence
+        const metadata: import('@shared/engine_types').InteractionMetadata = {
+          ...(existingData.metadata || {}),
+          ...context,
+          effects: context.effects.map((e) => ({ ...e })),
+          startIndex: i + 1,
+          nextEffectIndex: i + 1,
+          parentContext: pruneContext(parentContext),
+          stackObj: slimStackObj || undefined,
+        };
+
         state.pendingAction.data = {
-          label: "Resolution",
-          nextEffectIndex: existingData.nextEffectIndex ?? (i + 1),
-          effects: existingData.effects || effects.map((e) => ({ ...e })),
-          targets: existingData.targets || targets,
-          stackObj: existingData.stackObj || (slimStackObj || undefined),
-          parentContext: existingData.parentContext || pruneContext(parentContext),
           ...existingData,
+          label: existingData.label || "Resolution",
+          metadata
         };
         state.priorityPlayerId = state.pendingAction.playerId;
         return false;
@@ -211,13 +261,12 @@ export class EffectProcessor {
     }
     if (stackObject) {
       stackObject.nextEffectIndex = effects.length;
-      if (stackObject.data) stackObject.data.nextEffectIndex = effects.length;
     }
 
     return true;
   }
 
-  private static slimStackObj(state: GameState, stackObject: StackObject | undefined): StackObject | null {
+  private static slimStackObj(state: GameState, stackObject: StackObject | undefined): StackObject | undefined {
     if (stackObject) {
       // Recover name/image if missing (triggers often lose metadata in engine internals)
       let name = stackObject.name;
@@ -247,68 +296,20 @@ export class EffectProcessor {
         controllerId: stackObject.controllerId,
         definition: source?.definition, // Pass the definition for clean rendering
         targets: stackObject.targets || [],
+        targetsControllers: stackObject.targetsControllers,
+        summary: stackObject.summary,
         resolution: stackObject.resolution,
-        data: stackObject.data,
+        data: stackObject.data, // Preserve legacy data for UI components still using it
       } as unknown as StackObject;
     }
-    return null;
+    return undefined;
   }
 
   public static executeEffect(options: EffectExecutionOptions) {
-    const {
-      state,
-      effect,
-      sourceId,
-      stackObject,
-      parentContext,
-      controllerIdOverride,
-      lookingCards,
-      lastMilledIds,
-      lastDiscardedIds,
-    } = options;
-    const { logger } = getProcessors(state);
-    const targets = options.validTargetIds || [];
+    const { state, context, effect } = options;
+    const { sourceId, stackObject, controllerId, targets } = context;
+    const { logger, targeting: TP } = getProcessors(state);
 
-    const sourceObj =
-      this.findObject(state, sourceId, stackObject, parentContext, lookingCards) ||
-      stackObject?.sourceObject ||
-      stackObject;
-    const controllerId =
-      (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
-    const { targeting: TP } = getProcessors(state);
-
-    const res = stackObject?.resolution;
-    const transient = res?.transient || {};
-
-    // Create a ResolutionContext for handlers that expect it
-    const context: ResolutionContext = {
-      castFromZone: transient.castFromZone || stackObject?.castFromZone || stackObject?.data?.castFromZone || parentContext?.castFromZone,
-      controller: state.players[controllerId],
-      controllerId,
-      currentIndex: options.currentIndex,
-      discardAmount: transient.discardAmount || stackObject?.discardAmount || stackObject?.data?.discardAmount || parentContext?.discardAmount,
-      effects: stackObject?.effects || stackObject?.data?.effects || [effect],
-      event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
-      eventAmount: transient.eventAmount || stackObject?.eventAmount || stackObject?.data?.eventAmount || parentContext?.eventAmount,
-      exiledIds: transient.exiledIds || stackObject?.exiledIds || stackObject?.data?.exiledIds,
-      isCopy: transient.isCopy || stackObject?.isCopy || (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
-      lastDiscardedIds: lastDiscardedIds || transient.lastDiscardedIds || stackObject?.lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
-      lastMilledIds: lastMilledIds || transient.lastMilledIds || stackObject?.lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
-      lookingCards: (lookingCards || transient.lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
-      maxChoices: transient.maxChoices ?? stackObject?.maxChoices ?? stackObject?.data?.maxChoices ?? parentContext?.maxChoices,
-      minChoices: transient.minChoices ?? stackObject?.minChoices ?? stackObject?.data?.minChoices ?? parentContext?.minChoices,
-      nextEffectIndex: options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
-      nextPlayerIds: transient.nextPlayerIds || stackObject?.nextPlayerIds || stackObject?.data?.nextPlayerIds || parentContext?.nextPlayerIds,
-      onFailureEffects: transient.onFailureEffects || stackObject?.onFailureEffects || stackObject?.data?.onFailureEffects || parentContext?.onFailureEffects,
-      parentContext,
-      sourceId,
-      sourceName: transient.sourceName || stackObject?.sourceName || stackObject?.data?.sourceName || parentContext?.sourceName,
-      sourceObject: (sourceObj as GameObject),
-      stackObject,
-      startIndex: stackObject?.startIndex ?? stackObject?.data?.startIndex ?? 0,
-      targets,
-      xValue: transient.xValue ?? stackObject?.xValue ?? stackObject?.data?.xValue ?? parentContext?.xValue,
-    };
     logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
 
 
@@ -319,13 +320,13 @@ export class EffectProcessor {
         if (effect.onFailureEffects) {
           return this.resolveEffects({
             state,
-            effects: effect.onFailureEffects,
-            sourceId,
-            targets,
-            startIndex: 0,
-            stackObject,
-            parentContext,
-            controllerIdOverride,
+            context: this.createEngineFrame(state, {
+              sourceId,
+              effects: effect.onFailureEffects,
+              targets,
+              stackObject,
+              parentContext: context,
+            })
           });
         }
         return;
@@ -449,7 +450,7 @@ export class EffectProcessor {
         sourceId,
         controllerId,
         stackObject,
-        parentContext,
+        context.parentContext,
       );
     }
 
@@ -477,7 +478,7 @@ export class EffectProcessor {
     state: GameState,
     effect: EffectDefinition,
     ids: string[],
-    context: ResolutionContext,
+    context: EngineFrame,
     validationIndex: number = 0,
   ): string[] {
     const { sourceId, stackObject, parentContext } = context;
@@ -507,7 +508,7 @@ export class EffectProcessor {
         return true;
       const targetDefinitions =
         effect.targetDefinitions ||
-        (stackObject || parentContext?.stackObject)?.data?.targetDefinitions;
+        (stackObject || parentContext?.stackObject)?.targetDefinitions;
       if (!targetDefinitions) return true;
 
       const { targeting: TP } = getProcessors(state);
@@ -519,6 +520,8 @@ export class EffectProcessor {
           stackObject,
           targetDefinitions,
           targetIndex: validationIndex !== undefined ? validationIndex : index,
+          effects: [],
+          targets: []
         },
         tid,
       );
@@ -528,28 +531,16 @@ export class EffectProcessor {
   private static checkCondition(
     state: GameState,
     condition: ConditionType,
-    context: ResolutionContext,
+    context: EngineFrame,
   ): boolean {
     const { condition: CP } = getProcessors(state);
-    const { sourceId, controllerId, targets, stackObject } = context;
-
-    // We wrap the stackObject/parent state into a clean ConditionContext
-    const event = (context.event || { ...(stackObject || {}), targets });
-
-    return CP.matchesCondition(state, condition, {
-      sourceId,
-      controllerId,
-      event: event as import('@shared/engine_types').GameEvent,
-      stackObject,
-      targets,
-      effectSourceId: sourceId,
-    });
+    return CP.matchesCondition(state, condition, context);
   }
 
   public static resolveAmount(
     state: GameState,
     amount: NumericProperty,
-    context: ResolutionContext,
+    context: EngineFrame,
     targetIds: string[] = [],
   ): number {
     return RuleUtils.resolveAmount(state, amount, { ...context, targets: targetIds });
@@ -559,7 +550,7 @@ export class EffectProcessor {
     state: GameState,
     id: string,
     stackObject?: StackObject,
-    parentContext?: ResolutionContext,
+    parentContext?: EngineFrame,
     lookingCards?: GameObject[]
   ): Targetable | undefined {
     // Priority 1: LKI Snapshot (Rule 608.2h)
@@ -574,10 +565,7 @@ export class EffectProcessor {
         (o) => o.id === id,
       ) ||
       (parentContext?.lookingCards as GameObject[])?.find((o) => o.id === id) ||
-      (stackObject?.lookingCards as GameObject[])?.find((o) => o.id === id) ||
-      (stackObject?.data?.lookingCards as GameObject[])?.find(
-        (o) => o.id === id,
-      )
+      (stackObject?.lookingCards as GameObject[])?.find((o) => o.id === id)
     );
   }
 
@@ -587,36 +575,34 @@ export class EffectProcessor {
     sourceId: string,
     controllerId: PlayerId,
     stackObject?: StackObject,
-    parentContext?: ResolutionContext,
+    parentContext?: EngineFrame,
   ) {
     const { choiceGenerator: ChoiceGenerator, targeting: TP, logger } = getProcessors(state);
-    const targetDefinitions = Array.isArray(effect.targetDefinitions)
-      ? effect.targetDefinitions[0]
-      : effect.targetDefinitions!;
-    if (!targetDefinitions) return;
+    const targetDefinitions = effect.targetDefinitions || [];
+    const firstDef = targetDefinitions[0];
+    if (!firstDef) return;
 
     const player = state.players[controllerId];
     if (!player) return;
 
     let pool: GameObject[] = [];
-    const expectedZone = targetDefinitions.zone;
+    const expectedZone = firstDef.zone;
 
-    if (expectedZone === Zone.Hand || targetDefinitions.type === TargetType.CardInHand) {
+    if (expectedZone === Zone.Hand || firstDef.type === TargetType.CardInHand) {
       pool = player.hand;
-    } else if (expectedZone === Zone.Graveyard || targetDefinitions.type === TargetType.CardInGraveyard) {
+    } else if (expectedZone === Zone.Graveyard || firstDef.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p) => p.graveyard);
-    } else if (expectedZone === Zone.Library || targetDefinitions.type === TargetType.CardInLibrary) {
+    } else if (expectedZone === Zone.Library || firstDef.type === TargetType.CardInLibrary) {
       pool = player.library;
     } else if (
       expectedZone === Zone.Battlefield ||
-      targetDefinitions.type === TargetType.Permanent ||
-      (targetDefinitions.type as string) === "PERMANENT" ||
-      (targetDefinitions.type as string).toLowerCase().includes("permanent") ||
-      (targetDefinitions.type as string).toLowerCase() === "nonland" ||
-      (targetDefinitions.type as string).toLowerCase().includes("creature") ||
-      (targetDefinitions.type as string).toLowerCase().includes("planeswalker") ||
-      (targetDefinitions.type as string).toLowerCase().includes("artifact") ||
-      (targetDefinitions.type as string).toLowerCase().includes("enchantment")
+      firstDef.type === TargetType.Permanent ||
+      (firstDef.type as string).toLowerCase().includes("permanent") ||
+      (firstDef.type as string).toLowerCase() === "nonland" ||
+      (firstDef.type as string).toLowerCase().includes("creature") ||
+      (firstDef.type as string).toLowerCase().includes("planeswalker") ||
+      (firstDef.type as string).toLowerCase().includes("artifact") ||
+      (firstDef.type as string).toLowerCase().includes("enchantment")
     ) {
       pool = state.battlefield;
     } else {
@@ -657,29 +643,42 @@ export class EffectProcessor {
 
     const searchRestrictions = [
       ...(effect.restrictions || []),
-      ...getRestrictions(targetDefinitions),
+      ...getRestrictions(firstDef),
     ];
 
-    const validCandidates = pool.filter((c) =>
-      TP.isLegalTarget(
+    const xValueToUse = stackObject?.xValue ?? parentContext?.xValue;
+    logger.info(state, LogCategory.ACTION, `[RESOLVE-INTERACTIVE] Starting selection for ${sourceId}. xValue: ${xValueToUse}, stackObj.xValue: ${stackObject?.xValue}, parentContext.xValue: ${parentContext?.xValue}`);
+
+    const validCandidates = pool.filter((c) => {
+      const isLegal = TP.isLegalTarget(
         state,
         {
           sourceId,
           controllerId,
           stackObject,
-          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
-          targetIndex: 0
+          targetDefinitions: effect.targetDefinitions || [],
+          targetIndex: 0,
+          xValue: xValueToUse,
+          effects: [],
+          targets: []
         },
         c.id
-      ),
-    );
+      );
+      if (!isLegal) {
+        const mv = ManaProcessor.getEffectiveManaValue(c);
+        logger.info(state, LogCategory.ACTION, `[RESOLVE-INTERACTIVE-DEBUG] Card ${c.definition.name} (MV=${mv}) is NOT legal. Zone=${c.zone}`);
+      }
+      return isLegal;
+    });
+
+    logger.info(state, LogCategory.ACTION, `[RESOLVE-INTERACTIVE] Found ${validCandidates.length} valid candidates for ${sourceId} from pool of ${pool.length}. ExpectedZone: ${expectedZone}`);
 
     if (validCandidates.length === 0) {
       logger.info(state, LogCategory.ACTION, `[INFO] EffectProcessor: No valid targets for interactive selection. Skipping.`);
       return;
     }
 
-    const resolvedContext: ResolutionContext = {
+    const resolvedContext: EngineFrame = {
       sourceId,
       controllerId,
       targets: [],
@@ -688,13 +687,13 @@ export class EffectProcessor {
     };
     const resolvedMax = this.resolveAmount(
       state,
-      targetDefinitions.count as unknown as number || 1,
+      firstDef.count as unknown as number || 1,
       resolvedContext,
     );
     const resolvedMin =
-      targetDefinitions.minCount !== undefined
-        ? this.resolveAmount(state, targetDefinitions.minCount, resolvedContext)
-        : targetDefinitions.optional
+      firstDef.minCount !== undefined
+        ? this.resolveAmount(state, firstDef.minCount, resolvedContext)
+        : firstDef.optional
           ? 0
           : resolvedMax;
 
@@ -708,7 +707,7 @@ export class EffectProcessor {
       TargetType.AnyTarget,
       TargetType.Player,
       TargetType.Opponent,
-    ].some(t => String(targetDefinitions.type).toUpperCase().includes(String(t).toUpperCase()));
+    ].some(t => String(firstDef.type).toUpperCase().includes(String(t).toUpperCase()));
 
     if (isBattlefieldTarget) {
       state.pendingAction = {
@@ -717,13 +716,17 @@ export class EffectProcessor {
         sourceId: sourceId,
         data: {
           label: effect.label || `Choose target for ${sourceId}`,
-          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
+          metadata: {
+            stackObj: EffectProcessor.slimStackObj(state, stackObject),
+            parentContext: pruneContext(parentContext),
+            xValue: stackObject?.xValue,
+            exileOnResolution: stackObject?.exileOnResolution ?? parentContext?.exileOnResolution
+          },
+          targetDefinitions: effect.targetDefinitions || [],
           targets: validCandidates.map(c => c.id),
-          stackObj: stackObject,
-          parentContext: pruneContext(parentContext),
           nextEffectIndex: parentContext?.nextEffectIndex,
           effects: parentContext?.effects || [effect],
-          xValue: stackObject?.xValue
+          stackObj: stackObject, // Legal in BaseActionData
         }
       };
       logger.info(state, LogCategory.ACTION, `[TARGETING] Prompting for battlefield targeting for effect resolution...`);
@@ -736,11 +739,13 @@ export class EffectProcessor {
       sourceId: sourceId,
       restrictions: searchRestrictions,
       filterSelectable: true,
-      optional: targetDefinitions.optional || effect.optional || resolvedMin === 0,
+      optional: firstDef.optional || effect.optional || resolvedMin === 0,
       minChoices: resolvedMin,
       maxChoices: resolvedMax,
+      stackObj: EffectProcessor.slimStackObj(state, stackObject),
+      exileOnResolution: stackObject?.exileOnResolution ?? parentContext?.exileOnResolution,
       actionType:
-        targetDefinitions.optional || effect.optional || resolvedMin === 0
+        firstDef.optional || effect.optional || resolvedMin === 0
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
       onSelected: (selected: GameObject | GameObject[]) => {
@@ -758,8 +763,8 @@ export class EffectProcessor {
         ];
       },
       onNone: () => [],
-      stackObj: this.slimStackObj(state, stackObject),
       parentContext: pruneContext(parentContext),
     });
   }
 }
+

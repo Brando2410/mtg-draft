@@ -363,15 +363,16 @@ export class PriorityProcessor {
     if (isLand) {
       if (player.hasPlayedLandThisTurn || state.stack.length > 0) return false;
     } else if (!player.manaCheat) {
-      if (!ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost, cardToPlay)) return false;
+      if (!ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay)) return false;
       
       // Check for mandatory additional costs (e.g. Sacrifice a creature)
-      const additionalCosts = (cardToPlay.definition as any).additionalCosts || [];
+      const spellAbility = cardToPlay.definition.abilities?.find((a: any) => a.type === AbilityType.Spell) as any;
+      const additionalCosts = spellAbility?.additionalCosts || [];
       if (additionalCosts.length > 0) {
         const { targeting: TargetingProcessor } = getProcessors(state);
         const canPayExtras = (additionalCosts as any[]).every(cost => {
           if (cost.type === 'Sacrifice') {
-            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId }));
+            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId , effects: [], targets: []}));
           }
           return true; 
         });
@@ -381,15 +382,14 @@ export class PriorityProcessor {
 
     // 5. Targeting (Rule 601.2c)
     const { targeting: TargetingProc } = getProcessors(state);
-    const logic = oracle.getCard(cardToPlay.definition.name);
-    const spellAbility = (logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) || 
-                          cardToPlay.definition.abilities?.find((a: any) => a.type === AbilityType.Spell)) as AbilityDefinition;
+    const spellAbility = (cardToPlay.definition.abilities?.find((a: any) => a.type === AbilityType.Spell)) as AbilityDefinition;
 
     if (spellAbility) {
       if (spellAbility.modes) {
         const hasValidMode = spellAbility.modes.some(mode => {
-          if (!mode.targetDefinitions || mode.targetDefinitions.length === 0 || mode.targetDefinitions.every((td: TargetDefinition) => td.optional)) return true;
-          return TargetingProc.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
+          const tDefs = (mode.targetDefinitions || []) as TargetDefinition[];
+          if (tDefs.length === 0 || tDefs.every((td: TargetDefinition) => td.optional)) return true;
+          return TargetingProc.hasLegalTargets(state, cardToPlay!.id, tDefs, playerId);
         });
         if (!hasValidMode) return false;
       } else if (spellAbility.targetDefinitions && spellAbility.targetDefinitions.length > 0) {
@@ -413,7 +413,7 @@ export class PriorityProcessor {
     if (!this.validateTiming(state, player.id, face, false, checkPriority)) return false;
 
     const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
-    if (player.manaCheat || ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
+    if (player.manaCheat || ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, obj)) {
       return true;
     }
     return false;
@@ -423,19 +423,7 @@ export class PriorityProcessor {
    * Centralized helper to collect all abilities for an object (logic, definition, and granted).
    */
   private static getAbilitiesForObject(state: GameState, obj: BaseEntity): (AbilityDefinition | string)[] {
-    const logic = oracle.getCard(obj.definition.name);
-    const abilities: (AbilityDefinition | string)[] = [...(logic?.abilities || [])];
-
-    // Definition abilities (Inline/Token/Virtual)
-    if (obj.definition.abilities) {
-      obj.definition.abilities.forEach((a: string | AbilityDefinition) => {
-        const isDuplicate = abilities.some(existing => {
-          if (typeof a === 'string' || typeof existing === 'string') return a === existing;
-          return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
-        });
-        if (!isDuplicate) abilities.push(a);
-      });
-    }
+    const abilities: (AbilityDefinition | string)[] = [...(obj.definition.abilities || [])];
 
     // Granted abilities (Continuous Effects)
     const { layer: LayerProcessor } = getProcessors(state);
@@ -479,9 +467,9 @@ export class PriorityProcessor {
 
     // 4. Restrictions (Silence, Limits, Conditions)
     const dummyEvent: GameEvent = { type: 'NONE', playerId };
-    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) return false;
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId , effects: [], targets: []})) return false;
     
-    if (ability.condition && !ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, targets: [] })) return false;
+    if (ability.condition && !ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, effects: [], targets: [] })) return false;
 
     if (ability.limitPerTurn) {
       const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
@@ -502,8 +490,9 @@ export class PriorityProcessor {
     const { targeting: TargetingProcessor } = getProcessors(state);
     if (ability.modes) {
       const hasValidMode = ability.modes.some(mode => {
-        if (!mode.targetDefinitions || mode.targetDefinitions.length === 0 || mode.targetDefinitions.every((td: TargetDefinition) => td.optional)) return true;
-        return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinitions, playerId);
+        const tDefs = (mode.targetDefinitions || []) as TargetDefinition[];
+        if (tDefs.length === 0 || tDefs.every((td: TargetDefinition) => td.optional)) return true;
+        return TargetingProcessor.hasLegalTargets(state, obj.id, tDefs, playerId);
       });
       if (!hasValidMode) return false;
     } else if (ability.targetDefinitions && ability.targetDefinitions.length > 0) {
@@ -541,7 +530,7 @@ export class PriorityProcessor {
     // - Abilities explicitly marked "Activate only as a sorcery"
     // - Non-instant/flash spells
     // - Non-instant activated abilities (default is instant-speed, but we check the flag)
-    const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || objOrAbility.sorcerySpeed;
+    const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery;
     const isSorcerySpeed = isLand || isLoyalty || onlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility);
 
     // 3. Evaluate Speed Requirements
@@ -590,6 +579,7 @@ export class PriorityProcessor {
       if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
         sourceId: e.sourceId,
         controllerId: e.controllerId,
+        effects: [],
         targets: []
       })) return false;
 

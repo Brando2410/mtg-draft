@@ -1,4 +1,4 @@
-import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, TargetMapping, Zone } from '@shared/engine_types';
+import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, EngineFrame, TargetMapping, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -11,7 +11,7 @@ export class ContinuousEffectHandler {
     public static handle(
         state: GameState,
         effect: EffectDefinition,
-        context: ResolutionContext
+        context: EngineFrame
     ) {
         const { logger, effect: EffectProcessor, targeting: TP_FROM_REG } = getProcessors(state);
         const ceDef = effect as ContinuousEffectDefinition;
@@ -19,20 +19,15 @@ export class ContinuousEffectHandler {
         logger.info(state, LogCategory.ACTION, `[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
 
         // 1. Resolve Duration
-        const rawDuration = effect.duration;
-        let duration: EffectDuration = { type: DurationType.UntilEndOfTurn };
+        const duration: EffectDuration = { ...(effect.duration || { type: DurationType.UntilEndOfTurn }) };
 
-        if (typeof rawDuration === 'string') {
-            duration.type = rawDuration as DurationType;
-            if (duration.type === DurationType.UntilYourNextTurn || duration.type === DurationType.UntilEndOfYourNextTurn) {
-                duration.untilTurnOfPlayerId = controllerId;
-            }
-        } else if (rawDuration && typeof rawDuration === 'object') {
-            duration = { ...rawDuration as any };
-            if (duration.untilTurnOfPlayerId && typeof duration.untilTurnOfPlayerId === 'function') {
-                const source = RuleUtils.findObject(state, sourceId);
-                duration.untilTurnOfPlayerId = duration.untilTurnOfPlayerId(state, source);
-            }
+        if (duration.untilTurnOfPlayerId && typeof duration.untilTurnOfPlayerId === 'function') {
+            const source = RuleUtils.findObject(state, sourceId);
+            duration.untilTurnOfPlayerId = duration.untilTurnOfPlayerId(state, source);
+        }
+
+        if (!duration.untilTurnOfPlayerId && (duration.type === DurationType.UntilYourNextTurn || duration.type === DurationType.UntilEndOfYourNextTurn)) {
+            duration.untilTurnOfPlayerId = controllerId;
         }
 
         // 2. Resolve Targets (Rule 611.2a: Snap targets at resolution)
@@ -135,13 +130,13 @@ export class ContinuousEffectHandler {
                 restrictions: ceDef.restrictionsToAdd ? ceDef.restrictionsToAdd.map((r: any) => ({
                     id: `rest_${effId}`,
                     sourceId,
-                    type: typeof r === 'string' ? r as any : r.type,
+                    type: typeof r === 'string' ? r : r.type,
                     targetControllerId: targetCID,
                     duration: effDuration
                 })) : (effect.restrictions && !([TargetMapping.MatchingPermanents, TargetMapping.MatchingCards, TargetMapping.MatchingPermanentsYouControl] as string[]).includes(effect.targetMapping as any) ? effect.restrictions.map((r: any) => ({
                     id: `rest_${effId}`,
                     sourceId,
-                    type: typeof r === 'string' ? r as any : r.type,
+                    type: typeof r === 'string' ? r : r.type,
                     targetControllerId: targetCID,
                     duration: effDuration
                 })) : [])
@@ -183,3 +178,4 @@ export class ContinuousEffectHandler {
         });
     }
 }
+

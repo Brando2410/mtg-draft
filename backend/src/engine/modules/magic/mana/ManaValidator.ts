@@ -1,37 +1,37 @@
-import { AbilityDefinition, ContinuousEffect, GameObject, GameState, PlayerState, Restriction, TargetRestriction } from '@shared/engine_types';
+import { AbilityDefinition, ContinuousEffect, GameObject, GameState, PlayerState, Restriction, TargetRestriction, EffectType, EffectDefinition, AddManaEffect, SpecializedEffect } from '@shared/engine_types';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
-import { oracle } from './../../../OracleLogicMap';
+import { getProcessors } from '../../ProcessorRegistry';
 
 export class ManaValidator {
 
   public static canPayManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject): boolean {
     if (!costStr || player.manaCheat) return true;
-    
+
     // Support for Chromatic Orrery / Spend as Any Color
-    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some((e: ContinuousEffect) => 
-        (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
-        e.controllerId === player.id &&
-        (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some((e: ContinuousEffect) =>
+      (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) &&
+      e.controllerId === player.id &&
+      (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
     );
     const pool = ManaPoolManager.getUsableMana(player, payingFor);
 
     if (canSpendAsAnyColor) {
-        const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
-        const totalRequired = ManaParser.getManaValue(costStr);
-        return totalFloating >= totalRequired;
+      const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
+      const totalRequired = ManaParser.getManaValue(costStr);
+      return totalFloating >= totalRequired;
     }
 
     const requirements = ManaParser.parseManaCost(costStr);
     let extraGenericFromHybrids = 0;
-    
+
     // Check colored mana first (including hybrids)
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
         const options = symbol.split('/');
         let left = amount;
-        
+
         // 1. Try to pay with colors first
         for (const opt of options) {
           if (opt === 'P' || !isNaN(parseInt(opt))) continue;
@@ -59,32 +59,34 @@ export class ManaValidator {
 
     const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
     const totalRequired = requirements.generic + extraGenericFromHybrids;
-    
+
     return totalFloating >= totalRequired;
   }
 
   /**
    * Complex check: Can the player pay this cost using floating mana AND untapped sources?
    */
-  public static canPayWithTotal(player: PlayerState, battlefield: GameObject[], costStr: string, payingFor?: GameObject): boolean {
+  public static canPayWithTotal(state: GameState, player: PlayerState, battlefield: GameObject[], costStr: string, payingFor?: GameObject): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = ManaParser.parseManaCost(costStr);
-    
+
     // 1. Prepare available sources
     const pool = { ...ManaPoolManager.getUsableMana(player, payingFor) };
     const untappedSources: { id: string, colors: string[], value: number }[] = [];
 
+    const { layer: LayerProcessor } = getProcessors(state);
+
     battlefield.forEach((obj: GameObject) => {
       if (obj.controllerId === player.id && !obj.isTapped) {
-        const logic = oracle.getCard(obj.definition.name);
-        const abilities = (logic?.abilities || obj.definition.abilities || []) as (AbilityDefinition | string)[];
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        const abilities = (stats.abilities || []) as (AbilityDefinition | string)[];
         const manaAbilities = abilities.filter((a): a is AbilityDefinition => typeof a !== 'string' && !!a.isManaAbility);
         if (manaAbilities.length === 0) return;
 
         const isLegalForSource = (restrictions: TargetRestriction[]) => {
           if (!restrictions || restrictions.length === 0) return true;
           if (!payingFor) return false;
-          
+
           return restrictions.every(r => {
             if (r === Restriction.InstantOrSorcery) {
               return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
@@ -100,24 +102,24 @@ export class ManaValidator {
           const colors = new Set<string>();
           const restrictions: TargetRestriction[] = [];
 
-          const extract = (effects: import('@shared/engine_types').EffectDefinition[]) => {
+          const extract = (effects: EffectDefinition[]) => {
             if (!effects) return;
             effects.forEach((e) => {
-              if (e.type === 'AddMana' || (e as any).mana || (e as any).manaType) {
-                const addMana = e as any; // Cast once to access legacy/optional fields
-                const val = addMana.value || addMana.manaType || addMana.mana || '{C}';
+              if (e.type === EffectType.AddMana) {
+                const addMana = e as AddManaEffect;
+                const val = addMana.manaType || '{C}';
                 const res = ManaParser.parseManaCost(val.toString());
                 Object.keys(res.colored).forEach(c => colors.add(c));
                 if (res.generic > 0) colors.add('C');
-                
-                const rawR = addMana.manaRestrictions || addMana.restriction || addMana.restrictions;
+
+                const rawR = addMana.manaRestrictions || addMana.costs; // Simplified for validator
                 if (rawR) {
-                  if (Array.isArray(rawR)) restrictions.push(...rawR);
-                  else restrictions.push(rawR);
+                  if (Array.isArray(rawR)) restrictions.push(...(rawR as any));
+                  else restrictions.push(rawR as any);
                 }
               }
-              if ((e as any).choices) (e as any).choices.forEach((c: any) => extract(c.effects));
-              if ((e as any).effects) extract((e as any).effects);
+              if ('choices' in e && (e as any).choices) (e as any).choices.forEach((c: any) => extract(c.effects || []));
+              if ('effects' in e && (e as any).effects) extract((e as any).effects);
             });
           };
           extract(a.effects || []);
@@ -126,9 +128,14 @@ export class ManaValidator {
             let val = 0;
             if (a.effects) {
               a.effects.forEach((e) => {
-                const addMana = e as any;
-                const v = addMana.value || addMana.manaType || addMana.mana || '{C}';
-                val = Math.max(val, ManaParser.getManaValue(String(v)) * (addMana.amount || 1));
+                let v: any = '{C}';
+                if (e.type === EffectType.AddMana) {
+                  v = (e as AddManaEffect).manaType || '{C}';
+                } else if (e.type === EffectType.AdNauseam || e.type === EffectType.ChaosWarp) {
+                  v = (e as SpecializedEffect).value || '{C}';
+                }
+                const amount = typeof e.amount === 'number' ? e.amount : 1;
+                val = Math.max(val, ManaParser.getManaValue(String(v)) * amount);
               });
             }
             sourceAbilities.push({ colors: Array.from(colors), value: val });
@@ -136,8 +143,8 @@ export class ManaValidator {
         });
 
         if (sourceAbilities.length > 0) {
-            const bestAbility = sourceAbilities.sort((a,b) => b.value - a.value)[0];
-            untappedSources.push({ id: obj.id, colors: bestAbility.colors, value: bestAbility.value });
+          const bestAbility = sourceAbilities.sort((a, b) => b.value - a.value)[0];
+          untappedSources.push({ id: obj.id, colors: bestAbility.colors, value: bestAbility.value });
         }
       }
     });
@@ -145,61 +152,61 @@ export class ManaValidator {
     // 2. Greedy validation for colored costs
     const coloredReqs: string[] = [];
     Object.entries(requirements.colored).forEach(([symbol, amount]) => {
-        for (let i = 0; i < (amount as number); i++) coloredReqs.push(symbol);
+      for (let i = 0; i < (amount as number); i++) coloredReqs.push(symbol);
     });
 
     const usedSources = new Map<string, number>(); // id -> value used
     for (const req of coloredReqs) {
-        // a. Try pool first
-        if (req.includes('/')) {
-            const options = req.split('/');
-            const colorOpt = options.find(opt => isNaN(parseInt(opt)) && (pool as Record<string, number>)[opt] > 0);
-            if (colorOpt) {
-                (pool as Record<string, number>)[colorOpt]--;
-                continue;
-            }
-            
-            // If it's a monocolored hybrid and we can't pay color, it adds to generic requirements
-            const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
-            if (numericOpt) {
-                requirements.generic += parseInt(numericOpt);
-                continue;
-            }
-        } else if ((pool as Record<string, number>)[req] > 0) {
-            (pool as Record<string, number>)[req]--;
-            continue;
+      // a. Try pool first
+      if (req.includes('/')) {
+        const options = req.split('/');
+        const colorOpt = options.find(opt => isNaN(parseInt(opt)) && (pool as Record<string, number>)[opt] > 0);
+        if (colorOpt) {
+          (pool as Record<string, number>)[colorOpt]--;
+          continue;
         }
 
-        // b. Try sources
-        const options = req.includes('/') ? req.split('/') : [req];
-        const colorOptions = options.filter(opt => isNaN(parseInt(opt)));
+        // If it's a monocolored hybrid and we can't pay color, it adds to generic requirements
         const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
-
-        const possibleSources = untappedSources
-            .filter(l => !usedSources.has(l.id) && l.colors.some((c: string) => colorOptions.includes(c)))
-            .sort((a, b) => a.colors.length - b.colors.length);
-
-        if (possibleSources.length > 0) {
-            const source = possibleSources[0];
-            usedSources.set(source.id, 1); // Mark 1 mana used from this source
-        } else if (numericOpt) {
-            // Treat as generic debt
-            requirements.generic += parseInt(numericOpt);
-        } else {
-            return false;
+        if (numericOpt) {
+          requirements.generic += parseInt(numericOpt);
+          continue;
         }
+      } else if ((pool as Record<string, number>)[req] > 0) {
+        (pool as Record<string, number>)[req]--;
+        continue;
+      }
+
+      // b. Try sources
+      const options = req.includes('/') ? req.split('/') : [req];
+      const colorOptions = options.filter(opt => isNaN(parseInt(opt)));
+      const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
+
+      const possibleSources = untappedSources
+        .filter(l => !usedSources.has(l.id) && l.colors.some((c: string) => colorOptions.includes(c)))
+        .sort((a, b) => a.colors.length - b.colors.length);
+
+      if (possibleSources.length > 0) {
+        const source = possibleSources[0];
+        usedSources.set(source.id, 1); // Mark 1 mana used from this source
+      } else if (numericOpt) {
+        // Treat as generic debt
+        requirements.generic += parseInt(numericOpt);
+      } else {
+        return false;
+      }
     }
 
     // 3. Final generic check
     const remainingPool = Object.values(pool).reduce((a, b) => a + (b as number), 0);
     const untranslatedSourcesValue = untappedSources
-        .filter(s => !usedSources.has(s.id))
-        .reduce((sum, s) => sum + s.value, 0);
-    
+      .filter(s => !usedSources.has(s.id))
+      .reduce((sum, s) => sum + s.value, 0);
+
     // Add leftover value from sources that were partially used for colored mana
     const partialSourcesValue = untappedSources
-        .filter(s => usedSources.has(s.id))
-        .reduce((sum, s) => sum + Math.max(0, s.value - usedSources.get(s.id)!), 0);
+      .filter(s => usedSources.has(s.id))
+      .reduce((sum, s) => sum + Math.max(0, s.value - usedSources.get(s.id)!), 0);
 
     return (remainingPool + untranslatedSourcesValue + partialSourcesValue) >= requirements.generic;
   }

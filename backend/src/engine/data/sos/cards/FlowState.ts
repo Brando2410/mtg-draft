@@ -6,12 +6,8 @@ export const FlowState: CardDefinition = {
     scryfall_id: "47d6093b-b1b6-4956-8bfd-02cce899f832",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249",
-    colors: [
-        "U"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["U"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. If there is an instant card and a sorcery card in your graveyard, instead put two of them into your hand and the rest on the bottom of your library in any order.",

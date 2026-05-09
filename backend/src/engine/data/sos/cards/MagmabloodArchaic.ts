@@ -31,9 +31,9 @@ export const MagmabloodArchaic: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
             condition: (state, event, trigger) => {
-                if (event.playerId !== trigger.controllerId) return false;
+                if (event?.playerId !== trigger.controllerId) return false;
                 const card = RuleUtils.getEventObject(event, state);
-                return !!card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
+                return !!card?.definition.types?.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
             },
             effects: [
                 {

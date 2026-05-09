@@ -1,4 +1,4 @@
-import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject, Targetable, PlayerState, CardDefinition } from "@shared/engine_types";
+import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, EngineFrame, Zone, PlayerId, StackObject, Targetable, PlayerState, CardDefinition } from "@shared/engine_types";
 import { getProcessors } from "../modules/ProcessorRegistry";
 import { LogCategory } from "./EngineLogger";
 /**
@@ -272,7 +272,7 @@ export class RuleUtils {
      * Centralized numeric resolution for engine effects.
      * Rule 107: Numbers and Symbols.
      */
-    public static resolveAmount(state: GameState, amount: import('@shared/engine_types').NumericProperty | any, context: ResolutionContext): number {
+    public static resolveAmount(state: GameState, amount: import('@shared/engine_types').NumericProperty | any, context: EngineFrame): number {
         if (typeof amount === 'number') return amount;
         if (!amount) return 0;
 
@@ -378,9 +378,9 @@ export class RuleUtils {
                             }
 
                             // 2. Try the restriction engine for complex tokens (e.g. COUNT_POWER4PLUS_CREATURE)
-                            const targetingContext = { sourceId, controllerId, stackObject };
+                            const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
                             const restrictions = filterToken.split('_');
-                            return TargetingProcessor.matchesRestrictions(state, o, restrictions, targetingContext);
+                            return TargetingProcessor.matchesRestrictions(state, o, restrictions, EngineFrame);
                         }).length;
                     }
 
@@ -516,3 +516,4 @@ export class RuleUtils {
         };
     }
 }
+

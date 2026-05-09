@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
 
 export const EagerFirstYear: CardDefinition = {
     name: 'Eager First-Year',
@@ -14,10 +14,13 @@ export const EagerFirstYear: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
-            effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', powerModifier: 1 }]
+            eventMatch: TriggerEvent.Magecraft,
+            effects: [{ 
+                type: EffectType.ApplyContinuousEffect, 
+                targetMapping: TargetMapping.Self, 
+                duration: { type: DurationType.UntilEndOfTurn }, 
+                powerModifier: 1 
+            }]
         }
     ]
   };
-
-

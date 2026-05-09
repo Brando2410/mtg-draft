@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { GameCard } from '../GameCard';
-import { type GameObject, type PlayerState } from '@shared/engine_types';
+import { type GameObject, type PlayerState, ActionType } from '@shared/engine_types';
 
 interface OrderingModalProps {
   pendingAction: any;
@@ -15,7 +15,7 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
   const [minimized, setMinimized] = useState(false);
   const [items, setItems] = useState<string[]>([]);
   
-  const isOrdering = pendingAction?.type === 'ORDER_BLOCKERS' || pendingAction?.type === 'ORDER_ATTACKERS';
+  const isOrdering = pendingAction?.type === ActionType.OrderBlockers || pendingAction?.type === ActionType.OrderAttackers;
   
   // Sync items when pendingAction changes
   useEffect(() => {
@@ -56,7 +56,7 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
 
               <div className="flex flex-col items-center gap-2">
                 <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">
-                  {pendingAction.type === 'ORDER_BLOCKERS' ? "Assign Damage Order" : "Order Attackers"}
+                  {pendingAction.type === ActionType.OrderBlockers ? "Assign Damage Order" : "Order Attackers"}
                 </h3>
                 <p className="text-slate-400 text-sm font-medium max-w-sm">
                   Drag and slide cards to reorder. Damage will be assigned from left to right.

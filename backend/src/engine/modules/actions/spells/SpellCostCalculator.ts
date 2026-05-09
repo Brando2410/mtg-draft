@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, CostModifierEffect, CostType, EffectDefinition, EffectType, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -89,7 +89,7 @@ export class SpellCostCalculator {
 
         // 0. Check for Free Cast permissions (Alternative Costs)
         const isFree = state.ruleRegistry.continuousEffects.find(e => {
-            const matchesBasic = (e.isFreeCast || (e as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING");
+            const matchesBasic = (e.isFreeCast || e.value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING");
             if (!matchesBasic) return false;
 
             const isPlayerTarget = (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId);
@@ -108,7 +108,7 @@ export class SpellCostCalculator {
         });
 
         if (isFree) {
-            if ((isFree as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
+            if (isFree.value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
                 // Keep looking
             } else {
                 console.log(`[COST-DEBUG] ${card.definition.name} is free because of continuous effect ${isFree.id}.`);
@@ -136,7 +136,7 @@ export class SpellCostCalculator {
         // 2. Add the card's OWN static additional costs (e.g. Goremand) OR inherent spell costs (e.g. Village Rites)
         const abilitiesToScan = currentDef.abilities || [];
 
-        abilitiesToScan.forEach((a: any) => {
+        abilitiesToScan.forEach((a) => {
             if (typeof a === 'string') return;
 
             // Case A: Static abilities that apply costs to the card itself
@@ -157,7 +157,8 @@ export class SpellCostCalculator {
                         const conditionMatches = !costEffect.condition || ConditionProcessor.matchesCondition(state, costEffect.condition, {
                             sourceId: card.id,
                             controllerId: card.controllerId,
-                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any,
+                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
+                            effects: [],
                             targets: []
                         });
                         if (conditionMatches && costEffect.additionalCosts) {
@@ -165,12 +166,18 @@ export class SpellCostCalculator {
                         }
                     }
                     if (e.type === EffectType.CostReduction && e.targetMapping === 'SELF') {
-                        modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
+                        modifiers.push({
+                            ...e,
+                            id: `temp_${card.id}`,
+                            timestamp: Date.now(),
+                            sourceId: card.id,
+                            controllerId: card.controllerId
+                        } as ContinuousEffect);
                     }
                 });
             }
             // Case B: Inherent Costs/Reductions inside the Spell ability itself (Instants/Sorceries)
-            if ((a.type === AbilityType.Spell || a.type === 'SpellAbility')) {
+            if (a.type === AbilityType.Spell) {
                 if (a.costs) {
                     additionalCosts = [...additionalCosts, ...a.costs];
                 }
@@ -178,7 +185,14 @@ export class SpellCostCalculator {
                     additionalCosts = [...additionalCosts, ...a.additionalCosts];
                 }
                 if (a.costReduction) {
-                    modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId, targetMapping: 'SELF' } as any);
+                    modifiers.push({
+                        ...a.costReduction,
+                        id: `inherent_reduction_${card.id}`,
+                        timestamp: Date.now(),
+                        sourceId: card.id,
+                        controllerId: card.controllerId,
+                        targetMapping: 'SELF'
+                    } as ContinuousEffect);
                 }
             }
         });
@@ -195,12 +209,14 @@ export class SpellCostCalculator {
                 else amount = `COUNT_${condition.charAt(0).toUpperCase() + condition.slice(1)}`;
 
                 modifiers.push({
+                    id: `affinity_${card.id}`,
+                    timestamp: Date.now(),
                     type: 'CostReduction',
                     reductionAmount: amount,
                     sourceId: card.id,
                     controllerId: card.controllerId || card.ownerId,
                     targetMapping: 'SELF'
-                } as any);
+                } as ContinuousEffect);
             }
         });
 
@@ -216,15 +232,18 @@ export class SpellCostCalculator {
             const restrictions = mod.restrictions || [];
             const { condition: ConditionProcessor } = getProcessors(state);
 
-            const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any), {
+            const matches = TargetingProcessor.matchesRestrictions(state, card, restrictions, {
                 sourceId: mod.sourceId,
-                controllerId: card.controllerId || card.ownerId
+                controllerId: card.controllerId || card.ownerId,
+                effects: [],
+                targets: []
             });
             const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, {
                 sourceId: mod.sourceId,
                 controllerId: card.controllerId,
                 cardToPlay: { ...card, isFlashbackCast: isFlashback },
-                event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any,
+                event: { type: TriggerEvent.CastSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
+                effects: [],
                 targets: []
             });
 
@@ -247,15 +266,16 @@ export class SpellCostCalculator {
                         const parsedRed = ManaProcessor.parseManaCost(red);
                         extraGeneric -= parsedRed.generic;
                         for (const [s, c] of Object.entries(parsedRed.colored)) {
-                            parsed.colored[s] = Math.max(0, (parsed.colored[s] || 0) - (c as number));
+                            parsed.colored[s] = Math.max(0, (parsed.colored[s] || 0) - c);
                         }
-                    } else if (typeof red === 'string' || (typeof red === 'object' && (red as any).type)) {
+                    } else if (typeof red === 'string' || (typeof red === 'object' && red !== null && 'type' in red)) {
                         const { effect: EP } = getProcessors(state);
-                        const resolved = EP.resolveAmount(state, red as any, {
+                        const resolved = EP.resolveAmount(state, red, {
                             sourceId: mod.sourceId,
                             controllerId: card.controllerId || card.ownerId,
-                            targets
-                        } as any, targets);
+                            targets,
+                            effects: []
+                        }, targets);
                         extraGeneric -= resolved;
                     }
                 }
@@ -269,9 +289,9 @@ export class SpellCostCalculator {
         let finalGeneric = Math.max(0, parsed.generic + extraGeneric);
 
         // --- CHOICE COST RESOLUTION ---
-        const choiceCostIndex = additionalCosts.findIndex(c => (c.type as string) === 'Choice');
+        const choiceCostIndex = additionalCosts.findIndex(c => c.type === CostType.Choice);
         if (choiceCostIndex !== -1) {
-            const choice = additionalCosts[choiceCostIndex];
+            const choice = additionalCosts[choiceCostIndex] as ChoiceCost;
             const chosenIndex = state.interaction.lastChoiceIndex;
             if (chosenIndex !== undefined && (choice as ChoiceCost).choices?.[chosenIndex]) {
                 const chosenCosts = (choice as ChoiceCost).choices[chosenIndex].costs;
@@ -279,12 +299,12 @@ export class SpellCostCalculator {
                 additionalCosts.splice(choiceCostIndex, 1, ...chosenCosts);
 
                 // Add any mana costs from the choice to the total
-                chosenCosts.forEach((cc: any) => {
-                    if (cc.type === 'Mana') {
+                chosenCosts.forEach((cc: AbilityCost) => {
+                    if (cc.type === CostType.Mana) {
                         const ccParsed = ManaProcessor.parseManaCost(cc.value);
                         finalGeneric += ccParsed.generic;
                         Object.entries(ccParsed.colored).forEach(([s, c]) => {
-                            parsed.colored[s] = (parsed.colored[s] || 0) + (c as number);
+                            parsed.colored[s] = (parsed.colored[s] || 0) + c;
                         });
                     }
                 });
