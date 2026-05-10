@@ -11,7 +11,7 @@ export const Duress: CardDefinition = {
       type: AbilityType.Spell,
       targetDefinitions: [{
         count: 1,
-        type: TargetType.Opponent,
+        type: TargetType.Opponent
       }],
       effects: [
         {
@@ -23,6 +23,9 @@ export const Duress: CardDefinition = {
         }
       ]
     }
-  ]
+  ],
+    scryfall_id: "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+    image_url: "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",
+    rarity: "common"
 };
 

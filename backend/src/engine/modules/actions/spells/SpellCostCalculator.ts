@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, EnginePrefix, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -52,15 +52,17 @@ export class SpellCostCalculator {
         const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') ||
             card.definition.keywords?.some((k) => k.toLowerCase() === 'flashback');
 
-        const isFlashback = forceFlashback ||
-            card.isFlashbackCast ||
-            (card.zone === Zone.Graveyard && hasFlashbackKeyword);
+        const isFlashback = forceFlashback === true ||
+            (forceFlashback !== false && (
+                card.isFlashbackCast ||
+                (card.zone === Zone.Graveyard && hasFlashbackKeyword && !card.id.startsWith(EnginePrefix.Permission) && !card.id.startsWith(EnginePrefix.FreeCast) && !card.id.startsWith(EnginePrefix.VirtualHand))
+            ));
 
         if (isFlashback) {
             let override = stats.flashbackCostOverride;
             if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
-            baseCost = currentDef.flashbackCost || override || baseCost;
-        } else if (card.zone === Zone.Graveyard || Object.values(state.players).some(p => p.virtualHand?.some((v) => v.id === card.id))) {
+            baseCost = override || currentDef.flashbackCost || baseCost;
+        } else if (forceFlashback !== false && (card.zone === Zone.Graveyard || Object.values(state.players).some(p => p.virtualHand?.some((v) => v.id === card.id)))) {
             const graveyardAbility = currentDef.abilities?.find((a) =>
                 typeof a !== 'string' &&
                 a.type === AbilityType.Activated &&
@@ -78,17 +80,16 @@ export class SpellCostCalculator {
         }
 
         const parsed = ManaProcessor.parseManaCost(baseCost);
-        if (card.isFreeCast) {
-            console.log(`[COST-DEBUG] ${card.definition.name} is free because card.isFreeCast is true.`);
-            return { totalMana: "{0}", additionalCosts: [], isFlashback };
-        }
+        // We defer the card.isFreeCast early return so we can identify the source effect for limit tracking
+
 
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
         let effectiveCost: string | null = null;
 
         // 0. Check for Free Cast permissions (Alternative Costs)
-        const isFree = state.ruleRegistry.continuousEffects.find(e => {
+        // Rule: Only apply free cast if explicitly chosen (isFreeCast: true) OR as a fallback for non-hand zones.
+        const isFree = (card.isFreeCast || (card.isFreeCast === undefined && card.zone !== Zone.Hand)) ? state.ruleRegistry.continuousEffects.find(e => {
             const matchesBasic = (e.isFreeCast || e.value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING");
             if (!matchesBasic) return false;
 
@@ -99,19 +100,21 @@ export class SpellCostCalculator {
             // Rule: Check limitPerTurn if defined
             if (e.limitPerTurn) {
                 const used = state.turnState.triggeredAbilitiesUsedThisTurn[e.id] || 0;
-                if (used >= e.limitPerTurn) return false;
+                // If it's already been selected (card.isFreeCast is true), we allow it even if the count is currently at limit,
+                // because we're about to increment it. But for the initial selection, we block it.
+                if (used >= e.limitPerTurn && !card.isFreeCast) return false;
             }
 
             // Use LayerProcessor to verify the card is actually a target (checking restrictions)
             const { layer: LayerProcessor } = getProcessors(state);
             return LayerProcessor.isTarget(state, e, card.id);
-        });
+        }) : undefined;
 
-        if (isFree) {
-            if (isFree.value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
+        if (isFree || card.isFreeCast) {
+            if (isFree?.value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
                 // Keep looking
             } else {
-                console.log(`[COST-DEBUG] ${card.definition.name} is free because of continuous effect ${isFree.id}.`);
+                console.log(`[COST-DEBUG] ${card.definition.name} is free because of ${isFree ? `continuous effect ${isFree.id}` : 'isFreeCast flag'}.`);
                 effectiveCost = "{0}";
             }
         }

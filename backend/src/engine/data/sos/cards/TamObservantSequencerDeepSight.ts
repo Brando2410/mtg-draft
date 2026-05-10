@@ -11,7 +11,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
     power: "4",
     toughness: "3",
     entersPrepared: false,
-    image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -26,7 +26,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
     ],
     preparedFace: {
         name: "Deep Sight",
-        image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
+
         manaCost: "{G}{U}",
         colors: ["G", "U"],
         types: ["Sorcery"],
@@ -47,6 +47,11 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "7120e71b-2976-451b-89a7-a1665dc6fb6b",
+    image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
+    rarity: "uncommon"
 };
+

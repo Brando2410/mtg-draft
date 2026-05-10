@@ -33,6 +33,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "eaa358ac-761d-4507-aa15-3d4684027207",
+    image_url: "https://cards.scryfall.io/normal/front/e/a/eaa358ac-761d-4507-aa15-3d4684027207.jpg?1775938661",
+    rarity: "uncommon"
 };
-    
+

@@ -21,8 +21,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
                 }
             ]
         }
-    ]
-    ,
+    ],
     preparedFace: {
         name: "Venomous Words",
         manaCost: "{B}",
@@ -35,7 +34,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
                 targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 1,
-                    restrictions: [Restriction.YouControl],
+                    restrictions: [Restriction.YouControl]
     }],
                 effects: [
                     {
@@ -47,7 +46,10 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
                     }
                 ]
             }
-        ]
-    }
-    };
-    
+        ],
+    },
+    scryfall_id: "03e664cd-c3a6-4263-b2d8-dd99058fb8ec",
+    image_url: "https://cards.scryfall.io/normal/front/0/3/03e664cd-c3a6-4263-b2d8-dd99058fb8ec.jpg?1775937593",
+    rarity: "uncommon"
+};
+

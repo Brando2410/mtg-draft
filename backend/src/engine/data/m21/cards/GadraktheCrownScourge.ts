@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const GadraktheCrownScourge: CardDefinition = {
     name: "Gadrak, the Crown-Scourge",
     manaCost: "{2}{R}",
-    scryfall_id: "313bd2a7-6202-4043-9823-4552077ef580",
-    image_url: "https://cards.scryfall.io/normal/front/3/1/313bd2a7-6202-4043-9823-4552077ef580.jpg?1594736635",
     oracleText: "Flying\nGadrak, the Crown-Scourge can't attack unless you control four or more artifacts.\nAt the beginning of your end step, create a Treasure token for each nontoken creature that died this turn. (It's an artifact with \"{T}, Sacrifice this artifact: Add one mana of any color.\")",
     colors: ["R"],
     supertypes: ["Legendary"],
@@ -36,7 +34,7 @@ export const GadraktheCrownScourge: CardDefinition = {
                         colors: [],
                         types: ['Artifact'],
                         subtypes: ['Treasure'],
-                        image_url: 'https://cards.scryfall.io/large/front/c/c/ccf89b94-0cfb-44ec-a6be-3518a38ae1ec.jpg?1594733767',
+
                         abilities: [{
                             type: AbilityType.Activated,
                             costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
@@ -48,5 +46,9 @@ export const GadraktheCrownScourge: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "249bf4b2-9239-4303-9c5d-81d06f6b7fb1",
+    image_url: "https://cards.scryfall.io/normal/front/2/4/249bf4b2-9239-4303-9c5d-81d06f6b7fb1.jpg?1743206671",
+    rarity: "rare"
 };
+

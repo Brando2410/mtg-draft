@@ -20,8 +20,9 @@ export const DeathlessKnight: CardDefinition = {
             condition: 'EVENT_PLAYER_IS_YOU',
             effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Self }]
         }
-    ]
+    ],
+    scryfall_id: "39c6e952-97b5-435c-a7fd-6271ddc23200",
+    image_url: "https://cards.scryfall.io/normal/front/3/9/39c6e952-97b5-435c-a7fd-6271ddc23200.jpg?1572490881",
+    rarity: "uncommon"
 };
-
-
 

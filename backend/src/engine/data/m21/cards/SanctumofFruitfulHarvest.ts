@@ -22,5 +22,9 @@ export const SanctumofFruitfulHarvest: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5ca28cfd-1a1b-4176-8b07-993d3d7b7ae4",
+    image_url: "https://cards.scryfall.io/normal/front/5/c/5ca28cfd-1a1b-4176-8b07-993d3d7b7ae4.jpg?1594737198",
+    rarity: "uncommon"
 };
+

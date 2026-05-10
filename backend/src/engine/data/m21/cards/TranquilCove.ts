@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const TranquilCove: CardDefinition = {
     name: "Tranquil Cove",
     manaCost: "",
-    scryfall_id: "ef172e73-9828-4ad0-b86a-75a7fc4d2625",
-    image_url: "https://cards.scryfall.io/normal/front/e/f/ef172e73-9828-4ad0-b86a-75a7fc4d2625.jpg?1594737890",
+
     oracleText: "Tranquil Cove enters the battlefield tapped.\nWhen Tranquil Cove enters the battlefield, you gain 1 life.\n{T}: Add {W} or {U}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const TranquilCove: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "0fee9b4b-1510-4b78-bdde-2e0bb319ee33",
+    image_url: "https://cards.scryfall.io/normal/front/0/f/0fee9b4b-1510-4b78-bdde-2e0bb319ee33.jpg?1594737751",
+    rarity: "common"
 };
+

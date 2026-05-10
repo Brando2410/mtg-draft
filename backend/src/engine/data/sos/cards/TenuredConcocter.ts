@@ -36,5 +36,9 @@ export const TenuredConcocter: CardDefinition = {
                 }
             ]
         }
-    ]
-}
+    ],
+    scryfall_id: "376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc",
+    image_url: "https://cards.scryfall.io/normal/front/3/7/376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc.jpg?1775938116",
+    rarity: "common"
+};
+

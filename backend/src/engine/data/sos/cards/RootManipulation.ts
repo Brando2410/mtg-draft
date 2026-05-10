@@ -35,5 +35,9 @@ export const RootManipulation: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5390a79c-bc4b-4edb-a845-0d3514986401",
+    image_url: "https://cards.scryfall.io/normal/front/5/3/5390a79c-bc4b-4edb-a845-0d3514986401.jpg?1775938546",
+    rarity: "uncommon"
 };
+

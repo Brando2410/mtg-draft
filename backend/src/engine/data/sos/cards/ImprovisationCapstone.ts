@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const ImprovisationCapstone: CardDefinition = {
     name: "Improvisation Capstone",
     manaCost: "{5}{R}{R}",
-    scryfall_id: "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787",
+
+
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],
@@ -21,5 +20,9 @@ export const ImprovisationCapstone: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
+    image_url: "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787",
+    rarity: "mythic"
 };
+

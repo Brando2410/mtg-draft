@@ -45,7 +45,9 @@ export const StormKilnArtist: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "da7ae8e0-cb6b-4386-8a30-9527d1af9be5",
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da7ae8e0-cb6b-4386-8a30-9527d1af9be5.jpg?1775941380",
+    rarity: "uncommon"
 };
-
 

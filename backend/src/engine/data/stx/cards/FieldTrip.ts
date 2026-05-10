@@ -22,5 +22,9 @@ export const FieldTrip: CardDefinition = {
                 { type: EffectType.Learn }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f235060a-eb49-4a73-bb5f-01228c3c4070",
+    image_url: "https://cards.scryfall.io/normal/front/f/2/f235060a-eb49-4a73-bb5f-01228c3c4070.jpg?1624592751",
+    rarity: "common"
 };
+

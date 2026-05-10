@@ -49,5 +49,9 @@ export const ShadrixSilverquill: CardDefinition = {
                 ]
             }]
         }
-    ]
+    ],
+    scryfall_id: "214a695b-208e-4fd5-9ceb-23c882eadcf7",
+    image_url: "https://cards.scryfall.io/normal/front/2/1/214a695b-208e-4fd5-9ceb-23c882eadcf7.jpg?1775941913",
+    rarity: "mythic"
 };
+

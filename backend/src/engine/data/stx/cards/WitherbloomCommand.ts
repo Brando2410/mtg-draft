@@ -69,5 +69,9 @@ export const WitherbloomCommand: CardDefinition = {
                 }
             ]
         }]
-    }]
+    }],
+    scryfall_id: "0d68dee5-56ff-45bb-a37e-9e2dfc07c5a7",
+    image_url: "https://cards.scryfall.io/normal/front/0/d/0d68dee5-56ff-45bb-a37e-9e2dfc07c5a7.jpg?1775941977",
+    rarity: "rare"
 };
+

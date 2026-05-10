@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const ArtisticProcess: CardDefinition = {
     name: "Artistic Process",
     manaCost: "{3}{R}{R}",
-    scryfall_id: "bce9d933-be58-4301-beb4-07b04d0b69f0",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683",
+
+
     colors: ["R"],
     types: ["Sorcery"],
     oracleText: "Choose one —\n• Artistic Process deals 6 damage to target creature.\n• Artistic Process deals 2 damage to each creature you don't control.\n• Create a 3/3 blue and red Elemental creature token with flying. It gains haste until end of turn.",
@@ -36,7 +35,7 @@ export const ArtisticProcess: CardDefinition = {
                                 types: ['Creature'],
                                 subtypes: ['Elemental'],
                                 keywords: ['Flying'],
-                                image_url: 'https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1775828255'
+                                image_url: "https://cards.scryfall.io/normal/front/5/7/57b98846-85e3-47c7-a903-29953d0b0e8a.jpg?1775828504"
                             }
                         },
                         {
@@ -49,5 +48,9 @@ export const ArtisticProcess: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "bce9d933-be58-4301-beb4-07b04d0b69f0",
+    image_url: "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1775828255",
+    rarity: "uncommon"
 };
+

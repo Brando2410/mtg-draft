@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, RestrictionType,
 export const AcademicDispute: CardDefinition = {
     name: "Academic Dispute",
     manaCost: "{R}",
-    scryfall_id: "4620cc3b-e401-4096-b310-fed080806344",
-    image_url: "https://cards.scryfall.io/normal/front/4/6/4620cc3b-e401-4096-b310-fed080806344.jpg?1624591542",
+
     colors: ["R"],
     types: ["Instant"],
     oracleText: "Target creature blocks this turn if able. Target creature gets +1/+0 and gains reach until end of turn. Learn.",
@@ -28,5 +27,9 @@ export const AcademicDispute: CardDefinition = {
                 { type: EffectType.Learn }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4620cc3b-e401-4096-b310-fed080806344",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/4620cc3b-e401-4096-b310-fed080806344.jpg?1624591542",
+    rarity: "uncommon"
 };
+

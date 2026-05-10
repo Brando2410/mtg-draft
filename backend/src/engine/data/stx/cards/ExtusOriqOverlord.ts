@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
     manaCost: "{1}{W}{B}{B}",
-    scryfall_id: "ba09360a-067e-48a5-bdc5-a19fd066a785",
-    image_url: "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+
     colors: ["W", "B"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -65,7 +64,7 @@ export const ExtusOriqOverlord: CardDefinition = {
                                 types: ['Creature', 'Token'],
                                 subtypes: ['Avatar'],
                                 keywords: ['Haste'],
-                                image_url: 'https://cards.scryfall.io/large/front/9/4/94a50acd-ac2d-47bf-b331-0bcf5edd9c75.jpg?1641306148',
+
                                 oracleText: "Whenever this creature attacks, it deals 3 damage to each opponent.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
@@ -83,8 +82,9 @@ export const ExtusOriqOverlord: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ba09360a-067e-48a5-bdc5-a19fd066a785",
+    image_url: "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+    rarity: "mythic"
 };
-
-
 

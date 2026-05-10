@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const OrneryDilophosaur: CardDefinition = {
     name: "Ornery Dilophosaur",
     manaCost: "{3}{G}",
-    scryfall_id: "c2c4a0e7-9ca4-4291-94de-165cc2ded822",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c2c4a0e7-9ca4-4291-94de-165cc2ded822.jpg?1594737108",
+
     oracleText: "Deathtouch\nWhenever Ornery Dilophosaur attacks, if you control a creature with power 4 or greater, Ornery Dilophosaur gets +2/+2 until end of turn.",
     colors: ["G"],
     types: ["Creature"],
@@ -27,5 +26,9 @@ export const OrneryDilophosaur: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "c2c4a0e7-9ca4-4291-94de-165cc2ded822",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c2c4a0e7-9ca4-4291-94de-165cc2ded822.jpg?1594737108",
+    rarity: "common"
 };
+

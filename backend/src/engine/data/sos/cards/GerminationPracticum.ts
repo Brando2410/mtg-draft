@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const GerminationPracticum: CardDefinition = {
     name: "Germination Practicum",
     manaCost: "{3}{G}{G}",
-    scryfall_id: "abe8332f-c76e-44e2-9427-d1228453abec",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
+
+
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],
@@ -22,5 +21,9 @@ export const GerminationPracticum: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "abe8332f-c76e-44e2-9427-d1228453abec",
+    image_url: "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
+    rarity: "mythic"
 };
+

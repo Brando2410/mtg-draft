@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const DuelingCoach: CardDefinition = {
     name: "Dueling Coach",
     manaCost: "{3}{W}",
-    scryfall_id: "99120614-727c-4034-8c83-8a30364d9b3d",
-    image_url: "https://cards.scryfall.io/normal/front/9/9/99120614-727c-4034-8c83-8a30364d9b3d.jpg?1624589363",
+
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Human", "Monk"],
@@ -29,5 +28,9 @@ export const DuelingCoach: CardDefinition = {
                 restrictions: [Restriction.Creature, Restriction.HasP1P1Counter]
             }]
         }
-    ]
+    ],
+    scryfall_id: "45b3dbb0-0d68-4351-bfc9-a09c50454bf7",
+    image_url: "https://cards.scryfall.io/normal/front/4/5/45b3dbb0-0d68-4351-bfc9-a09c50454bf7.jpg?1624589385",
+    rarity: "uncommon"
 };
+

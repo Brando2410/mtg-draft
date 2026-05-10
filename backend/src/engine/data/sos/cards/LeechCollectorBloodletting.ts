@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",
-    scryfall_id: "c715fe4c-c0e7-4342-811f-b74687851097",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525",
+
+
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Human", "Warlock"],
@@ -29,7 +28,7 @@ export const LeechCollectorBloodletting: CardDefinition = {
     ],
     preparedFace: {
         name: "Bloodletting",
-        image_url: "https://cards.scryfall.io/png/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.png?1775937525",
+
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -45,6 +44,11 @@ export const LeechCollectorBloodletting: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "c715fe4c-c0e7-4342-811f-b74687851097",
+    image_url: "https://cards.scryfall.io/png/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.png?1775937525",
+    rarity: "uncommon"
 };
+

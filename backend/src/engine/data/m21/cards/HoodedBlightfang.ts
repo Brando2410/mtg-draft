@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const HoodedBlightfang: CardDefinition = {
     name: "Hooded Blightfang",
     manaCost: "{2}{B}",
-    scryfall_id: "ac38a51f-9a3b-451c-b72d-6d4e0b296fbd",
-    image_url: "https://cards.scryfall.io/normal/front/a/c/ac38a51f-9a3b-451c-b72d-6d4e0b296fbd.jpg?1594736187",
+
     oracleText: "Deathtouch\nWhenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life.\nWhenever a creature you control with deathtouch deals damage to a planeswalker, destroy that planeswalker.",
     colors: ["B"],
     types: ["Creature"],
@@ -31,5 +30,9 @@ export const HoodedBlightfang: CardDefinition = {
                 targetMapping: TargetMapping.EventTarget
             }]
         }
-    ]
+    ],
+    scryfall_id: "ac38a51f-9a3b-451c-b72d-6d4e0b296fbd",
+    image_url: "https://cards.scryfall.io/normal/front/a/c/ac38a51f-9a3b-451c-b72d-6d4e0b296fbd.jpg?1594736187",
+    rarity: "rare"
 };
+

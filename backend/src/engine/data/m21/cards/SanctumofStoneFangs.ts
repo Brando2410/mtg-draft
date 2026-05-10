@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, 
 export const SanctumofStoneFangs: CardDefinition = {
     name: "Sanctum of Stone Fangs",
     manaCost: "{1}{B}",
-    scryfall_id: "d1430973-57dd-484d-82fa-66a496a7eb19",
-    image_url: "https://cards.scryfall.io/normal/front/d/1/d1430973-57dd-484d-82fa-66a496a7eb19.jpg?1594736353",
     oracleText: "At the beginning of your precombat main phase, each opponent loses X life and you gain X life, where X is the number of Shrines you control.",
     colors: ["B"],
     supertypes: ["Legendary"],
@@ -28,5 +26,9 @@ export const SanctumofStoneFangs: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d1439412-618c-483d-89b9-5ea37f0f1edc",
+    image_url: "https://cards.scryfall.io/normal/front/d/1/d1439412-618c-483d-89b9-5ea37f0f1edc.jpg?1594736357",
+    rarity: "uncommon"
 };
+

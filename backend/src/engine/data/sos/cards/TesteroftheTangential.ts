@@ -3,7 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const TesteroftheTangential: CardDefinition = {
     name: "Tester of the Tangential",
     manaCost: "{1}{U}",
-    scryfall_id: "71f760e9-b541-477a-b911-45186b520ae1", // placeholder
+ // placeholder,
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Djinn", "Wizard"],
@@ -43,5 +43,9 @@ export const TesteroftheTangential: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "bbd708ec-eef4-4f45-99dd-60e1cec4b991",
+    image_url: "https://cards.scryfall.io/normal/front/b/b/bbd708ec-eef4-4f45-99dd-60e1cec4b991.jpg?1775937389",
+    rarity: "uncommon"
 };
+

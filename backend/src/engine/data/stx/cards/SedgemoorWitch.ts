@@ -36,7 +36,9 @@ export const SedgemoorWitch: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e900c1eb-968b-4046-b824-c167a7a5b682",
+    image_url: "https://cards.scryfall.io/normal/front/e/9/e900c1eb-968b-4046-b824-c167a7a5b682.jpg?1624591402",
+    rarity: "rare"
 };
-
 

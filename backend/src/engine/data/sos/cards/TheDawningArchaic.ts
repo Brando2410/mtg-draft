@@ -53,5 +53,9 @@ export const TheDawningArchaic: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "7a451985-37e1-44d8-839b-dc1e88df5c96",
+    image_url: "https://cards.scryfall.io/normal/front/7/a/7a451985-37e1-44d8-839b-dc1e88df5c96.jpg?1775936921",
+    rarity: "mythic"
 };
+

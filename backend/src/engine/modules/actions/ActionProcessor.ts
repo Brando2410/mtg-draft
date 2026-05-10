@@ -200,7 +200,11 @@ export class ActionProcessor {
       if (!card.originalDefinition) {
         card.originalDefinition = card.definition;
       }
-      card.definition = card.selectedFaceDefinition;
+      card.definition = { 
+        ...card.selectedFaceDefinition, 
+        image_url: card.selectedFaceDefinition.image_url || card.definition.image_url 
+      };
+      card.image_url = card.definition.image_url;
     }
 
     // 4. Rule 400.1: Add to the new zone
@@ -327,38 +331,48 @@ export class ActionProcessor {
     }
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
-    this.updateEntityCache(state, cid, true);
+    const realId = cid.startsWith('v_') ? cid.replace('v_', '') : cid;
+    const virtualId = cid.startsWith('v_') ? cid : `v_${cid}`;
 
-    state.battlefield = state.battlefield.filter((c) => c.id !== cid);
+    this.updateEntityCache(state, realId, true);
+    this.updateEntityCache(state, virtualId, true);
+
+    state.battlefield = state.battlefield.filter((c) => c.id !== realId && c.id !== virtualId);
 
     // Rule 113.7a: Abilities on the stack exist independently of their source.
-    // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
     state.stack = state.stack.filter((s) => {
-      // ONLY remove if it's the exact same ID (the Spell object)
-      // DO NOT remove if it's an ability (Triggered/Activated) originating from this source.
-      if (s.id === cid) {
+      if (s.id === realId || s.id === virtualId) {
         this.updateEntityCache(state, s, true);
         return false;
       }
       return true;
     });
-    state.exile = state.exile.filter((c) => c.id !== cid);
+
+    state.exile = state.exile.filter((c) => c.id !== realId && c.id !== virtualId);
 
     for (const pid in state.players) {
       const p = state.players[pid as PlayerId];
-      p.hand = p.hand.filter((c) => c.id !== cid);
-      const isFromGrave = p.graveyard.some((c) => c.id === cid);
-      p.graveyard = p.graveyard.filter((c) => c.id !== cid);
+      p.hand = p.hand.filter((c) => c.id !== realId && c.id !== virtualId);
+      
+      const isFromGrave = p.graveyard.some((c) => c.id === realId || c.id === virtualId);
+      p.graveyard = p.graveyard.filter((c) => c.id !== realId && c.id !== virtualId);
       if (isFromGrave) {
         state.turnState.cardLeftGraveyardThisTurn[pid as PlayerId] = true;
       }
-      p.library = p.library.filter((c) => c.id !== cid);
+
+      p.library = p.library.filter((c) => c.id !== realId && c.id !== virtualId);
+
       if (p.virtualHand) {
-        p.virtualHand = p.virtualHand.filter((c) => c.id !== cid && c.sourceCreatureId !== cid);
+        p.virtualHand = p.virtualHand.filter((c) => 
+            c.id !== realId && 
+            c.id !== virtualId && 
+            c.sourceCreatureId !== realId &&
+            c.sourceCreatureId !== virtualId
+        );
       }
     }
     if (!state.limbo) state.limbo = [];
-    state.limbo = state.limbo.filter((c) => c.id !== cid);
+    state.limbo = state.limbo.filter((c) => c.id !== realId && c.id !== virtualId);
   }
 
   private static addToTargetZone(
@@ -531,6 +545,9 @@ export class ActionProcessor {
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
     card.effectiveStats = undefined;
     card.modifierSnapshot = null;
+
+    // Ensure image_url is synchronized with the (possibly reset) definition
+    card.image_url = card.definition.image_url;
   }
 
   private static handleEnteringBattlefield(

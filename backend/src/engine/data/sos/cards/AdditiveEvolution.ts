@@ -2,14 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
 export const AdditiveEvolution: CardDefinition = {
     name: "Additive Evolution",
     manaCost: "{3}{G}{G}",
-    scryfall_id: "b44ec684-d558-45eb-bcd0-e4b7db5c38a3",
-    image_url: "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Enchantment"
-    ],
+    colors: ["G"],
+    types: ["Enchantment"],
     subtypes: [],
     keywords: [],
     oracleText: "When this enchantment enters, create a 0/0 green and blue Fractal creature token. Put three +1/+1 counters on it.\nAt the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.",
@@ -27,7 +21,7 @@ export const AdditiveEvolution: CardDefinition = {
                         colors: ['G', 'U'],
                         power: '0',
                         toughness: '0',
-                        image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279",
+                        image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                     },
                     amount: 1
                 },
@@ -54,6 +48,9 @@ export const AdditiveEvolution: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b44ec684-d558-45eb-bcd6-8119428634c2",
+    image_url: "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943",
+    rarity: "uncommon"
 };
 

@@ -69,5 +69,9 @@ export const RalZarekGuestLecturer: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8fbad757-4081-42f7-a460-68ac03e77510",
+    image_url: "https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587",
+    rarity: "mythic"
 };
+

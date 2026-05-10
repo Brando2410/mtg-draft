@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
 export const HeroicIntervention: CardDefinition = {
     name: "Heroic Intervention",
     manaCost: "{1}{G}",
-    scryfall_id: "43c037e3-7d1a-48ca-8ecc-276696592f62",
-    image_url: "https://cards.scryfall.io/normal/front/4/3/43c037e3-7d1a-48ca-8ecc-276696592f62.jpg?1594737038",
+
     oracleText: "Permanents you control gain hexproof and indestructible until end of turn.",
     colors: ["G"],
     types: ["Instant"],
@@ -21,5 +20,9 @@ export const HeroicIntervention: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "43c037e3-7d1a-48ca-8ecc-276696592f62",
+    image_url: "https://cards.scryfall.io/normal/front/4/3/43c037e3-7d1a-48ca-8ecc-276696592f62.jpg?1594737038",
+    rarity: "rare"
 };
+

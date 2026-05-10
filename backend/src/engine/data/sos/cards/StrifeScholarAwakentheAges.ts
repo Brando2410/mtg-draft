@@ -13,12 +13,9 @@ export const StrifeScholarAwakentheAges: CardDefinition = {
     oracleText: "Ward—Pay 2 life.\nThis creature enters prepared.",
     power: "3",
     toughness: "2",
-    image_url: "https://cards.scryfall.io/png/front/8/d/8de79312-2046-425e-9919-49afe19be81b.png?1775937883",
     entersPrepared: true,
-    // The new streamlined field for SOS Prepared cards
     preparedFace: {
         name: "Awaken the Ages",
-        image_url: "https://cards.scryfall.io/png/front/8/d/8de79312-2046-425e-9919-49afe19be81b.png?1775937883",
         manaCost: "{5}{R}",
         colors: ["R"],
         types: ["Sorcery"],
@@ -36,12 +33,16 @@ export const StrifeScholarAwakentheAges: CardDefinition = {
                         subtypes: ["Spirit"],
                         power: "2",
                         toughness: "2",
-                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
+                        image_url: "https://cards.scryfall.io/normal/front/8/7/877f7ddb-ed70-41a0-b845-d9bf8ac65f9b.jpg?1775828448"
                     },
                     targetMapping: TargetMapping.Controller
                 }
             ]
-        }]
-    }
+        }],
+
+    },
+    scryfall_id: "8de79312-2046-425e-9919-49afe19be81b",
+    image_url: "https://cards.scryfall.io/png/front/8/d/8de79312-2046-425e-9919-49afe19be81b.png?1775937883",
+    rarity: "common"
 };
 

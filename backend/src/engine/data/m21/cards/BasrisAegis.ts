@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const BasrisAegis: CardDefinition = {
     name: "Basri's Aegis",
     manaCost: "{3}{W}",
-    scryfall_id: "8f747867-080e-4735-97e3-057b4455855f",
-    image_url: "https://cards.scryfall.io/normal/front/8/f/8f747867-080e-4735-97e3-057b4455855f.jpg?1596250058",
+
     oracleText: "Put a +1/+1 counter on target creature you control. You may search your library and/or graveyard for a card named Basri, Devoted Paladin, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["W"],
     types: ["Instant"],
@@ -33,5 +32,9 @@ export const BasrisAegis: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "577657ed-162f-4104-b0af-ee9733e90f20",
+    image_url: "https://cards.scryfall.io/normal/front/5/7/577657ed-162f-4104-b0af-ee9733e90f20.jpg?1596250020",
+    rarity: "rare"
 };
+

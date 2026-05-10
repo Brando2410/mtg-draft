@@ -4,9 +4,8 @@ import { RuleUtils } from '../../../utils/RuleUtils';
 export const MagmabloodArchaic: CardDefinition = {
     name: "Magmablood Archaic",
     manaCost: "{2/R}{2/R}{2/R}",
-    scryfall_id: "4d611278-9948-4345-b4dd-aa6eaf21b233",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816",
+
+
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Avatar"],
@@ -38,11 +37,15 @@ export const MagmabloodArchaic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    powerModifier: DynamicAmount.ConvergeAmount, // The engine needs to know this refers to the TRIGGERING spell's converge
+                    powerModifier: DynamicAmount.ConvergeAmount, // The engine needs to know this refers to the TRIGGERING spell's converge,
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 }
             ]
         }
     ],
+    scryfall_id: "4d611278-9948-4345-b4dd-aa6eaf21b233",
+    image_url: "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816",
+    rarity: "rare"
 };
+

@@ -21,6 +21,9 @@ export const VanishingVerse: CardDefinition = {
                     }
                 ]
             }
-        ]
-    };
+        ],
+    scryfall_id: "8a475868-a335-45e7-9d59-9dc4c2cea1ae",
+    image_url: "https://cards.scryfall.io/normal/front/8/a/8a475868-a335-45e7-9d59-9dc4c2cea1ae.jpg?1775941950",
+    rarity: "rare"
+};
 

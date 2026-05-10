@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
 export const ChandraFlamesCatalyst: CardDefinition = {
     name: "Chandra, Flame's Catalyst",
     manaCost: "{4}{R}{R}",
-    scryfall_id: "1e49ce44-5286-4310-88c2-f8a1402b113b",
-    image_url: "https://cards.scryfall.io/normal/front/1/e/1e49ce44-5286-4310-88c2-f8a1402b113b.jpg?1596168039",
+
     oracleText: "+1: Chandra deals 3 damage to each opponent.\n−2: You may cast target red instant or sorcery card from your graveyard this turn without paying its mana cost. If that spell would be put into your graveyard this turn, exile it instead.\n−8: Discard your hand, then draw seven cards. Until end of turn, you may cast spells from your hand without paying their mana costs.",
     colors: ["R"],
     supertypes: ["Legendary"],
@@ -55,5 +54,9 @@ export const ChandraFlamesCatalyst: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "1e49ce44-5286-4310-88c2-f8a1402b113b",
+    image_url: "https://cards.scryfall.io/normal/front/1/e/1e49ce44-5286-4310-88c2-f8a1402b113b.jpg?1596168039",
+    rarity: "mythic"
 };
+

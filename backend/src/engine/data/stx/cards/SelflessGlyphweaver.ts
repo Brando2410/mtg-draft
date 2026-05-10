@@ -37,6 +37,9 @@ export const SelflessGlyphweaver: CardDefinition = {
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.AllOtherCreaturesAndPlaneswalkers, excludedTargetMapping: TargetMapping.Target1 }]
             }]
         }
-    ]
+    ],
+    scryfall_id: "8982ff88-8595-4363-8cde-6e87fb57a2d8",
+    image_url: "https://cards.scryfall.io/normal/front/8/9/8982ff88-8595-4363-8cde-6e87fb57a2d8.jpg?1634060533",
+    rarity: "rare"
 };
 

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const Miscast: CardDefinition = {
     name: "Miscast",
     manaCost: "{U}",
-    scryfall_id: "033afbd5-9937-4957-98ba-48e469a490bb",
-    image_url: "https://cards.scryfall.io/normal/front/0/3/033afbd5-9937-4957-98ba-48e469a490bb.jpg?1594735579",
+
     oracleText: "Counter target instant or sorcery spell unless its controller pays {3}.",
     colors: ["U"],
     types: ["Instant"],
@@ -32,5 +31,9 @@ export const Miscast: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "033afbd5-9937-4957-98ba-48e469a490bb",
+    image_url: "https://cards.scryfall.io/normal/front/0/3/033afbd5-9937-4957-98ba-48e469a490bb.jpg?1594735579",
+    rarity: "uncommon"
 };
+

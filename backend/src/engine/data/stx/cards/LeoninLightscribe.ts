@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const LeoninLightscribe: CardDefinition = {
     name: 'Leonin Lightscribe',
     manaCost: '{1}{W}',
-    scryfall_id: "2a465d7b-398c-444b-9eae-331ea2513f6d",
-    image_url: "https://cards.scryfall.io/normal/front/2/a/2a465d7b-398c-444b-9eae-331ea2513f6d.jpg?1624589525",
+
     colors: ['W'],
     types: ['Creature'],
     subtypes: ['Cat', 'Cleric'],
@@ -25,7 +24,9 @@ export const LeoninLightscribe: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2a465d7b-398c-444b-9eae-331ea2513f6d",
+    image_url: "https://cards.scryfall.io/normal/front/2/a/2a465d7b-398c-444b-9eae-331ea2513f6d.jpg?1624589525",
+    rarity: "rare"
 };
-
 

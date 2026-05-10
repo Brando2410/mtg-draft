@@ -64,5 +64,9 @@ export const ProfessorOnyx: CardDefinition = {
                 ]
             }))
         }
-    ]
+    ],
+    scryfall_id: "b8d8e608-6de4-4b90-aeb7-d060d1f44844",
+    image_url: "https://cards.scryfall.io/normal/front/b/8/b8d8e608-6de4-4b90-aeb7-d060d1f44844.jpg?1726284891",
+    rarity: "mythic"
 };
+

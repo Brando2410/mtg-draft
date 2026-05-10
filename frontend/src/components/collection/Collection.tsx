@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Home, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus, ShieldCheck } from 'lucide-react';
-import { ImplementedCards } from './ImplementedCards';
+import { Home, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus } from 'lucide-react';
+
 
 interface SavedItem {
   id: string;
@@ -22,7 +22,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'cube' | 'deck' | 'implemented'>('cube');
+  const [activeTab, setActiveTab] = useState<'cube' | 'deck'>('cube');
 
   const fetchData = async () => {
     setLoading(true);
@@ -131,13 +131,6 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
                 <Sword className="w-4 h-4" />
                 Mazzi
               </button>
-              <button 
-                onClick={() => setActiveTab('implemented')}
-                className={`flex-1 sm:flex-none flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'implemented' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Implemented
-              </button>
            </div>
 
           <div className="relative w-full group">
@@ -161,31 +154,24 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* NEW ITEM CARD */}
-          {activeTab !== 'implemented' && (
-            <button 
-              onClick={activeTab === 'cube' ? onCreateNewCube : onCreateNewDeck}
-              className="group relative bg-slate-900/10 border-2 border-dashed border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/30 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center gap-6 min-h-[300px]"
-            >
-              <div className={`p-6 rounded-3xl ${activeTab === 'cube' ? 'bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500' : 'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500'} group-hover:text-white transition-all duration-500`}>
-                <Plus className="w-10 h-10" />
-              </div>
-              <div className="text-center space-y-2">
-                <h4 className="text-2xl font-black text-white uppercase tracking-tight italic">
-                  Crea {activeTab === 'cube' ? 'Nuovo Cubo' : 'Nuovo Mazzo'}
-                </h4>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest group-hover:text-slate-300 transition-colors">
-                  {activeTab === 'cube' ? 'Inizia un nuovo progetto draft' : 'Componi una strategia micidiale'}
-                </p>
-              </div>
-            </button>
-          )}
+          <button 
+            onClick={activeTab === 'cube' ? onCreateNewCube : onCreateNewDeck}
+            className="group relative bg-slate-900/10 border-2 border-dashed border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/30 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center gap-6 min-h-[300px]"
+          >
+            <div className={`p-6 rounded-3xl ${activeTab === 'cube' ? 'bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500' : 'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500'} group-hover:text-white transition-all duration-500`}>
+              <Plus className="w-10 h-10" />
+            </div>
+            <div className="text-center space-y-2">
+              <h4 className="text-2xl font-black text-white uppercase tracking-tight italic">
+                Crea {activeTab === 'cube' ? 'Nuovo Cubo' : 'Nuovo Mazzo'}
+              </h4>
+              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest group-hover:text-slate-300 transition-colors">
+                {activeTab === 'cube' ? 'Inizia un nuovo progetto draft' : 'Componi una strategia micidiale'}
+              </p>
+            </div>
+          </button>
 
-          {activeTab === 'implemented' ? (
-             <div className="col-span-full">
-                <ImplementedCards />
-             </div>
-          ) : (
-            filteredItems.map(item => (
+          {filteredItems.map(item => (
               <div 
                 key={item.id}
                 className="group relative bg-slate-900/30 border border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/50 hover:border-indigo-500/20 transition-all duration-500 shadow-xl overflow-hidden"
@@ -233,8 +219,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
                   </div>
                 </div>
               </div>
-            ))
-          )}
+            ))}
         </div>
       )}
 

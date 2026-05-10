@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 
 export const FeedtheSwarm: CardDefinition = {
     name: "Feed the Swarm",
-    manaCost: "{1}{B}",
-    scryfall_id: "a041cfe3-a02d-41e2-aea3-76bc2bacc10e",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/a/0/a041cfe3-a02d-41e2-aea3-76bc2bacc10e.jpg?1775936576",
+    manaCost: "{1}{B}",
     colors: ["B"],
     types: ["Sorcery"],
     subtypes: [],
@@ -30,5 +27,9 @@ export const FeedtheSwarm: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a041cfe3-a02d-41e2-aea3-76bc2bacc10e",
+    image_url: "https://cards.scryfall.io/normal/front/a/0/a041cfe3-a02d-41e2-aea3-76bc2bacc10e.jpg?1775936576",
+    rarity: "uncommon"
 };
+

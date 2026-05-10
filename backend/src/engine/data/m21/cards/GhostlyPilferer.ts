@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Eff
 export const GhostlyPilferer: CardDefinition = {
     name: "Ghostly Pilferer",
     manaCost: "{1}{U}",
-    scryfall_id: "2810631f-c55c-4947-a26f-4d3ce76024b3",
-    image_url: "https://cards.scryfall.io/normal/front/2/8/2810631f-c55c-4947-a26f-4d3ce76024b3.jpg?1594735508",
+
     oracleText: "Whenever this creature becomes untapped, you may pay {2}. If you do, draw a card.\nWhenever an opponent casts a spell from anywhere other than their hand, draw a card.\nDiscard a card: This creature can't be blocked this turn.",
     colors: ["U"],
     types: ["Creature"],
@@ -50,5 +49,9 @@ export const GhostlyPilferer: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2810631f-c55c-4947-a26f-4d3ce76024b3",
+    image_url: "https://cards.scryfall.io/normal/front/2/8/2810631f-c55c-4947-a26f-4d3ce76024b3.jpg?1594735508",
+    rarity: "rare"
 };
+

@@ -42,6 +42,9 @@ export const StadiumTidalmage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a689289e-7141-4950-8a87-82e9bd6846fe",
+    image_url: "https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619",
+    rarity: "common"
 };
 

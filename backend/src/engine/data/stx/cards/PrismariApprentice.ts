@@ -29,5 +29,9 @@ export const PrismariApprentice: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "dca3aa59-c8ac-4930-abf7-0a74d657122a",
+    image_url: "https://cards.scryfall.io/normal/front/d/c/dca3aa59-c8ac-4930-abf7-0a74d657122a.jpg?1627429925",
+    rarity: "uncommon"
 };
+

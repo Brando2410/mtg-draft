@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const PigmentWranglerStrikingPalette: CardDefinition = {
     name: "Pigment Wrangler // Striking Palette",
     manaCost: "{4}{R}",
-    scryfall_id: "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841",
+
+
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Orc", "Sorcerer"],
@@ -15,7 +14,7 @@ export const PigmentWranglerStrikingPalette: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Striking Palette",
-        image_url: "https://cards.scryfall.io/png/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.png?1775937841",
+
         manaCost: "{R}",
         colors: ["R"],
         types: ["Sorcery"],
@@ -39,7 +38,11 @@ export const PigmentWranglerStrikingPalette: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
+    image_url: "https://cards.scryfall.io/png/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.png?1775937841",
+    rarity: "uncommon"
 };
 

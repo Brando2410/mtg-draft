@@ -24,5 +24,9 @@ export const StarPupil: CardDefinition = {
             }],
             effects: [{ type: EffectType.MoveCounters, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "99e9318f-2e17-4b6e-895f-c17cd5d0d282",
+    image_url: "https://cards.scryfall.io/normal/front/9/9/99e9318f-2e17-4b6e-895f-c17cd5d0d282.jpg?1624589792",
+    rarity: "common"
 };
+

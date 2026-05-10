@@ -21,7 +21,7 @@ export const WildHypothesis: CardDefinition = {
                         colors: ['G', 'U'],
                         power: 0,
                         toughness: 0,
-                        image_url: 'https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279'
+                        image_url: "https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306"
                     },
                     startingCounters: { counterType: CounterType.P1P1, amount: DynamicAmount.X },
 
@@ -34,6 +34,9 @@ export const WildHypothesis: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "04fdfabc-c247-4384-a5bb-f49035f8aae0",
+    image_url: "https://cards.scryfall.io/normal/front/0/4/04fdfabc-c247-4384-a5bb-f49035f8aae0.jpg?1775938142",
+    rarity: "common"
 };
 

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const HallMonitor: CardDefinition = {
     name: 'Hall Monitor',
     manaCost: '{R}',
-    scryfall_id: "02fdc551-0b22-49f4-8765-143ad82f16a3",
-    image_url: "https://cards.scryfall.io/normal/front/0/2/02fdc551-0b22-49f4-8765-143ad82f16a3.jpg?1624591927",
+
     colors: ['R'],
     types: ['Creature'],
     subtypes: ['Lizard', 'Wizard'],
@@ -19,5 +18,9 @@ export const HallMonitor: CardDefinition = {
             targetDefinitions: [{ count: 1, type: TargetType.Creature }],
             effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, cannotBlock: true }]
         }
-    ]
+    ],
+    scryfall_id: "02fdc551-0b22-49f4-8765-143ad82f16a3",
+    image_url: "https://cards.scryfall.io/normal/front/0/2/02fdc551-0b22-49f4-8765-143ad82f16a3.jpg?1624591927",
+    rarity: "uncommon"
 };
+

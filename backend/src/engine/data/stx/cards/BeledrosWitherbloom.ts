@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const BeledrosWitherbloom: CardDefinition = {
     name: "Beledros Witherbloom",
     manaCost: "{5}{B}{G}",
-    scryfall_id: "93f786a2-a7b7-4f9e-92e8-9a6a11efe290",
-    image_url: "https://cards.scryfall.io/normal/front/9/3/93f786a2-a7b7-4f9e-92e8-9a6a11efe290.jpg?1627428096",
+
     colors: ["B", "G"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -40,5 +39,9 @@ export const BeledrosWitherbloom: CardDefinition = {
             restrictions: [{ type: 'OncePerTurn' }],
             effects: [{ type: EffectType.Untap, targetMapping: TargetMapping.AllLandsYouControl }]
         }
-    ]
+    ],
+    scryfall_id: "144c2886-3d37-4a8a-8e37-99ccff66599e",
+    image_url: "https://cards.scryfall.io/normal/front/1/4/144c2886-3d37-4a8a-8e37-99ccff66599e.jpg?1775941663",
+    rarity: "mythic"
 };
+

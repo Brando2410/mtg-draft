@@ -17,12 +17,12 @@ export const RenderSpeechless: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinitions: [
                 {
-                    type: TargetType.Opponent,
+                    type: TargetType.Opponent
                 },
                 {
                     type: TargetType.Creature,
                     count: 1,
-                    minCount: 0,
+                    minCount: 0
                 }
             ],
             effects: [
@@ -38,9 +38,13 @@ export const RenderSpeechless: CardDefinition = {
                     type: EffectType.AddCounters,
                     targetMapping: TargetMapping.Target2,
                     amount: 2,
-                    counterType: 'p1p1',
+                    counterType: 'p1p1'
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "25bbb1c7-14e8-444f-ab98-e95f50927460",
+    image_url: "https://cards.scryfall.io/normal/front/2/5/25bbb1c7-14e8-444f-ab98-e95f50927460.jpg?1775938531",
+    rarity: "common"
 };
+

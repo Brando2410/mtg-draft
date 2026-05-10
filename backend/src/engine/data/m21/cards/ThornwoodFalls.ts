@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const ThornwoodFalls: CardDefinition = {
     name: "Thornwood Falls",
     manaCost: "",
-    scryfall_id: "ef1350a4-e9ed-4d40-9a3d-c12484b39178",
-    image_url: "https://cards.scryfall.io/normal/front/e/f/ef1350a4-e9ed-4d40-9a3d-c12484b39178.jpg?1594737878",
+
     oracleText: "Thornwood Falls enters the battlefield tapped.\nWhen Thornwood Falls enters the battlefield, you gain 1 life.\n{T}: Add {G} or {U}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const ThornwoodFalls: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ebb502c2-5fd0-46a9-b77d-010f4a942056",
+    image_url: "https://cards.scryfall.io/normal/front/e/b/ebb502c2-5fd0-46a9-b77d-010f4a942056.jpg?1743205064",
+    rarity: "common"
 };
+

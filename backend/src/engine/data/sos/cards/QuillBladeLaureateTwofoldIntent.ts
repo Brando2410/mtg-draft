@@ -9,11 +9,11 @@ export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
     oracleText: "Double strike\nThis creature enters prepared.",
     power: "1",
     toughness: "1",
-    image_url: "https://cards.scryfall.io/png/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.png?1775937102",
+
     entersPrepared: true,
     preparedFace: {
         name: "Twofold Intent",
-        image_url: "https://cards.scryfall.io/png/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.png?1775937102",
+
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],
@@ -37,7 +37,11 @@ export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "62a47835-5719-48c4-a740-a0c5f00dce11",
+    image_url: "https://cards.scryfall.io/png/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.png?1775937102",
+    rarity: "uncommon"
 };
 

@@ -20,5 +20,9 @@ export const StandUpforYourself: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b756ca13-b904-4510-9bbb-5bc2864abfbd",
+    image_url: "https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151",
+    rarity: "uncommon"
 };
+

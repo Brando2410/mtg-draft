@@ -161,7 +161,7 @@ export class TurnProcessor {
       return;
     }
 
-    if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
+    if ((state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) && state.stack.length === 0) {
       // logger.info(state, LogCategory.TURN, `[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
       engine.advanceStep();
     } else {

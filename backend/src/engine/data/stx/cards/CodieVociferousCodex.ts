@@ -3,9 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
     manaCost: "{3}",
-    scryfall_id: "714c67a5-93ee-4362-9711-d0e58b90480f",
-    image_url: "https://cards.scryfall.io/normal/front/7/1/714c67a5-93ee-4362-9711-d0e58b90480f.jpg?1632061963",
-    rarity: "rare",
+
     colors: [],
     types: ["Legendary", "Artifact", "Creature"],
     subtypes: ["Construct"],
@@ -73,5 +71,9 @@ export const CodieVociferousCodex: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "714c67a5-93ee-4362-9711-d0e58b90480f",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/714c67a5-93ee-4362-9711-d0e58b90480f.jpg?1632061963",
+    rarity: "rare"
 };
+

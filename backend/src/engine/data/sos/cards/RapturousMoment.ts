@@ -32,5 +32,9 @@ export const RapturousMoment: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "21afe19d-881a-48cb-863e-22942bea5ebe",
+    image_url: "https://cards.scryfall.io/normal/front/2/1/21afe19d-881a-48cb-863e-22942bea5ebe.jpg?1775938524",
+    rarity: "uncommon"
 };
+

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
     manaCost: "{1}{B}",
-    scryfall_id: "174f5d7e-5d36-4d13-96bf-9b12cd644716",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558",
+
+
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Zombie", "Warlock"],
@@ -51,4 +50,8 @@ export const PostmortemProfessor: CardDefinition = {
             ]
         }
     ],
+    scryfall_id: "174f5d7e-5d36-4d13-96bf-9b12cd644716",
+    image_url: "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558",
+    rarity: "rare"
 };
+

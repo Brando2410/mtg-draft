@@ -40,6 +40,9 @@ export const SpectacleSummit: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a0a66f7b-eab4-45da-8895-c2c2c7eb05f8",
+    image_url: "https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830",
+    rarity: "common"
 };
 

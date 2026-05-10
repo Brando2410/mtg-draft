@@ -45,5 +45,9 @@ export const SanctumofAll: CardDefinition = {
             condition: 'YOU_CONTROL_FIVE_OR_MORE_SHRINES',
             effects: [{ type: EffectType.AddAdditionalTrigger, targetMapping: TargetMapping.TriggerSource }]
         }
-    ]
+    ],
+    scryfall_id: "ba91338c-1f6c-4b83-851f-98c3e9dea17b",
+    image_url: "https://cards.scryfall.io/normal/front/b/a/ba91338c-1f6c-4b83-851f-98c3e9dea17b.jpg?1594737442",
+    rarity: "rare"
 };
+

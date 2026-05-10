@@ -17,5 +17,9 @@ export const VillageRites: CardDefinition = {
         ],
         effects: [{ type: EffectType.DrawCards, amount: 2 }]
       }
-    ]
+    ],
+    scryfall_id: "42ed35e9-51cd-468a-86a9-9412553cf50d",
+    image_url: "https://cards.scryfall.io/normal/front/4/2/42ed35e9-51cd-468a-86a9-9412553cf50d.jpg?1736468066",
+    rarity: "common"
 };
+

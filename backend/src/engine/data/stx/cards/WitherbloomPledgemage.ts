@@ -23,7 +23,9 @@ export const WitherbloomPledgemage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a6cc6914-2dcb-411d-90a5-01853ff2d5b8",
+    image_url: "https://cards.scryfall.io/normal/front/a/6/a6cc6914-2dcb-411d-90a5-01853ff2d5b8.jpg?1771242005",
+    rarity: "common"
 };
-
 

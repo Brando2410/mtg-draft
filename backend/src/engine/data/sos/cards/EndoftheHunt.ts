@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CostType, TargetType } from '@shared/engin
 export const EndoftheHunt: CardDefinition = {
     name: "End of the Hunt",
     manaCost: "{1}{B}",
-    scryfall_id: "0809b51a-6a05-4f18-9bf4-1b8382da648f",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476",
+
+
     colors: [
         "B"
     ],
@@ -19,7 +18,7 @@ export const EndoftheHunt: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinitions: [{
                 type: TargetType.Opponent,
-                count: 1,
+                count: 1
             }],
             effects: [
                 {
@@ -28,5 +27,9 @@ export const EndoftheHunt: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "0809b51a-6a05-4f18-9bf4-1b8382da648f",
+    image_url: "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476",
+    rarity: "uncommon"
 };
+

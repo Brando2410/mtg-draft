@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const LoreholdExcavation: CardDefinition = {
     name: 'Lorehold Excavation',
     manaCost: '{R}{W}',
-    scryfall_id: "43105beb-46f3-4914-8222-4907bd76d48f",
-    image_url: "https://cards.scryfall.io/normal/front/4/3/43105beb-46f3-4914-8222-4907bd76d48f.jpg?1627429478",
+
     colors: ['R', 'W'],
     types: ['Enchantment'],
     oracleText: "At the beginning of your end step, mill a card.\n{5}, Exile a creature card from your graveyard: Create a 3/2 red and white Spirit creature token.",
@@ -41,5 +40,9 @@ export const LoreholdExcavation: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "43105beb-46f3-4914-8222-4907bd76d48f",
+    image_url: "https://cards.scryfall.io/normal/front/4/3/43105beb-46f3-4914-8222-4907bd76d48f.jpg?1627429478",
+    rarity: "uncommon"
 };
+

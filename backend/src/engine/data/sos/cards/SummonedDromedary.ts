@@ -25,7 +25,9 @@ export const SummonedDromedary: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "44d0277c-ca82-4334-a15a-cd67a9db0d02",
+    image_url: "https://cards.scryfall.io/normal/front/4/4/44d0277c-ca82-4334-a15a-cd67a9db0d02.jpg?1775937170",
+    rarity: "uncommon"
 };
-
 

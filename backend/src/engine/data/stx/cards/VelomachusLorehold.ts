@@ -31,6 +31,9 @@ export const VelomachusLorehold: CardDefinition = {
                 shuffleRemainder: true
             }]
         }
-    ]
+    ],
+    scryfall_id: "523d8fe6-1efd-4278-82fe-ea4517e6665c",
+    image_url: "https://cards.scryfall.io/normal/front/5/2/523d8fe6-1efd-4278-82fe-ea4517e6665c.jpg?1743207256",
+    rarity: "mythic"
 };
 

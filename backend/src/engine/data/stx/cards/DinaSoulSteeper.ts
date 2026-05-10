@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
 export const DinaSoulSteeper: CardDefinition = {
     name: 'Dina, Soul Steeper',
     manaCost: '{B}{G}',
-    scryfall_id: "9cd2b567-0cf7-4441-b3ce-e31141dd91c8",
-    image_url: "https://cards.scryfall.io/normal/front/9/c/9cd2b567-0cf7-4441-b3ce-e31141dd91c8.jpg?1627428607",
+
     colors: ['B', 'G'],
     types: ['Creature'],
     subtypes: ['Dryad', 'Druid'],
@@ -34,7 +33,9 @@ export const DinaSoulSteeper: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6ae992b6-506b-4667-884f-4f7fc075b71e",
+    image_url: "https://cards.scryfall.io/normal/front/6/a/6ae992b6-506b-4667-884f-4f7fc075b71e.jpg?1775941723",
+    rarity: "uncommon"
 };
-
 

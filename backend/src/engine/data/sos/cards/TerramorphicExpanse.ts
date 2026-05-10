@@ -24,10 +24,13 @@ export const TerramorphicExpanse: CardDefinition = {
                         restrictions: [Restriction.Basic]
                     }],
                     zone: Zone.Battlefield,
-                    tapped: true,
+                    tapped: true
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "9a4c5629-fadd-42b9-850f-9f8586a2ca50",
+    image_url: "https://cards.scryfall.io/normal/front/9/a/9a4c5629-fadd-42b9-850f-9f8586a2ca50.jpg?1775938853",
+    rarity: "common"
 };
 

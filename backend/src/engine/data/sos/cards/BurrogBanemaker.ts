@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const BurrogBanemaker: CardDefinition = {
     name: "Burrog Banemaker",
     manaCost: "{B}",
-    scryfall_id: "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433",
+
+
     colors: [
         "B"
     ],
@@ -36,7 +35,8 @@ export const BurrogBanemaker: CardDefinition = {
             ]
         }
     ],
+    scryfall_id: "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
+    image_url: "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433",
+    rarity: "common"
 };
-
-
 

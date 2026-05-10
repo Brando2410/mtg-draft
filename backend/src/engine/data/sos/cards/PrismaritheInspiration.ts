@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const PrismaritheInspiration: CardDefinition = {
     name: "Prismari, the Inspiration",
     manaCost: "{5}{U}{R}",
-    scryfall_id: "767ff9fa-4e7f-421a-b911-45186b520ae1",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472",
+
+
     colors: [
         "R",
         "U"
@@ -39,5 +38,9 @@ export const PrismaritheInspiration: CardDefinition = {
         }
     ],
     power: "7",
-    toughness: "7"
+    toughness: "7",
+    scryfall_id: "767ff9fa-4e7f-421a-b911-45186b520ae1",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472",
+    rarity: "mythic"
 };
+

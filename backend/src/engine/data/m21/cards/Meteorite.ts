@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const Meteorite: CardDefinition = {
     name: "Meteorite",
     manaCost: "{5}",
-    scryfall_id: "ec3a2c95-4e7a-43c5-90bd-6f1de7c82a5c",
-    image_url: "https://cards.scryfall.io/normal/front/e/c/ec3a2c95-4e7a-43c5-90bd-6f1de7c82a5c.jpg?1594737513",
+
     oracleText: "When this artifact enters, it deals 2 damage to any target.\n{T}: Add one mana of any color.",
     colors: [],
     types: ["Artifact"],
@@ -29,5 +28,9 @@ export const Meteorite: CardDefinition = {
                 manaType: 'ANY'
             }]
         }
-    ]
+    ],
+    scryfall_id: "33eb2032-50af-4fd6-bdc7-7cae2211956c",
+    image_url: "https://cards.scryfall.io/normal/front/3/3/33eb2032-50af-4fd6-bdc7-7cae2211956c.jpg?1677542216",
+    rarity: "common"
 };
+

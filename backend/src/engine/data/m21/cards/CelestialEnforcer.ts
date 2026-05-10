@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const CelestialEnforcer: CardDefinition = {
     name: "Celestial Enforcer",
     manaCost: "{2}{W}",
-    scryfall_id: "46666fba-d4a7-4687-8747-a42e4c6d853e",
-    image_url: "https://cards.scryfall.io/normal/front/4/6/46666fba-d4a7-4687-8747-a42e4c6d853e.jpg?1594734826",
+
     oracleText: "{1}{W}, {T}: Tap target creature. Activate only if you control a creature with flying.",
     colors: ["W"],
     types: ["Creature"],
@@ -22,5 +21,9 @@ export const CelestialEnforcer: CardDefinition = {
             targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [{ type: EffectType.Tap, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "46666fba-d4a7-4687-8747-a42e4c6d853e",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/46666fba-d4a7-4687-8747-a42e4c6d853e.jpg?1594734826",
+    rarity: "common"
 };
+

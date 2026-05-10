@@ -30,5 +30,9 @@ export const StirringHopesinger: CardDefinition = {
         }
     ],
     power: "1",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "21375667-b318-47f8-a482-9c8c2b5b14c0",
+    image_url: "https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157",
+    rarity: "rare"
 };
+

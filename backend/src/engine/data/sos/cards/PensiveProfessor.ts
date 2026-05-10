@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     export const PensiveProfessor: CardDefinition = {
     name: "Pensive Professor",
     manaCost: "{1}{U}{U}",
-    scryfall_id: "66d47940-84f9-4479-8562-45e5148435d4",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349",
+
+
     colors: [
         "U"
     ],
@@ -32,6 +31,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         }
     ],
     power: "0",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "66d47940-84f9-4479-8562-45e5148435d4",
+    image_url: "https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349",
+    rarity: "rare"
 };
-    
+

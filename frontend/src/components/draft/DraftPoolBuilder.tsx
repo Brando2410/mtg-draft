@@ -100,7 +100,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
         setIsApiLoading(true);
         const results = await fetchRegistryCards(addQuery);
         setApiSuggestions(results
-          .filter(c => c.engineStatus === 'IMPLEMENTED' && c.image_url)
+          .filter(c => c.image_url)
           .map(mapRegistryToSimplified)
         );
         setIsApiLoading(false);
@@ -119,10 +119,8 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
     setIsApiLoading(true);
     const results = await fetchRegistryCards(card.name);
     const match = results.find(c => c.name.toLowerCase() === card.name.toLowerCase());
-    if (match && match.engineStatus === 'IMPLEMENTED') {
+    if (match) {
        setDraftPool(prev => [mapRegistryToSimplified(match), ...prev]);
-    } else if (match) {
-       alert(`${card.name} non è ancora implementata.`);
     }
     setIsApiLoading(false);
   };

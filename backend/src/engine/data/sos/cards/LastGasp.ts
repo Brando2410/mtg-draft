@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const LastGasp: CardDefinition = {
     name: "Last Gasp",
     manaCost: "{1}{B}",
-    scryfall_id: "da5f3729-6ec7-4482-90cb-83b973edeae4",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510",
+
+
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -15,7 +14,7 @@ export const LastGasp: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinitions: [{
                 type: TargetType.Creature,
-                count: 1,
+                count: 1
             }],
             effects: [
                 {
@@ -27,6 +26,9 @@ export const LastGasp: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "da5f3729-6ec7-4482-90cb-83b973edeae4",
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510",
+    rarity: "common"
 };
 

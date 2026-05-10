@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const SilversmoteGhoul: CardDefinition = {
     name: "Silversmote Ghoul",
     manaCost: "{2}{B}",
-    scryfall_id: "ff544e7d-22d2-49e3-8e7c-96c34dcb1f3f",
-    image_url: "https://cards.scryfall.io/normal/front/f/f/ff544e7d-22d2-49e3-8e7c-96c34dcb1f3f.jpg?1594736374",
+
     oracleText: "At the beginning of your end step, if you gained 3 or more life this turn, return Silversmote Ghoul from your graveyard to the battlefield tapped.\n{1}{B}, Sacrifice Silversmote Ghoul: Draw a card.",
     colors: ["B"],
     types: ["Creature"],
@@ -27,5 +26,9 @@ export const SilversmoteGhoul: CardDefinition = {
             ],
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
-    ]
+    ],
+    scryfall_id: "c50a8053-7e79-4e0f-8e72-8df089377cd1",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c50a8053-7e79-4e0f-8e72-8df089377cd1.jpg?1625193403",
+    rarity: "uncommon"
 };
+

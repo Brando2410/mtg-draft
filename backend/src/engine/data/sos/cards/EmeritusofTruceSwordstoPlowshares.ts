@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, 
 export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",
-    scryfall_id: "9869a753-5e41-4098-ab41-e75b4396ec50",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
@@ -33,7 +30,7 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898'
+                        image_url: "https://cards.scryfall.io/normal/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.jpg?1777982214"
                     }
                 },
                 {
@@ -51,7 +48,7 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     ],
     preparedFace: {
         name: "Swords to Plowshares",
-        image_url: "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
+
         manaCost: "{W}",
         colors: ["W"],
         types: ["Instant"],
@@ -75,6 +72,11 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "9869a753-5e41-4098-ab41-e75b4396ec50",
+    image_url: "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
+    rarity: "mythic"
 };
+

@@ -33,5 +33,9 @@ export const QuandrixCultivator: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e3ca9ff7-0dcf-4ecc-879c-957d290ad7f5",
+    image_url: "https://cards.scryfall.io/normal/front/e/3/e3ca9ff7-0dcf-4ecc-879c-957d290ad7f5.jpg?1624739546",
+    rarity: "uncommon"
 };
+

@@ -10,106 +10,92 @@ import { getProcessors } from '../../ProcessorRegistry';
 
 export class SpellValidator {
 
-    public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, bypassPermission = false): GameObject | null {
+    public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, bypassPermission = false, forceFlashback?: boolean): GameObject | null {
         const player = state.players[playerId];
 
-        // 1. Search in Hand
+        // 1. Search in Hand (Real objects)
         const cardInHand = player.hand.find(c => c.id === cardInstanceId);
         if (cardInHand) return cardInHand;
 
-        // 2. Search in Non-hand zones with Permission Check
-        const obj = RuleUtils.findObject(state, cardInstanceId);
-        if (RuleUtils.isEntity(obj) && obj.controllerId === playerId) {
-            let permissionType: string | undefined;
-            if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
-            else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
-            else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
-
-            const { layer: LayerProcessor } = getProcessors(state);
-            const stats = ('isTapped' in obj) ? LayerProcessor.getEffectiveStats(obj as GameObject, state) : { keywords: [] as string[] };
-            const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
-
-            if (hasFlashback) {
-                obj.isFlashbackCast = true;
-                EngineLogger.info(state, LogCategory.ACTION, `[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
-                return obj as GameObject;
-            }
-
-            const hasGraveAbility = obj.zone === Zone.Graveyard && (obj.definition.abilities || []).some((a: string | AbilityDefinition) => {
-                if (typeof a === 'string') return false;
-                return a.type === AbilityType.Activated &&
-                    ((a as ActivatedAbilityDefinition).activeZone === Zone.Graveyard);
-            });
-
-            if (hasGraveAbility) return obj as GameObject;
-
-            if (permissionType) {
-                if (bypassPermission) {
-                    EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} (Bypassing permission check).`);
-                    return obj as GameObject;
-                }
-                const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
-                if (hasPermission) return obj as GameObject;
-                EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}. (bypass=${bypassPermission})`);
-            } else {
-                EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} but no permission type defined.`);
-            }
-        } else if (obj && obj.controllerId !== playerId) {
-            EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Object ${cardInstanceId} found but wrong controller (controllerMatch=false).`);
-        } else {
-            EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Object ${cardInstanceId} not found.`);
-        }
-
-        // 3. Search for Prepared Creatures on Battlefield
-        const isVirtual = cardInstanceId.startsWith(EnginePrefix.VirtualPrepared);
+        // 2. Search for Virtual Actions (Flashback, Permission, FreeCast, Prepared)
+        const isVirtualPrepared = cardInstanceId.startsWith(EnginePrefix.VirtualPrepared);
+        const isFlashback = cardInstanceId.startsWith(EnginePrefix.Flashback);
+        const isPermission = cardInstanceId.startsWith(EnginePrefix.Permission);
+        const isFree = cardInstanceId.startsWith(EnginePrefix.FreeCast);
         const isCopy = cardInstanceId.startsWith(EnginePrefix.Copy);
 
-        if (isVirtual || isCopy) {
+        if (isVirtualPrepared || isFlashback || isPermission || isFree || isCopy) {
             let realId = cardInstanceId;
-            if (isVirtual) realId = cardInstanceId.replace(EnginePrefix.VirtualPrepared, '');
+            if (isVirtualPrepared) realId = cardInstanceId.replace(EnginePrefix.VirtualPrepared, '');
+            if (isFlashback) realId = cardInstanceId.replace(EnginePrefix.Flashback, '');
+            if (isPermission) realId = cardInstanceId.replace(EnginePrefix.Permission, '');
+            if (isFree) realId = cardInstanceId.replace(EnginePrefix.FreeCast, '');
+
             if (isCopy) {
                 const parts = cardInstanceId.split('_');
                 if (parts.length >= 2) realId = parts[1];
             }
 
-            const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
-            if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
-                const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
-                const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${preparedObj.id}_${Date.now()}`;
+            const realObj = RuleUtils.findObject(state, realId);
+            if (realObj && RuleUtils.isGameObject(realObj)) {
+                if (isVirtualPrepared && realObj.zone === Zone.Battlefield && realObj.isPrepared) {
+                    const face = realObj.definition.preparedFace || realObj.definition.faces?.[1];
+                    if (face) {
+                        const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${realObj.id}_${Date.now()}`;
+                        if (state.dynamicCopies && state.dynamicCopies[copyId]) return state.dynamicCopies[copyId];
+                        
+                        const copy: GameObject = {
+                            ...realObj,
+                            id: copyId,
+                            definition: { ...face, image_url: face.image_url || realObj.definition.image_url },
+                            zone: Zone.Exile,
+                            isPreparedCopy: true,
+                            sourceCreatureId: realObj.id,
+                            effectiveStats: undefined,
+                            image_url: face.image_url || realObj.definition.image_url,
+                            counters: {},
+                            isTapped: false,
+                            damageMarked: 0,
+                            summoningSickness: false,
+                            faceDown: false,
+                            abilitiesUsedThisTurn: 0,
+                            attachedTo: undefined
+                        };
 
-                if (state.dynamicCopies && state.dynamicCopies[copyId]) {
-                    return state.dynamicCopies[copyId];
+                        if (!state.dynamicCopies) state.dynamicCopies = {};
+                        state.dynamicCopies[copyId] = copy;
+                        return copy;
+                    }
                 }
 
-                const copy: GameObject = {
-                    ...preparedObj,
-                    id: copyId,
-                    definition: face,
-                    zone: Zone.Exile,
-                    isPreparedCopy: true,
-                    sourceCreatureId: preparedObj.id,
-                    effectiveStats: undefined,
-                    counters: {},
-                    isTapped: false,
-                    damageMarked: 0,
-                    summoningSickness: false,
-                    faceDown: false,
-                    abilitiesUsedThisTurn: 0,
-                    attachedTo: undefined
+                return {
+                    ...realObj,
+                    isFlashbackCast: isFlashback,
+                    isFreeCast: isFree,
+                    isVirtual: true
                 };
-
-                if (!state.dynamicCopies) state.dynamicCopies = {};
-                state.dynamicCopies[copyId] = copy;
-                return copy;
             }
         }
 
-        if (state.paradigmCopies && state.paradigmCopies[cardInstanceId]) {
-            return state.paradigmCopies[cardInstanceId];
+        // 3. Search in Non-hand zones using Real ID (New Modal System)
+        let realId = cardInstanceId;
+        const isV = cardInstanceId.startsWith(EnginePrefix.VirtualHand);
+        if (isV) realId = cardInstanceId.replace(EnginePrefix.VirtualHand, '');
+
+        const obj = RuleUtils.findObject(state, realId);
+        if (RuleUtils.isEntity(obj) && obj.controllerId === playerId && (obj.zone !== Zone.Hand || isV)) {
+            const realObj = obj as GameObject;
+            const stats = getProcessors(state).layer.getEffectiveStats(realObj, state);
+            const hasFlashback = realObj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || realObj.definition.keywords?.includes(Keyword.Flashback));
+
+            // Set flags on the REAL object
+            realObj.isFlashbackCast = forceFlashback === true;
+            realObj.isVirtual = true;
+            return realObj;
         }
-        if (state.dynamicCopies && state.dynamicCopies[cardInstanceId]) {
-            return state.dynamicCopies[cardInstanceId];
-        }
+
+        if (state.paradigmCopies && state.paradigmCopies[cardInstanceId]) return state.paradigmCopies[cardInstanceId];
+        if (state.dynamicCopies && state.dynamicCopies[cardInstanceId]) return state.dynamicCopies[cardInstanceId];
 
         return null;
     }

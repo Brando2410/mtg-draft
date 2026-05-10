@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const AngelicAscension: CardDefinition = {
     name: "Angelic Ascension",
     manaCost: "{1}{W}",
-    scryfall_id: "e8cca776-b0e4-4cd2-815f-36c1f86cf497",
-    image_url: "https://cards.scryfall.io/normal/front/e/8/e8cca776-b0e4-4cd2-815f-36c1f86cf497.jpg?1594734706",
+
     oracleText: "Exile target creature or planeswalker. Its controller creates a 4/4 white Angel creature token with flying.",
     colors: ["W"],
     types: ["Instant"],
@@ -24,11 +23,15 @@ export const AngelicAscension: CardDefinition = {
                         types: ['Creature'],
                         subtypes: ['Angel'],
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/large/front/9/e/9e12d954-3ec2-46e3-b01f-1fd63159e8a4.jpg?1594733473'
+
                     },
                     targetMapping: TargetMapping.Target1Controller
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e8cca776-b0e4-4cd2-815f-36c1f86cf497",
+    image_url: "https://cards.scryfall.io/normal/front/e/8/e8cca776-b0e4-4cd2-815f-36c1f86cf497.jpg?1594734706",
+    rarity: "uncommon"
 };
+

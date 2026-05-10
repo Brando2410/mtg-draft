@@ -16,7 +16,11 @@
       "toughness": "5",
       "keywords": [
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ea008094-d995-4740-9b39-c61049356c55",
@@ -32,7 +36,11 @@
       "mana_cost": "{U}{U/R}{R}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b44ec684-d558-45eb-bcd6-8119428634c2",
@@ -45,7 +53,11 @@
       "cmc": 5,
       "type_line": "Enchantment",
       "mana_cost": "{3}{G}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Enchantment"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9cd1417a-badc-4abd-a8ca-5b31f85c1072",
@@ -58,7 +70,11 @@
       "cmc": 5,
       "type_line": "Instant",
       "mana_cost": "{4}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "85629088-2007-4db5-9397-bac12a3d7498",
@@ -75,7 +91,11 @@
       "toughness": "1",
       "keywords": [
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad",
@@ -88,7 +108,11 @@
       "cmc": 1,
       "type_line": "Sorcery",
       "mana_cost": "{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
@@ -103,7 +127,11 @@
       "mana_cost": "{1}{W}{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
@@ -117,7 +145,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{2}{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d357d997-9d4e-4ade-81f2-37629853f13a",
@@ -132,7 +164,11 @@
       "mana_cost": "{4}{B}",
       "keywords": [
         "Converge"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275",
@@ -147,7 +183,11 @@
       "mana_cost": "{4}{R}",
       "keywords": [
         "Converge"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "79d01c19-162b-4a12-9e27-18366d95eaa0",
@@ -163,7 +203,11 @@
       "mana_cost": "{2}{R}{W}",
       "keywords": [
         "Mill"
-      ]
+      ],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6168b472-0930-4db5-9920-407340b99050",
@@ -180,6 +224,12 @@
       "toughness": "2",
       "keywords": [
         "Deathtouch"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -193,7 +243,11 @@
       "cmc": 5,
       "type_line": "Sorcery",
       "mana_cost": "{3}{R}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "de3de40b-a7ac-455e-add2-4e451b602d17",
@@ -210,7 +264,11 @@
       "toughness": "4",
       "keywords": [
         "Flying"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6261e89a-dbf1-481a-823e-6bb00be57195",
@@ -226,7 +284,13 @@
       "mana_cost": "{R}{W}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4",
@@ -241,7 +305,11 @@
       "mana_cost": "{1}{U}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
@@ -259,6 +327,12 @@
       "toughness": "4",
       "keywords": [
         "Increment"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -274,7 +348,12 @@
       "toughness": "4",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Artifact",
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f588fa50-7cc5-41ba-90df-2d252eb5c785",
@@ -290,7 +369,13 @@
       "mana_cost": "{1}{B}{G}",
       "power": "3",
       "toughness": "4",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
@@ -306,7 +391,11 @@
       "mana_cost": "{B}{G}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a3226e14-554d-47c9-b8b6-dfeb53cc41ba",
@@ -320,7 +409,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{2}{R}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "151eab82-d20f-433b-b3bb-1d44e2871d5c",
@@ -333,7 +426,11 @@
       "cmc": 4,
       "type_line": "Instant",
       "mana_cost": "{2}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
@@ -350,7 +447,11 @@
       "toughness": "1",
       "keywords": [
         "Deathtouch"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "95d5b0a8-2b66-418e-9e5e-ecf7b304c31e",
@@ -363,7 +464,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd",
@@ -377,7 +482,11 @@
       "cmc": 3,
       "type_line": "Artifact",
       "mana_cost": "{1}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9940d992-1ba1-40ec-9b93-17d773452c4b",
@@ -394,7 +503,11 @@
       "toughness": "3",
       "keywords": [
         "Haste"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "06f9f257-c7ef-44b7-8b2b-f038fba900af",
@@ -407,7 +520,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a82a4d8c-4105-4923-85a2-ef58241f725c",
@@ -422,7 +539,11 @@
       "mana_cost": "{2}{G}",
       "keywords": [
         "Fight"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0cda4235-4dce-48fe-a8a5-2a952dedbe25",
@@ -435,7 +556,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{R}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
@@ -455,7 +580,11 @@
         "Haste",
         "Ward",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "bfa7f0a4-6b65-4e53-ba00-848df260d8e3",
@@ -471,7 +600,12 @@
       "mana_cost": "{4}{R}{W}",
       "power": "6",
       "toughness": "6",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact",
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5223a04f-6b47-4379-80ce-8489c4a91734",
@@ -484,7 +618,11 @@
       "cmc": 2,
       "type_line": "Enchantment",
       "mana_cost": "{1}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Enchantment"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e225929b-6197-4550-969e-3c4a97206a68",
@@ -502,7 +640,11 @@
       "toughness": "3",
       "keywords": [
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3a46816b-9f75-4c72-9ec6-cded6a4a0d01",
@@ -515,7 +657,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{2}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6384d135-7780-4d75-9e95-71bce506948e",
@@ -536,7 +682,11 @@
         "Trample",
         "Flash",
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e2b16cb2-b8b2-45df-9695-3c16e9d89e28",
@@ -551,7 +701,11 @@
       "mana_cost": "{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "78897104-80e1-4d8a-9958-145b40f679e8",
@@ -562,7 +716,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f4ab2d9b-c73d-478d-aac7-4d3bb24296d2",
@@ -577,7 +735,11 @@
       "mana_cost": "{3}{B}{B}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2e3b16ed-8727-48fd-8b1f-c0cbd329385e",
@@ -594,7 +756,11 @@
       "toughness": "2",
       "keywords": [
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ee1e0a96-af80-444e-a456-5b256cf60625",
@@ -605,7 +771,11 @@
       "cmc": 2,
       "type_line": "Artifact — Book",
       "mana_cost": "{2}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e52464ee-df8b-41ec-af93-4b0eb004383e",
@@ -620,7 +790,11 @@
       "mana_cost": "{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "775c1e50-08a4-413f-ab0f-f1c2a79cfe94",
@@ -634,7 +808,11 @@
       "cmc": 3,
       "type_line": "Instant",
       "mana_cost": "{1}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
@@ -647,7 +825,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "26295e25-f1bf-4665-ba00-dad35c49bbc2",
@@ -660,7 +842,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{X}{X}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ef662b92-5a7f-48c9-bcc1-14b55e091aef",
@@ -671,7 +857,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8",
@@ -686,7 +876,11 @@
       "mana_cost": "{R}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "bf736de9-9bc4-49df-ae60-672ed4f83f32",
@@ -701,7 +895,11 @@
       "mana_cost": "{3}{W}",
       "power": "3",
       "toughness": "3",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5d7086a7-dc42-468a-a2cf-a6f89030f947",
@@ -716,7 +914,11 @@
       "mana_cost": "{4}{U}{U}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
@@ -731,7 +933,11 @@
       "mana_cost": "{2}{G}",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0",
@@ -751,7 +957,11 @@
         "Flying",
         "Vigilance",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c0cf5e0f-3668-46f2-850d-d91a538e8ead",
@@ -765,7 +975,11 @@
       "cmc": 5,
       "type_line": "Instant",
       "mana_cost": "{3}{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3654416d-8558-4af2-9e10-18dbc8f2b376",
@@ -780,7 +994,13 @@
       "mana_cost": "{2}{G}",
       "power": "3",
       "toughness": "3",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "0809b51a-6a05-4f18-9bf4-1b8382da648f",
@@ -793,7 +1013,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{1}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d2ef31b4-24fa-4443-9f05-c8e99c3522e5",
@@ -808,7 +1032,13 @@
       "mana_cost": "{1}{W}",
       "power": "1",
       "toughness": "1",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "f2bf6b36-43e4-49d9-98b2-cbb4304c248b",
@@ -823,7 +1053,11 @@
       "mana_cost": "{1}{G}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "32e670da-7563-4f6a-a7db-4c126a440eb8",
@@ -836,7 +1070,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2a3cba55-3fae-4d45-ae03-4d662ec13718",
@@ -852,7 +1090,11 @@
       "mana_cost": "{B}{B/G}{G}",
       "power": "3",
       "toughness": "1",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "32840097-0531-4c43-b6a8-e76c17420b04",
@@ -865,7 +1107,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f97fac69-3e77-4150-9702-cc726daa6d21",
@@ -880,7 +1126,11 @@
       "mana_cost": "{3}{B}",
       "power": "4",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a58c364e-d0c5-41b9-8c8b-2e5a99468cc7",
@@ -898,7 +1148,11 @@
       "keywords": [
         "Mill",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
@@ -915,7 +1169,11 @@
       "toughness": "2",
       "keywords": [
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
@@ -925,10 +1183,14 @@
       "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
       "cmc": 0,
       "type_line": "Land",
-      "mana_cost": "",
+      "mana_cost": "{2}{R}{W}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c0cd1d71-8e4a-4e00-80cd-83aec231fa57",
@@ -942,7 +1204,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{2}{W}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1b832fda-d7c4-4566-884c-2a8b6da15488",
@@ -955,7 +1221,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "47d6093b-b1b6-4956-8bfd-02cce899f832",
@@ -968,7 +1238,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{1}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f9488480-2b6c-40bc-a93e-29fb1292a2e4",
@@ -983,7 +1257,11 @@
       "mana_cost": "{1}{G}",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d278f4c9-d20b-4a76-8c5c-4d3e985948b9",
@@ -998,7 +1276,11 @@
       "mana_cost": "{2}{B}",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
@@ -1009,7 +1291,13 @@
       "cmc": 0,
       "type_line": "Basic Land — Forest",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "67504a12-7414-4209-bf1c-624b4db19d52",
@@ -1027,7 +1315,11 @@
       "keywords": [
         "Ward",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1de6c6cc-0c55-4997-8623-d7f796bd9ab8",
@@ -1040,7 +1332,11 @@
       "mana_cost": "",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e1975a61-aef0-49a6-a6d6-c3a37e2e2b22",
@@ -1053,7 +1349,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e3c3b19b-01b6-4f5a-b428-513b778c5d89",
@@ -1066,7 +1366,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{X}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "cf5b19e3-eed1-4b36-9756-660ffb3baa08",
@@ -1084,7 +1388,11 @@
       "toughness": "6",
       "keywords": [
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
@@ -1103,7 +1411,11 @@
       "keywords": [
         "Ward",
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f11d2846-f181-4751-82ac-1e1ced6f46c7",
@@ -1120,7 +1432,11 @@
       "toughness": "4",
       "keywords": [
         "Menace"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ec0f3613-1edc-40e8-8f26-2e5ef13be55e",
@@ -1136,7 +1452,11 @@
       "mana_cost": "{G}{U}",
       "power": "1",
       "toughness": "4",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "abe8332f-c76e-44e2-9427-d1228453abec",
@@ -1151,7 +1471,11 @@
       "mana_cost": "{3}{G}{G}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a335f396-1004-4fee-842a-a35ff6ba17f2",
@@ -1164,7 +1488,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "db1cea01-123e-4b23-8b98-f94cabce3912",
@@ -1179,7 +1507,11 @@
       "mana_cost": "{W}",
       "keywords": [
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Enchantment"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
@@ -1193,7 +1525,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{1}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "42d92674-2664-411c-b9c5-b04da7c845f4",
@@ -1204,7 +1540,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e8abc1eb-6225-4b18-8502-b5324b818aed",
@@ -1219,7 +1559,11 @@
       "mana_cost": "{1}{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1675a445-86ae-413b-b95a-a1c254a7f252",
@@ -1233,7 +1577,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "06c9e8a7-2840-4cff-90af-c6636e598f78",
@@ -1252,7 +1600,11 @@
       "keywords": [
         "Flying",
         "Haste"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "e07a8fc7-c11c-4469-a31d-0abf40e57bbf",
@@ -1265,7 +1617,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0038d212-3d95-4f98-8c2e-7b2404d0ced7",
@@ -1278,7 +1634,11 @@
       "cmc": 5,
       "type_line": "Instant",
       "mana_cost": "{4}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6e4a1f82-b0b1-4608-91f8-130bee731435",
@@ -1291,7 +1651,11 @@
       "cmc": 6,
       "type_line": "Instant",
       "mana_cost": "{4}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "030b1272-5990-4bc9-8fc1-82cc05602060",
@@ -1309,7 +1673,11 @@
       "keywords": [
         "Reach",
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "099f8400-d70a-48ef-8ff6-645eae97e072",
@@ -1324,7 +1692,11 @@
       "mana_cost": "{1}{U}",
       "power": "1",
       "toughness": "3",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d5df1c3f-2536-4476-b8cd-34b026c38366",
@@ -1343,7 +1715,11 @@
       "keywords": [
         "Surveil",
         "Vigilance"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "39a816b4-39b8-421c-b828-68db901d34b7",
@@ -1356,7 +1732,11 @@
       "cmc": 1,
       "type_line": "Sorcery",
       "mana_cost": "{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
@@ -1371,7 +1751,11 @@
       "mana_cost": "{5}{R}{R}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
@@ -1389,7 +1773,11 @@
       "keywords": [
         "Vigilance",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6d4a2f39-0e1e-4076-815a-2676a09a1aab",
@@ -1408,7 +1796,11 @@
       "keywords": [
         "Surveil",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "bcfac992-9984-4529-b9ff-a42d58832b34",
@@ -1426,7 +1818,11 @@
       "keywords": [
         "Ward",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0534cff6-299c-4155-b318-eb7581989e8a",
@@ -1439,7 +1835,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
@@ -1450,7 +1850,13 @@
       "cmc": 0,
       "type_line": "Basic Land — Island",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "55ff776a-fc3b-4338-8864-d57a85b3f123",
@@ -1464,7 +1870,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{W}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "da5f3729-6ec7-4482-90cb-83b973edeae4",
@@ -1477,7 +1887,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ad07091e-8c24-43af-8ce8-031847bcaf30",
@@ -1494,7 +1908,11 @@
       "toughness": "1",
       "keywords": [
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
@@ -1507,7 +1925,11 @@
       "cmc": 2,
       "type_line": "Enchantment",
       "mana_cost": "{1}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Enchantment"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5fe70295-e550-4577-a341-dab6c25aabfd",
@@ -1521,7 +1943,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{R}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
@@ -1540,6 +1966,12 @@
       "keywords": [
         "Flying",
         "Haste"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -1555,7 +1987,11 @@
       "mana_cost": "{1}{G}",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1ceb704a-97a8-49f9-b799-30f001404144",
@@ -1568,7 +2004,12 @@
       "mana_cost": "{2}",
       "power": "2",
       "toughness": "1",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact",
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4d611278-9948-4345-b4dd-aa6eaf21b233",
@@ -1587,7 +2028,11 @@
         "Reach",
         "Converge",
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
@@ -1600,7 +2045,11 @@
       "cmc": 3,
       "type_line": "Instant",
       "mana_cost": "{1}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8d93d14d-7760-4af2-a237-2df326dd28d3",
@@ -1613,7 +2062,11 @@
       "cmc": 1,
       "type_line": "Instant",
       "mana_cost": "{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "cd3cc172-5609-4bc8-9d84-50680fed6df9",
@@ -1626,7 +2079,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{X}{X}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "460c6afd-cddf-4fea-925f-b27517ff250a",
@@ -1641,7 +2098,11 @@
       "mana_cost": "{2}{U}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d8309815-7035-47a5-acf2-2b2ac1e65037",
@@ -1658,7 +2119,11 @@
       "toughness": "2",
       "keywords": [
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "949ad3ff-9e80-493c-a3ae-146b919bfcd7",
@@ -1675,6 +2140,12 @@
       "toughness": "4",
       "keywords": [
         "Ward"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -1690,7 +2161,11 @@
       "mana_cost": "{1}{G}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0a7f0fdf-1d4b-4458-a19c-274611e8a59a",
@@ -1704,7 +2179,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{X}{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
@@ -1718,7 +2197,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{1}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "326dfe32-3674-4a11-acd8-5ba62371235a",
@@ -1736,7 +2219,11 @@
       "keywords": [
         "Menace",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "506f69aa-7dc4-4dd7-990a-7371fc1762c0",
@@ -1752,7 +2239,11 @@
       "mana_cost": "{X}{R}{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "577d9dc8-7720-4dc9-b650-64b4729b309b",
@@ -1766,7 +2257,11 @@
       "cmc": 7,
       "type_line": "Sorcery",
       "mana_cost": "{3}{W}{W}{B}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6877180c-22a1-4c4d-9178-316f4c34661b",
@@ -1784,6 +2279,12 @@
       "keywords": [
         "Infusion",
         "Flying"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -1795,7 +2296,13 @@
       "cmc": 0,
       "type_line": "Basic Land — Mountain",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "71cb4a6b-b500-4b28-bcdb-ec4188242f39",
@@ -1812,7 +2319,11 @@
       "toughness": "2",
       "keywords": [
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
@@ -1827,7 +2338,11 @@
       "mana_cost": "{4}{U}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fd80a87d-35d3-4ad1-8172-c85e93032d1d",
@@ -1843,7 +2358,13 @@
       "mana_cost": "{1}{W}{B}",
       "power": "2",
       "toughness": "3",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
@@ -1860,7 +2381,11 @@
       "toughness": "2",
       "keywords": [
         "Deathtouch"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "eb7e858a-9b85-49b2-a379-ee656b64935a",
@@ -1880,7 +2405,11 @@
         "Infusion",
         "Reach",
         "Vigilance"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0863a19d-4511-4a78-98dd-d194afd1c39b",
@@ -1893,7 +2422,11 @@
       "cmc": 1,
       "type_line": "Sorcery",
       "mana_cost": "{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "010ed379-63f5-452c-9cd4-00d51647c0e3",
@@ -1908,7 +2441,13 @@
       "mana_cost": "{4}{U}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "5fe99be0-e1ec-485e-82f8-02eba7b82441",
@@ -1926,7 +2465,11 @@
       "keywords": [
         "Flying",
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8c6fecfd-8241-4cf0-b1eb-19472b99e0ed",
@@ -1941,6 +2484,13 @@
       "toughness": "2",
       "keywords": [
         "Grandeur"
+      ],
+      "types": [
+        "Artifact",
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -1954,7 +2504,11 @@
       "mana_cost": "",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d7cb1af2-0302-46ff-8303-ae9d07541a01",
@@ -1972,7 +2526,11 @@
       "toughness": "3",
       "keywords": [
         "Reach"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "66d47940-84f9-4479-8562-45e5148435d4",
@@ -1989,7 +2547,11 @@
       "toughness": "2",
       "keywords": [
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
@@ -2006,7 +2568,11 @@
       "toughness": "4",
       "keywords": [
         "Reach"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d882beb9-6766-4818-afbb-f6fd7a2d5b70",
@@ -2024,7 +2590,11 @@
       "toughness": "3",
       "keywords": [
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "355dd460-b0e9-41f2-a058-b7f7e39ac387",
@@ -2035,7 +2605,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d85d0f25-a24a-4de0-9b8b-93fb5017bce9",
@@ -2046,7 +2620,13 @@
       "cmc": 0,
       "type_line": "Basic Land — Plains",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "c83b96a3-ddfd-4d11-8a85-5bf62087cbb9",
@@ -2059,7 +2639,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{3}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3755a2e9-af55-4625-a006-2a86c7893a96",
@@ -2076,7 +2660,11 @@
       "toughness": "2",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "174f5d7e-5d36-4d13-96bf-9b12cd644716",
@@ -2091,7 +2679,11 @@
       "mana_cost": "{1}{B}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2123b349-4649-4a15-a8b5-b54414d2b1b7",
@@ -2102,7 +2694,11 @@
       "cmc": 3,
       "type_line": "Artifact",
       "mana_cost": "{3}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9c99c17b-ad3a-4859-97e8-469718b81cd9",
@@ -2115,7 +2711,11 @@
       "cmc": 5,
       "type_line": "Sorcery",
       "mana_cost": "{B}{B}{B}{B}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "79c7cf94-c0a1-432d-90d7-7f0599c2e7a8",
@@ -2130,7 +2730,11 @@
       "mana_cost": "{2}{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "40075e3f-58b3-47fd-8fbe-4b301e9ce7a1",
@@ -2148,7 +2752,11 @@
       "toughness": "2",
       "keywords": [
         "First strike"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f6fdb814-45c6-4d14-afff-7f5bd1bd10a1",
@@ -2161,7 +2769,11 @@
       "cmc": 5,
       "type_line": "Enchantment",
       "mana_cost": "{4}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Enchantment"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
@@ -2177,7 +2789,11 @@
       "mana_cost": "{U}{R}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "767ff9fa-4e7f-421a-b911-45186b520ae1",
@@ -2196,6 +2812,12 @@
       "keywords": [
         "Flying",
         "Ward"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -2209,7 +2831,11 @@
       "cmc": 1,
       "type_line": "Sorcery",
       "mana_cost": "{X}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b127d543-0a90-4af6-9410-94d5cd30389e",
@@ -2223,7 +2849,11 @@
       "cmc": 4,
       "type_line": "Instant",
       "mana_cost": "{2}{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6ff3b4d8-1271-4c5d-8834-7662244f173d",
@@ -2237,7 +2867,13 @@
       "cmc": 4,
       "type_line": "Legendary Planeswalker — Dellian",
       "mana_cost": "{2}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Planeswalker"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "ecd33152-e290-4505-addd-a8d08cefdddd",
@@ -2255,7 +2891,11 @@
       "toughness": "0",
       "keywords": [
         "Flying"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d73612fe-8992-4650-a7e3-c7b662da6a03",
@@ -2268,7 +2908,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{2}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4584d5f7-b1f1-4c8e-80c5-ad35e44a968e",
@@ -2284,7 +2928,11 @@
       "mana_cost": "{R}{W}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "318486e0-f255-40f5-8150-dc272eec9d7d",
@@ -2298,7 +2946,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{G}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "015afe31-af3c-4c9b-9997-d7c33b915a33",
@@ -2318,6 +2970,12 @@
         "Cascade",
         "Flying",
         "Trample"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -2331,7 +2989,11 @@
       "cmc": 3,
       "type_line": "Instant",
       "mana_cost": "{2}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f5e67560-3135-4b27-a344-5859edf8bcd9",
@@ -2344,7 +3006,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8fbad757-4081-42f7-a460-68ac03e77510",
@@ -2359,6 +3025,12 @@
       "mana_cost": "{1}{B}{B}",
       "keywords": [
         "Surveil"
+      ],
+      "types": [
+        "Planeswalker"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -2376,7 +3048,11 @@
         "Reach",
         "Converge",
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "97b50521-5a0f-4dbd-8e15-f0f0d059c258",
@@ -2389,7 +3065,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{1}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "21afe19d-881a-48cb-863e-22942bea5ebe",
@@ -2403,7 +3083,11 @@
       "cmc": 6,
       "type_line": "Sorcery",
       "mana_cost": "{4}{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "06dd56bd-de92-4202-af31-7e881c34d799",
@@ -2421,7 +3105,11 @@
       "keywords": [
         "Reach",
         "Haste"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fc6a1425-6733-42a2-94d9-605966398092",
@@ -2439,7 +3127,11 @@
       "keywords": [
         "Vigilance",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "25bbb1c7-14e8-444f-ab98-e95f50927460",
@@ -2453,7 +3145,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{2}{W}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6ef168d6-28f2-4c24-9bfa-82c35663b729",
@@ -2467,7 +3163,11 @@
       "cmc": 4,
       "type_line": "Artifact",
       "mana_cost": "{2}{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6",
@@ -2482,7 +3182,11 @@
       "mana_cost": "{5}{W}{W}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5390a79c-bc4b-4edb-a845-0d3514986401",
@@ -2496,7 +3200,11 @@
       "cmc": 5,
       "type_line": "Sorcery",
       "mana_cost": "{3}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
@@ -2511,7 +3219,11 @@
       "mana_cost": "{2}{R}",
       "power": "1",
       "toughness": "4",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0",
@@ -2524,7 +3236,11 @@
       "cmc": 4,
       "type_line": "Instant",
       "mana_cost": "{3}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "69757177-aefa-44a6-81db-5ae9b5d2f117",
@@ -2543,7 +3259,11 @@
       "keywords": [
         "Menace",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4ddf4e34-a1f9-4636-942d-0a08e9f94320",
@@ -2558,7 +3278,11 @@
       "mana_cost": "{2}{R}",
       "keywords": [
         "Treasure"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "283b508b-89f0-4c23-9686-b049e402b73c",
@@ -2571,7 +3295,11 @@
       "cmc": 2,
       "type_line": "Sorcery",
       "mana_cost": "{1}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "dc0517ca-b271-49a1-a286-c20f4e5b9309",
@@ -2588,7 +3316,11 @@
       "toughness": "2",
       "keywords": [
         "Lifelink"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5aa0c810-3b7d-4661-979e-e84fb327742d",
@@ -2599,7 +3331,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "97f7fbb9-228c-4a74-975b-38d3b6cecb32",
@@ -2616,7 +3352,11 @@
       "toughness": "2",
       "keywords": [
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3eb73579-f1c6-4762-81d2-9568ab501fac",
@@ -2630,7 +3370,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{W}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
@@ -2649,6 +3393,12 @@
       "keywords": [
         "Flying",
         "Vigilance"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -2662,7 +3412,11 @@
       "mana_cost": "",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3a925370-58ac-4181-9acc-db7b0e0abf17",
@@ -2677,7 +3431,11 @@
       "mana_cost": "{X}{G}",
       "power": "6",
       "toughness": "6",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fc4c7fa2-aebb-4636-9afd-f1010c923316",
@@ -2692,7 +3450,11 @@
       "mana_cost": "{5}{G}",
       "keywords": [
         "Converge"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4b4c120e-abe9-4f11-a7e4-bc3f723da4b2",
@@ -2709,7 +3471,11 @@
       "toughness": "3",
       "keywords": [
         "Flying"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "73d06987-8686-461b-b260-9a4fee6a3b32",
@@ -2727,7 +3493,11 @@
       "toughness": "3",
       "keywords": [
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2fbe446b-60fd-43da-8358-985392293af8",
@@ -2745,7 +3515,11 @@
       "keywords": [
         "Flying",
         "Vigilance"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a04b6900-0436-4920-a0d4-c0186d605ae3",
@@ -2759,7 +3533,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{1}{W}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a0a66f7b-eab4-45da-8895-c2c2c7eb05f8",
@@ -2772,7 +3550,11 @@
       "mana_cost": "",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c90366d5-b4ba-4772-a3c5-f138bbe7f305",
@@ -2791,7 +3573,11 @@
       "keywords": [
         "Flying",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "123f1fde-d8de-4640-baa1-bb3781713168",
@@ -2807,7 +3593,11 @@
       "mana_cost": "{R}{W}",
       "power": "2",
       "toughness": "2",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "969b6657-c3b9-47e1-a42e-95bbcccf452d",
@@ -2821,7 +3611,11 @@
       "cmc": 5,
       "type_line": "Sorcery",
       "mana_cost": "{1}{U}{U}{R}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a689289e-7141-4950-8a87-82e9bd6846fe",
@@ -2837,7 +3631,11 @@
       "mana_cost": "{2}{U}{R}",
       "power": "4",
       "toughness": "4",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b756ca13-b904-4510-9bbb-5bc2864abfbd",
@@ -2850,7 +3648,11 @@
       "cmc": 3,
       "type_line": "Instant",
       "mana_cost": "{2}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f143fd41-58c3-45a0-bef8-e9e4b4a502a5",
@@ -2869,7 +3671,11 @@
       "keywords": [
         "Lifelink",
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "7ac6649f-980e-4404-9c05-458c30578ecc",
@@ -2882,7 +3688,11 @@
       "cmc": 3,
       "type_line": "Sorcery",
       "mana_cost": "{2}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ee84b04d-78fc-416f-9166-72e5417c3e17",
@@ -2898,7 +3708,11 @@
       "mana_cost": "{2}{W}{W/B}{B}",
       "power": "4",
       "toughness": "5",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "21375667-b318-47f8-a482-9c8c2b5b14c0",
@@ -2917,7 +3731,11 @@
         "Flying",
         "Lifelink",
         "Repartee"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c2abfffb-bf36-44af-9a27-6e109e4d77dd",
@@ -2934,7 +3752,11 @@
       "toughness": "1",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "bd3ae4fa-4c97-410a-8c0a-bd203342595d",
@@ -2945,7 +3767,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1ec40a1b-51e7-4a35-966c-ab2a10f21a80",
@@ -2959,7 +3785,11 @@
       "cmc": 5,
       "type_line": "Instant",
       "mana_cost": "{3}{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "87741fbb-b426-4f83-a358-587b0907f081",
@@ -2975,7 +3805,11 @@
       "keywords": [
         "Flying",
         "Crew"
-      ]
+      ],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "44d0277c-ca82-4334-a15a-cd67a9db0d02",
@@ -2992,7 +3826,11 @@
       "toughness": "3",
       "keywords": [
         "Vigilance"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c35b57e4-2358-46c0-8f09-cd27c10eaf2d",
@@ -3007,7 +3845,11 @@
       "toughness": "3",
       "keywords": [
         "Converge"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b34000e9-ff20-4fb4-9d0b-03a172a92457",
@@ -3018,7 +3860,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "135c0696-d86d-4e48-988c-5c218de451fc",
@@ -3032,7 +3878,11 @@
       "cmc": 3,
       "type_line": "Instant",
       "mana_cost": "{1}{R}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "51fe930f-2b5a-4b1e-9007-6ee74fb44715",
@@ -3043,7 +3893,13 @@
       "cmc": 0,
       "type_line": "Basic Land — Swamp",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "13059664-a940-4a66-8100-0c90b884bab4",
@@ -3058,7 +3914,11 @@
       "mana_cost": "{2}{R}",
       "keywords": [
         "Mill"
-      ]
+      ],
+      "types": [
+        "Artifact"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b87e2474-98c1-4c1a-91ed-340b72d31653",
@@ -3076,7 +3936,11 @@
       "keywords": [
         "Trample",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "eaa358ac-761d-4507-aa15-3d4684027207",
@@ -3094,7 +3958,11 @@
       "toughness": "1",
       "keywords": [
         "Menace"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc",
@@ -3112,7 +3980,11 @@
       "keywords": [
         "Infusion",
         "Vigilance"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9a4c5629-fadd-42b9-850f-9f8586a2ca50",
@@ -3123,7 +3995,11 @@
       "cmc": 0,
       "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "bbd708ec-eef4-4f45-99dd-60e1cec4b991",
@@ -3140,7 +4016,11 @@
       "toughness": "1",
       "keywords": [
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "56f54fee-b48d-4582-8982-ca4c7b8ef553",
@@ -3158,7 +4038,11 @@
       "keywords": [
         "Surveil",
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "7a451985-37e1-44d8-839b-dc1e88df5c96",
@@ -3173,6 +4057,12 @@
       "toughness": "7",
       "keywords": [
         "Reach"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3191,7 +4081,11 @@
       "keywords": [
         "Infusion",
         "Ward"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "590d1d95-ed13-4121-899f-f5a2d8a6617a",
@@ -3209,7 +4103,11 @@
       "keywords": [
         "Reach",
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21",
@@ -3222,7 +4120,11 @@
       "mana_cost": "",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ac2a8a66-e38c-42ab-83e1-d2d99ee48861",
@@ -3235,7 +4137,11 @@
       "mana_cost": "{6}",
       "keywords": [
         "Converge"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "72a3b17d-1e00-48e9-8402-c81bacd595a7",
@@ -3250,7 +4156,11 @@
       "mana_cost": "{1}{R}",
       "keywords": [
         "Flashback"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4f16a1c2-0a80-45e4-b025-3aa0c0b03812",
@@ -3267,7 +4177,11 @@
       "toughness": "2",
       "keywords": [
         "Increment"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b93cbaad-8ed8-4a1d-b95a-20a616dfedc9",
@@ -3286,7 +4200,11 @@
         "Infusion",
         "Trample",
         "Ward"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1624c680-502b-474a-b9b2-888fe3ca008c",
@@ -3302,7 +4220,11 @@
       "keywords": [
         "Vigilance",
         "Converge"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2a812fa7-4599-4e25-97db-20ffc6bc0b26",
@@ -3316,7 +4238,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{X}{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c25e1ae5-f17c-4eee-98f1-5681981af31c",
@@ -3334,7 +4260,11 @@
       "keywords": [
         "Infusion",
         "Menace"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2b7cb1a3-761e-470e-a164-6e29dd9448cd",
@@ -3349,7 +4279,11 @@
       "mana_cost": "{2}{R}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f9ba68ef-6efc-4249-8b74-e33f47173902",
@@ -3363,7 +4297,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6fa9cd18-3181-4373-ab65-49bf9de9487f",
@@ -3377,7 +4315,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{2}{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "846a0e79-a530-429e-8f7f-4b87f1b0156e",
@@ -3391,7 +4333,11 @@
       "cmc": 7,
       "type_line": "Sorcery",
       "mana_cost": "{5}{U}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3d409512-50b9-4a38-91b0-19ba25227992",
@@ -3404,7 +4350,11 @@
       "cmc": 4,
       "type_line": "Instant",
       "mana_cost": "{3}{B}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "0e6e2188-7203-4d10-a838-27233f283cd5",
@@ -3423,7 +4373,11 @@
         "Reach",
         "Converge",
         "Trample"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "04fdfabc-c247-4384-a5bb-f49035f8aae0",
@@ -3438,7 +4392,11 @@
       "mana_cost": "{X}{G}",
       "keywords": [
         "Surveil"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f63f7209-fc0f-400c-8076-125f3131cb32",
@@ -3452,7 +4410,11 @@
       "cmc": 4,
       "type_line": "Instant",
       "mana_cost": "{2}{R}{W}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "b227ef04-33e4-44e8-a357-0ea3dfe5d49b",
@@ -3465,7 +4427,11 @@
       "cmc": 7,
       "type_line": "Sorcery",
       "mana_cost": "{4}{U}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "254437f7-7a8a-4b11-9cea-e8e7ea23c59e",
@@ -3479,7 +4445,11 @@
       "cmc": 2,
       "type_line": "Instant",
       "mana_cost": "{B}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0",
@@ -3499,6 +4469,12 @@
         "Deathtouch",
         "Flying",
         "Affinity"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3514,7 +4490,11 @@
       "mana_cost": "{1}{B}{B}",
       "keywords": [
         "Infusion"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "5bdbf507-6fd7-49f6-b437-8f2ce2d0eb0f",
@@ -3530,7 +4510,13 @@
       "mana_cost": "{5}{U}{R}",
       "power": "5",
       "toughness": "7",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ]
     },
     {
       "scryfall_id": "36ab2130-9f21-4d30-873a-aa72d3d15fa8",
@@ -3545,7 +4531,11 @@
       "mana_cost": "{5}{R}",
       "power": "4",
       "toughness": "4",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a6597852-4267-4ea6-a391-f927e4833be2",
@@ -3558,7 +4548,11 @@
       "cmc": 4,
       "type_line": "Sorcery",
       "mana_cost": "{3}{G}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "77285d12-e658-4eb3-ba13-ff202afab9c8",
@@ -3577,6 +4571,12 @@
       "keywords": [
         "Flying",
         "Prepared"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3594,7 +4594,11 @@
       "toughness": "2",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
@@ -3611,7 +4615,11 @@
       "toughness": "3",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fac8ac39-ecb4-4142-bf37-131c65660a9b",
@@ -3629,7 +4637,11 @@
       "keywords": [
         "Prepared",
         "Ward"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "3c34660c-25e3-4ff5-9b2b-5554ded2bcc3",
@@ -3646,7 +4658,11 @@
       "toughness": "2",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
@@ -3663,7 +4679,11 @@
       "toughness": "2",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "ac095763-6f4e-4d4e-9c99-414646368f8d",
@@ -3681,7 +4701,11 @@
       "keywords": [
         "Vigilance",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "f58dba4f-1abb-47a3-a684-29c32bab95c0",
@@ -3699,7 +4723,11 @@
       "keywords": [
         "First strike",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "75961d36-acf6-425f-9698-0bf52af74f31",
@@ -3718,7 +4746,11 @@
         "Flying",
         "Prepared",
         "Ward"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "9869a753-5e41-4098-ab41-e75b4396ec50",
@@ -3735,7 +4767,11 @@
       "toughness": "3",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "7eb9e83d-515d-4911-a06b-9982200277b2",
@@ -3752,7 +4788,11 @@
       "toughness": "4",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "72654b84-9902-41db-92ab-a3499c31221c",
@@ -3770,7 +4810,11 @@
       "keywords": [
         "Flying",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
@@ -3788,7 +4832,11 @@
       "keywords": [
         "Treasure",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8b1e10e8-ea14-4761-910b-4072e2a18456",
@@ -3806,7 +4854,11 @@
       "keywords": [
         "Surveil",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "617208ff-dd9b-44fd-a740-d3188081e5cc",
@@ -3823,7 +4875,11 @@
       "toughness": "1",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "79a70863-860f-4a7b-9cb2-d3546b689d44",
@@ -3841,7 +4897,11 @@
       "keywords": [
         "First strike",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "911442e3-3003-4683-a766-e791e9553667",
@@ -3858,7 +4918,11 @@
       "toughness": "3",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a95b6baf-01e6-49c3-9a26-394b127d53c3",
@@ -3875,6 +4939,12 @@
       "toughness": "4",
       "keywords": [
         "Prepared"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3893,7 +4963,11 @@
       "keywords": [
         "First strike",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "676ba521-66e4-42cf-a315-70d03cb7334e",
@@ -3912,6 +4986,12 @@
       "keywords": [
         "Prepared",
         "Mill"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3929,7 +5009,11 @@
       "toughness": "1",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c715fe4c-c0e7-4342-811f-b74687851097",
@@ -3946,7 +5030,11 @@
       "toughness": "2",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a0bcb638-c3c8-4973-9537-5c471f43f34f",
@@ -3964,6 +5052,12 @@
       "toughness": "4",
       "keywords": [
         "Prepared"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -3982,7 +5076,11 @@
       "keywords": [
         "Haste",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
@@ -4000,7 +5098,11 @@
       "keywords": [
         "Flying",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "62a47835-5719-48c4-a740-a0c5f00dce11",
@@ -4018,7 +5120,11 @@
       "keywords": [
         "Prepared",
         "Double strike"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "173157aa-712d-44f2-89ba-dd2511a07f26",
@@ -4037,6 +5143,12 @@
       "keywords": [
         "Treasure",
         "Prepared"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -4054,7 +5166,11 @@
       "toughness": "6",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fe85a124-0d8b-4a29-8df1-65888a39147f",
@@ -4073,7 +5189,11 @@
         "Flying",
         "Lifelink",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4ecbca71-9a1d-44c5-b709-d6f565941d5e",
@@ -4093,7 +5213,11 @@
         "Vigilance",
         "Prepared",
         "Flash"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "cc44eaa4-59a4-419e-b1d1-d92f354ff588",
@@ -4111,7 +5235,11 @@
       "keywords": [
         "Flying",
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "c0b85569-2cb3-4b64-b0fe-418195c4dab0",
@@ -4128,7 +5256,11 @@
       "toughness": "3",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "8de79312-2046-425e-9919-49afe19be81b",
@@ -4146,7 +5278,11 @@
       "keywords": [
         "Prepared",
         "Ward"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "24f888dd-785c-4089-a89c-03f9080130ed",
@@ -4163,7 +5299,11 @@
       "toughness": "1",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "7120e71b-2976-451b-89a7-a1665dc6fb6b",
@@ -4182,6 +5322,12 @@
       "keywords": [
         "Prepared",
         "Landfall"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
       ]
     },
     {
@@ -4201,7 +5347,11 @@
         "Prepared",
         "Mill",
         "Deathtouch"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     }
   ],
   "cardCount": 271,

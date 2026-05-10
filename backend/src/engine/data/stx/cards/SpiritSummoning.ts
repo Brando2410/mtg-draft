@@ -21,13 +21,16 @@ export const SpiritSummoning: CardDefinition = {
               subtypes: ['Spirit'],
               power: "3",
               toughness: "2",
-              image_url: 'https://cards.scryfall.io/large/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.jpg?1682693862'
+
             },
             amount: 1,
             targetMapping: TargetMapping.Controller
           }
         ]
       }
-    ]
-  };
+    ],
+    scryfall_id: "74be6236-4095-419c-9927-fbd874df21f8",
+    image_url: "https://cards.scryfall.io/normal/front/7/4/74be6236-4095-419c-9927-fbd874df21f8.jpg?1637082381",
+    rarity: "common"
+};
 

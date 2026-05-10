@@ -26,6 +26,9 @@ export const SundownPass: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b34000e9-ff20-4fb4-9d0b-03a172a92457",
+    image_url: "https://cards.scryfall.io/normal/front/b/3/b34000e9-ff20-4fb4-9d0b-03a172a92457.jpg?1775938845",
+    rarity: "rare"
 };
 

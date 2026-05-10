@@ -24,6 +24,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         }
     ],
     power: "4",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "97f7fbb9-228c-4a74-975b-38d3b6cecb32",
+    image_url: "https://cards.scryfall.io/normal/front/9/7/97f7fbb9-228c-4a74-975b-38d3b6cecb32.jpg?1775938087",
+    rarity: "common"
 };
-    
+

@@ -28,6 +28,9 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TriggerEvent } 
         }
     ],
     power: "2",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "2565e16a-ed31-4867-adb8-f1633d580397",
+    image_url: "https://cards.scryfall.io/normal/front/2/5/2565e16a-ed31-4867-adb8-f1633d580397.jpg?1775936927",
+    rarity: "common"
 };
-    
+

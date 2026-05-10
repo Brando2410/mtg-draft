@@ -2,13 +2,12 @@ import { AbilityType, CardDefinition, ConditionType, CounterType, CostType, Dyna
 export const EmilVastlandsRoamer: CardDefinition = {
     name: "Emil, Vastlands Roamer",
     manaCost: "{2}{G}",
-    scryfall_id: "3654416d-8558-4af2-9e10-18dbc8f2b376",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993",
     colors: ["G"],
     types: ["Legendary", "Creature"],
     subtypes: ["Elf", "Druid"],
     keywords: [],
+    power: "3",
+    toughness: "3",
     oracleText: "Creatures you control with +1/+1 counters on them have trample.\n{4}{G}, {T}: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of differently named lands you control.",
     abilities: [
         {
@@ -39,7 +38,7 @@ export const EmilVastlandsRoamer: CardDefinition = {
                         subtypes: ['Fractal'],
                         power: 0,
                         toughness: 0,
-                        image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
+                        image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                     },
                     startingCounters: {
                         counterType: CounterType.P1P1,
@@ -49,7 +48,8 @@ export const EmilVastlandsRoamer: CardDefinition = {
             ]
         }
     ],
-    power: "3",
-    toughness: "3"
+    scryfall_id: "3654416d-8558-4af2-9e10-18dbc8f2b376",
+    image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894",
+    rarity: "uncommon"
 };
 

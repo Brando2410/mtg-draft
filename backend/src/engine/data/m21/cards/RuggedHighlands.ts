@@ -27,5 +27,9 @@ export const RuggedHighlands: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "31261eca-28ad-407c-84ef-0c124d0d7451",
+    image_url: "https://cards.scryfall.io/normal/front/3/1/31261eca-28ad-407c-84ef-0c124d0d7451.jpg?1743205049",
+    rarity: "common"
 };
+

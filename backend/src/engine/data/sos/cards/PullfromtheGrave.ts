@@ -34,5 +34,9 @@ export const PullfromtheGrave: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d73612fe-8992-4650-a7e3-c7b662da6a03",
+    image_url: "https://cards.scryfall.io/normal/front/d/7/d73612fe-8992-4650-a7e3-c7b662da6a03.jpg?1775937572",
+    rarity: "common"
 };
+

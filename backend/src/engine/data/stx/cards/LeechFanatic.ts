@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const LeechFanatic: CardDefinition = {
     name: 'Leech Fanatic',
     manaCost: '{1}{B}',
-    scryfall_id: "307f9fe7-241b-4eb6-a059-be5384b4a1b6",
-    image_url: "https://cards.scryfall.io/normal/front/3/0/307f9fe7-241b-4eb6-a059-be5384b4a1b6.jpg?1624591070",
+
     colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
@@ -27,7 +26,9 @@ export const LeechFanatic: CardDefinition = {
                 }]
             }]
         }
-    ]
+    ],
+    scryfall_id: "307f9fe7-241b-4eb6-a059-be5384b4a1b6",
+    image_url: "https://cards.scryfall.io/normal/front/3/0/307f9fe7-241b-4eb6-a059-be5384b4a1b6.jpg?1624591070",
+    rarity: "common"
 };
-
 

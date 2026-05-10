@@ -18,12 +18,38 @@ class OracleLogicMap {
   private initialize() {
     // Load Dedicated Set Logic
     [m21, random, stx, sos].forEach(setRegistry => {
-        Object.keys(setRegistry).forEach(name => {
+        Object.keys(setRegistry).forEach(key => {
+            const card = setRegistry[key] as CardLogic;
             const enriched = {
-                ...setRegistry[name],
+                ...card,
                 status: 'IMPLEMENTED'
             };
-            this.registry.set(name.toLowerCase(), enriched as CardLogic);
+            
+            // 1. Index by the key used in the registry (the canonical full name)
+            this.registry.set(key.toLowerCase(), enriched as CardLogic);
+
+            // 2. Index by the internal card name if different
+            if (card.name && card.name.toLowerCase() !== key.toLowerCase()) {
+                this.registry.set(card.name.toLowerCase(), enriched as CardLogic);
+            }
+
+            // 3. Handle Split/MDFC/Prepared names automatically
+            if (card.name && card.name.includes(' // ')) {
+                const faces = card.name.split(' // ');
+                faces.forEach(face => {
+                    if (!this.registry.has(face.toLowerCase())) {
+                        this.registry.set(face.toLowerCase(), enriched as CardLogic);
+                    }
+                });
+            }
+
+            // 4. Specifically index preparedFace name if it exists (for SOS cards)
+            if ((card as any).preparedFace && (card as any).preparedFace.name) {
+                const faceName = (card as any).preparedFace.name;
+                if (!this.registry.has(faceName.toLowerCase())) {
+                    this.registry.set(faceName.toLowerCase(), enriched as CardLogic);
+                }
+            }
         });
     });
   }

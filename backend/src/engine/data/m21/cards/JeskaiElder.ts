@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const JeskaiElder: CardDefinition = {
     name: "Jeskai Elder",
     manaCost: "{1}{U}",
-    scryfall_id: "a188164c-01fe-4980-83a5-91d14e218cf5",
-    image_url: "https://cards.scryfall.io/normal/front/a/1/a188164c-01fe-4980-83a5-91d14e218cf5.jpg?1594735524",
+
     oracleText: "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever Jeskai Elder deals combat damage to a player, you may draw a card. If you do, discard a card.",
     colors: ["U"],
     types: ["Creature"],
@@ -38,5 +37,9 @@ export const JeskaiElder: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "38fd9091-2d22-411f-955a-24c32293cdca",
+    image_url: "https://cards.scryfall.io/normal/front/3/8/38fd9091-2d22-411f-955a-24c32293cdca.jpg?1673147323",
+    rarity: "common"
 };
+

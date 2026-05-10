@@ -26,6 +26,9 @@ export const StoneriseSpirit: CardDefinition = {
                 abilitiesToAdd: ['Flying']
             }]
         }
-    ]
+    ],
+    scryfall_id: "388f2e45-570f-4a35-b205-37e1345b5d06",
+    image_url: "https://cards.scryfall.io/normal/front/3/8/388f2e45-570f-4a35-b205-37e1345b5d06.jpg?1624589838",
+    rarity: "common"
 };
 

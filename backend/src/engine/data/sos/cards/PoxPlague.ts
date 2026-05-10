@@ -6,9 +6,8 @@ import { AbilityType, CardDefinition, EffectType, GameState, PlayerId, Restricti
 export const PoxPlague: CardDefinition = {
     name: "Pox Plague",
     manaCost: "{B}{B}{B}{B}{B}",
-    scryfall_id: "9c99c17b-ad3a-4859-97e8-469718b81cd9",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566",
+
+
     colors: ["B"],
     types: ["Sorcery"],
     subtypes: [],
@@ -48,5 +47,9 @@ export const PoxPlague: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "9c99c17b-ad3a-4859-97e8-469718b81cd9",
+    image_url: "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566",
+    rarity: "rare"
 };
+

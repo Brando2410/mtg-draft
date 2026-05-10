@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const MascotExhibition: CardDefinition = {
         name: 'Mascot Exhibition',
         manaCost: '{7}',
-    scryfall_id: "2047592c-739c-41dd-b3e8-31ae1c7688ab",
-    image_url: "https://cards.scryfall.io/normal/front/2/0/2047592c-739c-41dd-b3e8-31ae1c7688ab.jpg?1637082330",
+
         colors: [],
         types: ['Sorcery'],
         subtypes: ['Lesson'],
@@ -33,6 +32,9 @@ export const MascotExhibition: CardDefinition = {
                     }
                 ]
             }
-        ]
-    };
+        ],
+    scryfall_id: "2047592c-739c-41dd-b3e8-31ae1c7688ab",
+    image_url: "https://cards.scryfall.io/normal/front/2/0/2047592c-739c-41dd-b3e8-31ae1c7688ab.jpg?1637082330",
+    rarity: "mythic"
+};
 

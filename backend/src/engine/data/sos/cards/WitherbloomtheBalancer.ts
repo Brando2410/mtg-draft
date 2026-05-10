@@ -3,7 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const WitherbloomtheBalancer: CardDefinition = {
     name: "Witherbloom the Balancer",
     manaCost: "{6}{B}{G}",
-    image_url: "https://cards.scryfall.io/normal/front/d/a/da336d33-3d33-4d33-9d33-da336d33da33.jpg", // Placeholder URL
+ // Placeholder URL,
     colors: ["B", "G"],
     types: ["Creature"],
     subtypes: ["Elder", "Dragon"],
@@ -23,5 +23,7 @@ export const WitherbloomtheBalancer: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da336d33-3d33-4d33-9d33-da336d33da33.jpg"
 };
+

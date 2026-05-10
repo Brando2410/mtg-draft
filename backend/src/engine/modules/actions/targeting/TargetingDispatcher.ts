@@ -43,14 +43,15 @@ export class TargetingDispatcher {
 
         const nextIndex = existingTargets.length;
         const currentDef = TargetingProcessor.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
-        
+
         const legalPool = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
             sourceId: sourceObj.id,
             controllerId: sourceObj.controllerId || playerId,
             targetDefinitions: targetDefinitions,
             targetIndex: nextIndex
-        , effects: [], targets: []}, tid));
-        
+            , effects: [], targets: []
+        }, tid));
+
         logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalPool.length} legal targets for slot ${nextIndex} of ${sourceObj.definition.name}: [${legalPool.join(', ')}]`);
 
         const restrictions = currentDef?.restrictions || [];
@@ -73,8 +74,9 @@ export class TargetingDispatcher {
                 controllerId: sourceObj.controllerId || playerId,
                 targetDefinitions: targetDefinitions,
                 targetIndex: autoSelected.length
-            , effects: [], targets: []}, tid));
-            
+                , effects: [], targets: []
+            }, tid));
+
             const nextCounts = TargetingProcessor.getCountsForDefinition(nextDefAfterAuto, xValue);
             const prompt = TargetingProcessor.generateTargetPrompt(targetDefinitions, autoSelected.length, xValue, isSpellCasting);
 
@@ -96,8 +98,10 @@ export class TargetingDispatcher {
                         abilityIndex,
                         preSelectedChoice,
                         isCopyTargeting,
+                        stackObj: sourceObj.zone === Zone.Stack ? (sourceObj as StackObject) : undefined,
                         spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
                     },
+                    stackId: sourceObj.zone === Zone.Stack ? sourceObj.id : undefined,
                     maxCount: nextCounts.maxCount,
                     minCount: nextCounts.minCount,
                     count: nextCounts.count,
@@ -127,7 +131,7 @@ export class TargetingDispatcher {
         if (isOffBattlefieldTargeting && legalPool.length > 0 && currentDef) {
             let consecutiveCount = 0;
             let consecutiveMin = 0;
-            
+
             // 1. Find where the current definition starts in the global target index
             let currentDefStart = 0;
             let currentDefIdx = -1;
@@ -144,7 +148,7 @@ export class TargetingDispatcher {
             // 2. Add remaining slots from the current definition
             const currentCounts = TargetingProcessor.getCountsForDefinition(currentDef, xValue);
             const slotsUsedInCurrentDef = nextIndex - currentDefStart;
-            
+
             // IF we are in the middle of a definition (slotsUsedInCurrentDef > 0),
             // and it's an off-battlefield target, it means we ALREADY showed the modal for this group.
             // We should not show it again for the remaining optional slots.
@@ -232,8 +236,10 @@ export class TargetingDispatcher {
                     abilityIndex,
                     preSelectedChoice,
                     isCopyTargeting,
+                    stackObj: (sourceObj as any).zone === Zone.Stack ? (sourceObj as StackObject) : undefined,
                     spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
                 },
+                stackId: (sourceObj as any).zone === Zone.Stack ? sourceObj.id : undefined,
                 maxCount: stepCounts.maxCount,
                 minCount: stepCounts.minCount,
                 count: stepCounts.count,

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
 export const PrimalMight: CardDefinition = {
     name: "Primal Might",
     manaCost: "{X}{G}",
-    scryfall_id: "1cd8cee8-7ea0-4037-8a3b-39334dc064fb",
-    image_url: "https://cards.scryfall.io/normal/front/1/c/1cd8cee8-7ea0-4037-8a3b-39334dc064fb.jpg?1594737142",
+
     oracleText: "Target creature you control gets +X/+X until end of turn. Then it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)",
     colors: ["G"],
     types: ["Sorcery"],
@@ -36,5 +35,9 @@ export const PrimalMight: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "69b3f7b9-9499-4883-b5c5-c5474e470b21",
+    image_url: "https://cards.scryfall.io/normal/front/6/9/69b3f7b9-9499-4883-b5c5-c5474e470b21.jpg?1775600391",
+    rarity: "rare"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const LoreholdPledgemage: CardDefinition = {
     name: 'Lorehold Pledgemage',
     manaCost: '{1}{R/W}{R/W}',
-    scryfall_id: "79b88b38-6b5a-4a89-80ca-add79c11e8b9",
-    image_url: "https://cards.scryfall.io/normal/front/7/9/79b88b38-6b5a-4a89-80ca-add79c11e8b9.jpg?1627429506", // Scryfall: {1}{R/W}{R/W}
+ // Scryfall: {1}{R/W}{R/W},
     colors: ['R', 'W'],
     types: ['Creature'],
     subtypes: ['Rhino', 'Cleric'],
@@ -18,7 +17,9 @@ export const LoreholdPledgemage: CardDefinition = {
             eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Self }]
         }
-    ]
+    ],
+    scryfall_id: "79b88b38-6b5a-4a89-80ca-add79c11e8b9",
+    image_url: "https://cards.scryfall.io/normal/front/7/9/79b88b38-6b5a-4a89-80ca-add79c11e8b9.jpg?1627429506",
+    rarity: "common"
 };
-
 

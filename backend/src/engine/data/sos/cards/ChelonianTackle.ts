@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
 export const ChelonianTackle: CardDefinition = {
     name: "Chelonian Tackle",
     manaCost: "{2}{G}",
-    scryfall_id: "a82a4d8c-4105-4923-85a2-ef58241f725c",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964",
+
+
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],
@@ -50,5 +49,9 @@ export const ChelonianTackle: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a82a4d8c-4105-4923-85a2-ef58241f725c",
+    image_url: "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964",
+    rarity: "uncommon"
 };
+

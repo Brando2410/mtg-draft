@@ -2,10 +2,7 @@ import { CardDefinition } from '@shared/engine_types';
 
 export const Flusterstorm: CardDefinition = {
     name: "Flusterstorm",
-    manaCost: "{U}",
-    scryfall_id: "ba8fa9db-f24f-46d4-add1-71b7f77636e2",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/b/a/ba8fa9db-f24f-46d4-add1-71b7f77636e2.jpg?1775936489",
+    manaCost: "{U}",
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],
@@ -28,5 +25,9 @@ export const Flusterstorm: CardDefinition = {
                 }
             ]
           }*/
-    ]
+    ],
+    scryfall_id: "ba8fa9db-f24f-46d4-add1-71b7f77636e2",
+    image_url: "https://cards.scryfall.io/normal/front/b/a/ba8fa9db-f24f-46d4-add1-71b7f77636e2.jpg?1775936489",
+    rarity: "mythic"
 };
+

@@ -31,7 +31,9 @@ export const IndulgentAristocrat: CardDefinition = {
             ]
             }]
         }
-    ]
+    ],
+    scryfall_id: "07015524-874f-4856-a5c1-3148bd126886",
+    image_url: "https://cards.scryfall.io/normal/front/0/7/07015524-874f-4856-a5c1-3148bd126886.jpg?1736467987",
+    rarity: "uncommon"
 };
-
 

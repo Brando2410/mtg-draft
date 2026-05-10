@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const Daydream: CardDefinition = {
     name: "Daydream",
     manaCost: "{W}",
-    scryfall_id: "e2b16cb2-b8b2-45df-9695-3c16e9d89e28",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973",
+
+
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -40,5 +39,9 @@ export const Daydream: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e2b16cb2-b8b2-45df-9695-3c16e9d89e28",
+    image_url: "https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973",
+    rarity: "uncommon"
 };
+

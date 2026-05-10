@@ -15,7 +15,9 @@ export const SpringmaneCervin: CardDefinition = {
                     eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{ type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }]
         }
-    ]
-  };
-
+    ],
+    scryfall_id: "f5b0eac4-0262-4eed-97d4-0f2e6f06c8e1",
+    image_url: "https://cards.scryfall.io/normal/front/f/5/f5b0eac4-0262-4eed-97d4-0f2e6f06c8e1.jpg?1624593152",
+    rarity: "common"
+};
 

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
-    scryfall_id: "5c88391d-271f-4021-a5d9-158ebc1e6357",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805",
+
+
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Minotaur", "Sorcerer"],
@@ -16,7 +15,7 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Rocket Volley",
-        image_url: "https://cards.scryfall.io/png/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.png?1775937805",
+
         manaCost: "{1}{R}",
         colors: ["R"],
         types: ["Sorcery"],
@@ -31,6 +30,11 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
                 }],
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "5c88391d-271f-4021-a5d9-158ebc1e6357",
+    image_url: "https://cards.scryfall.io/png/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.png?1775937805",
+    rarity: "rare"
 };
+

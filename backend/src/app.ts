@@ -158,8 +158,8 @@ app.get('/api/debug/paths', (req, res) => {
 
 import { CardRegistryService } from './services/CardRegistryService';
 
-// --- Implemented Cards Registry ---
-app.get('/api/implemented', (req, res) => {
+// --- Card Registry ---
+app.get('/api/cards', (req, res) => {
   try {
     const query = req.query.q as string;
     if (query) {
@@ -169,10 +169,9 @@ app.get('/api/implemented', (req, res) => {
     const cards = CardRegistryService.getAllCards();
     res.json(cards);
   } catch (err) {
-    res.status(500).json({ error: 'Errore nel recupero delle carte implementate' });
+    res.status(500).json({ error: 'Errore nel recupero delle carte' });
   }
 });
-
 
 // --- Servizio File Statici per il Frontend (Produzione) ---
 // Cerchiamo la cartella dist in più punti per supportare sia local che monorepo build

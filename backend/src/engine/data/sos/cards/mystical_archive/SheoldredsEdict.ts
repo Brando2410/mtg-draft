@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 
 export const SheoldredsEdict: CardDefinition = {
     name: "Sheoldred's Edict",
-    manaCost: "{1}{B}",
-    scryfall_id: "dca66a1b-0acd-4b79-b5fe-16f2930f9c1b",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/d/c/dca66a1b-0acd-4b79-b5fe-16f2930f9c1b.jpg?1775936597",
+    manaCost: "{1}{B}",
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -51,5 +48,9 @@ export const SheoldredsEdict: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "dca66a1b-0acd-4b79-b5fe-16f2930f9c1b",
+    image_url: "https://cards.scryfall.io/normal/front/d/c/dca66a1b-0acd-4b79-b5fe-16f2930f9c1b.jpg?1775936597",
+    rarity: "rare"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping }
 export const GnarledSage: CardDefinition = {
     name: "Gnarled Sage",
     manaCost: "{3}{G}{G}",
-    scryfall_id: "5f22116a-8b6a-4bbe-999f-7329e1e2b2d9",
-    image_url: "https://cards.scryfall.io/normal/front/5/f/5f22116a-8b6a-4bbe-999f-7329e1e2b2d9.jpg?1594737027",
+
     oracleText: "Reach (This creature can block creatures with flying.)\nAs long as you've drawn two or more cards this turn, this creature gets +0/+2 and has vigilance. (Attacking doesn't cause it to tap.)",
     colors: ["G"],
     types: ["Creature"],
@@ -32,5 +31,9 @@ export const GnarledSage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5f22116a-8b6a-4bbe-999f-7329e1e2b2d9",
+    image_url: "https://cards.scryfall.io/normal/front/5/f/5f22116a-8b6a-4bbe-999f-7329e1e2b2d9.jpg?1594737027",
+    rarity: "common"
 };
+

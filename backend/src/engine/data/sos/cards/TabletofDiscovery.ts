@@ -53,5 +53,9 @@ export const TabletofDiscovery: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "13059664-a940-4a66-8100-0c90b884bab4",
+    image_url: "https://cards.scryfall.io/normal/front/1/3/13059664-a940-4a66-8100-0c90b884bab4.jpg?1775937891",
+    rarity: "uncommon"
 };
+

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
 export const HarmonizedTrioBrainstorm: CardDefinition = {
     name: "Harmonized Trio // Brainstorm",
     manaCost: "{U}",
-    scryfall_id: "617208ff-dd9b-44fd-a740-d3188081e5cc",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard", "Wizard"],
@@ -44,7 +43,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
         colors: ["U"],
         types: ["Instant"],
         type_line: "Instant",
-        image_url: "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?177593727",
+
         oracleText: "Draw three cards, then put two cards from your hand on top of your library in any order.",
         abilities: [
             {
@@ -52,7 +51,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
                 effects: [
                     {
                         type: EffectType.DrawCards,
-                        amount: 3,
+                        amount: 3
                     },
                     {
                         type: EffectType.MoveToZone,
@@ -68,6 +67,11 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "617208ff-dd9b-44fd-a740-d3188081e5cc",
+    image_url: "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?177593727",
+    rarity: "rare"
 };
+

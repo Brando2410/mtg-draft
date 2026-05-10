@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const ExperimentalOverload: CardDefinition = {
     name: "Experimental Overload",
     manaCost: "{2}{U}{R}",
-    scryfall_id: "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
-    image_url: "https://cards.scryfall.io/normal/front/6/f/6f1bace4-a327-4eb6-a6ef-8394e76c06b7.jpg?1594737377",
+
     oracleText: "Create an X/X blue and red Weird creature token, where X is the number of instant and sorcery cards in your graveyard. Then you may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
     colors: ["U", "R"],
     types: ["Sorcery"],
@@ -20,7 +19,7 @@ export const ExperimentalOverload: CardDefinition = {
                         colors: ['U', 'R'],
                         types: ['Creature'],
                         subtypes: ['Weird'],
-                        image_url: 'https://cards.scryfall.io/large/front/0/b/0ba503b6-9fa0-482f-870f-ac95ee03893c.jpg?1594733724',
+
                         power: 0,
                         toughness: 0
                     },
@@ -40,5 +39,9 @@ export const ExperimentalOverload: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
+    image_url: "https://cards.scryfall.io/normal/front/6/f/6f1bace4-a327-4eb6-a6ef-8394e76c06b7.jpg?1594737377",
+    rarity: "uncommon"
 };
+

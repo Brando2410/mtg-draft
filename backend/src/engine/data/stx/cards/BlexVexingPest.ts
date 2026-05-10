@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zo
 export const BlexVexingPest: CardDefinition = {
     name: "Blex, Vexing Pest",
     manaCost: "{2}{G}",
-    scryfall_id: "c204b7ca-0904-40fa-b20c-92400fae20b8",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c204b7ca-0904-40fa-b20c-92400fae20b8.jpg?1739541943",
+
     colors: ["G"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -61,5 +60,9 @@ export const BlexVexingPest: CardDefinition = {
                 }]
             }]
         }
-    ]
+    ],
+    scryfall_id: "c204b7ca-0904-40fa-b20c-92400fae20b8",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c204b7ca-0904-40fa-b20c-92400fae20b8.jpg?1739541943",
+    rarity: "mythic"
 };
+

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
 export const ParadoxGardens: CardDefinition = {
     name: "Paradox Gardens",
     manaCost: "",
-    scryfall_id: "dbc3447e-1329-4ea1-b4ca-b321b0ffec8f",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801",
+
+
     colors: [],
     types: [
         "Land"
@@ -46,5 +45,9 @@ export const ParadoxGardens: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "dbc3447e-1329-4ea1-b4ca-b321b0ffec8f",
+    image_url: "https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801",
+    rarity: "common"
 };
+

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_ty
 export const VampiricTutor: CardDefinition = {
     name: "Vampiric Tutor",
     manaCost: "{B}",
-    scryfall_id: "db68c546-aca8-45d0-bf45-15b951ce66e5",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/d/b/db68c546-aca8-45d0-bf45-15b951ce66e5.jpg?1775936619",
+
+
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -30,5 +29,9 @@ export const VampiricTutor: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "db68c546-aca8-45d0-bf45-15b951ce66e5",
+    image_url: "https://cards.scryfall.io/normal/front/d/b/db68c546-aca8-45d0-bf45-15b951ce66e5.jpg?1775936619",
+    rarity: "mythic"
 };
+

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
 export const FieldsofStrife: CardDefinition = {
     name: "Fields of Strife",
     manaCost: "",
-    scryfall_id: "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+
+
     colors: [],
     types: ["Land"],
     subtypes: [],
@@ -38,5 +37,9 @@ export const FieldsofStrife: CardDefinition = {
                 { type: EffectType.Surveil, amount: 1 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+    image_url: "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+    rarity: "common"
 };
+

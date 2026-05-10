@@ -22,5 +22,9 @@ export const StirringHonormancer: CardDefinition = {
                 remainderZone: Zone.Graveyard
             }
         ]
-    }]
+    }],
+    scryfall_id: "ee84b04d-78fc-416f-9166-72e5417c3e17",
+    image_url: "https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634",
+    rarity: "uncommon"
 };
+

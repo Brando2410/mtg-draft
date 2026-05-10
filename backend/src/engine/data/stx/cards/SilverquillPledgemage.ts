@@ -24,7 +24,9 @@ export const SilverquillPledgemage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a3f64ad2-4041-421d-baa2-206cedcecf0e",
+    image_url: "https://cards.scryfall.io/normal/front/a/3/a3f64ad2-4041-421d-baa2-206cedcecf0e.jpg?1624740044",
+    rarity: "common"
 };
-
 

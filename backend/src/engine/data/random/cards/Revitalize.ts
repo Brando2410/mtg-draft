@@ -14,6 +14,9 @@ export const Revitalize: CardDefinition = {
           { type: EffectType.DrawCards, amount: 1 }
         ]
       }
-    ]
-  };
+    ],
+    scryfall_id: "3a9fb75e-c8e5-417b-83d4-5105af9c66c1",
+    image_url: "https://cards.scryfall.io/normal/front/3/a/3a9fb75e-c8e5-417b-83d4-5105af9c66c1.jpg?1631046075",
+    rarity: "common"
+};
 

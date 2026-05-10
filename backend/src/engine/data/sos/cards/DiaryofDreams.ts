@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
     export const DiaryofDreams: CardDefinition = {
     name: "Diary of Dreams",
     manaCost: "{2}",
-    scryfall_id: "ee1e0a96-af80-444e-a456-5b256cf60625",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731",
+
+
     colors: [],
     types: [
         "Artifact"
@@ -18,7 +17,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: ConditionType.PlayerIsController, // Repartee-style or generic
+            condition: ConditionType.PlayerIsController, // Repartee-style or generic,
             effects: [
                 { 
                     type: EffectType.AddCounters, 
@@ -42,5 +41,9 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ee1e0a96-af80-444e-a456-5b256cf60625",
+    image_url: "https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731",
+    rarity: "uncommon"
 };
+

@@ -34,6 +34,9 @@ export const ReconstructHistory: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "3e565e38-43d5-482e-a911-ce525dfee74f",
+    image_url: "https://cards.scryfall.io/normal/front/3/e/3e565e38-43d5-482e-a911-ce525dfee74f.jpg?1624739675",
+    rarity: "uncommon"
 };
 

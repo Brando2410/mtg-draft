@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const ArchwayCommons: CardDefinition = {
     name: 'Archway Commons',
     manaCost: '',
-    scryfall_id: "f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9",
-    image_url: "https://cards.scryfall.io/normal/front/f/6/f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9.jpg?1624740834",
+
     colors: [],
     types: ['Land'],
     oracleText: 'Archway Commons enters the battlefield tapped.\nWhen Archway Commons enters the battlefield, sacrifice it unless you pay {1}.\n{T}: Add one mana of any color.',
@@ -32,10 +31,12 @@ export const ArchwayCommons: CardDefinition = {
             costs: [{ type: CostType.Tap }],
             effects: [{
                 type: EffectType.AddMana,
-                manaType: 'ANY',
+                manaType: 'ANY'
             }]
         }
-    ]
+    ],
+    scryfall_id: "f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9",
+    image_url: "https://cards.scryfall.io/normal/front/f/6/f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9.jpg?1624740834",
+    rarity: "common"
 };
-
 

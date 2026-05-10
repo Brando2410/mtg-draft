@@ -46,4 +46,7 @@ export const calculate = (multiplier: number) => ({
             (o.effectiveStats?.power ?? 0) >= power
         );
     }
-});
+})
+{
+};
+

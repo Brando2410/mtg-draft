@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const BeamingDefiance: CardDefinition = {
     name: 'Beaming Defiance',
     manaCost: '{1}{W}',
-    scryfall_id: "7e22411c-11c1-4770-8491-7952dd406e01",
-    image_url: "https://cards.scryfall.io/normal/front/7/e/7e22411c-11c1-4770-8491-7952dd406e01.jpg?1624589223",
+
     colors: ['W'],
     types: ['Instant'],
     oracleText: 'Target creature you control gets +2/+2 and gains hexproof until end of turn.',
@@ -25,5 +24,9 @@ export const BeamingDefiance: CardDefinition = {
                 abilitiesToAdd: ['Hexproof']
             }]
         }
-    ]
+    ],
+    scryfall_id: "7e22411c-11c1-4770-8491-7952dd406e01",
+    image_url: "https://cards.scryfall.io/normal/front/7/e/7e22411c-11c1-4770-8491-7952dd406e01.jpg?1624589223",
+    rarity: "common"
 };
+

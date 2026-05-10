@@ -48,5 +48,9 @@ export const SunderingArchaic: CardDefinition = {
         }
     ],
     power: "3",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "c35b57e4-2358-46c0-8f09-cd27c10eaf2d",
+    image_url: "https://cards.scryfall.io/normal/front/c/3/c35b57e4-2358-46c0-8f09-cd27c10eaf2d.jpg?1775936933",
+    rarity: "uncommon"
 };
+

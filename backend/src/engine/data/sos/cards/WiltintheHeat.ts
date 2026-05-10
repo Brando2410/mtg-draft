@@ -22,7 +22,7 @@ export const WiltintheHeat: CardDefinition = {
             },
             targetDefinitions: [{
                 type: TargetType.Creature,
-                count: 1,
+                count: 1
             }],
             effects: [
                 {
@@ -38,6 +38,9 @@ export const WiltintheHeat: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f63f7209-fc0f-400c-8076-125f3131cb32",
+    image_url: "https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697",
+    rarity: "common"
 };
 

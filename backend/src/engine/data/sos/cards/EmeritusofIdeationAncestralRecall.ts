@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
-    scryfall_id: "75961d36-acf6-425f-9698-0bf52af74f31",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -55,7 +54,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     ],
     preparedFace: {
         name: "Ancestral Recall",
-        image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
+
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
@@ -75,6 +74,11 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "75961d36-acf6-425f-9698-0bf52af74f31",
+    image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
+    rarity: "mythic"
 };
+

@@ -15,7 +15,9 @@ export const QuandrixPledgemage: CardDefinition = {
             eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.AddCounters, counterType: CounterType.P1P1, amount: 1, targetMapping: TargetMapping.Self }]
         }
-    ]
+    ],
+    scryfall_id: "07633b7f-4150-458b-89c3-d05dc0e3c4bd",
+    image_url: "https://cards.scryfall.io/normal/front/0/7/07633b7f-4150-458b-89c3-d05dc0e3c4bd.jpg?1624739572",
+    rarity: "common"
 };
-
 

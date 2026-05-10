@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const PortcullisVine: CardDefinition = {
     name: "Portcullis Vine",
     manaCost: "{G}",
-    scryfall_id: "d1abd95a-4ecc-479c-b200-5aaf7c993ef8",
-    image_url: "https://cards.scryfall.io/normal/front/d/1/d1abd95a-4ecc-479c-b200-5aaf7c993ef8.jpg?1594737120",
+
     oracleText: "Defender\n{2}, {T}, Sacrifice a creature with defender: Draw a card.",
     colors: ["G"],
     types: ["Creature"],
@@ -29,5 +28,9 @@ export const PortcullisVine: CardDefinition = {
                 targetMapping: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "d1abd95a-4ecc-479c-b200-5aaf7c993ef8",
+    image_url: "https://cards.scryfall.io/normal/front/d/1/d1abd95a-4ecc-479c-b200-5aaf7c993ef8.jpg?1594737120",
+    rarity: "common"
 };
+

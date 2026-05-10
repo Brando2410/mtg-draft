@@ -45,4 +45,8 @@ export const StrixhavenSkycoach: CardDefinition = {
             ]
         }
     ],
+    scryfall_id: "87741fbb-b426-4f83-a358-587b0907f081",
+    image_url: "https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg?1775938759",
+    rarity: "uncommon"
 };
+

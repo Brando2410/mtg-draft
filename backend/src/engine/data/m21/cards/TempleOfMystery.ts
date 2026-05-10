@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const TempleOfMystery: CardDefinition = {
     name: "Temple of Mystery",
     manaCost: "",
-    scryfall_id: "e03779e4-5390-482a-a92c-62bdae1ce013",
-    image_url: "https://cards.scryfall.io/normal/front/e/0/e03779e4-5390-482a-a92c-62bdae1ce013.jpg?1594737841",
+
     oracleText: "Temple of Mystery enters the battlefield tapped.\nWhen Temple of Mystery enters the battlefield, scry 1.\n{T}: Add {G} or {U}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const TempleOfMystery: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "258077cf-edef-40fe-ab46-03c965ebe990",
+    image_url: "https://cards.scryfall.io/normal/front/2/5/258077cf-edef-40fe-ab46-03c965ebe990.jpg?1775942484",
+    rarity: "rare"
 };
+

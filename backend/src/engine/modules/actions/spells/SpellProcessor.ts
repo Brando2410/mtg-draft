@@ -151,6 +151,41 @@ export class SpellProcessor {
             return true;
         }
 
+        // --- CAST MODE SELECTION (CR 601.2b) ---
+        // If there are multiple ways to cast this card (e.g., Zaffai Free Cast vs Normal Cast),
+        // we prompt the player to choose.
+        if (isFreeCast === undefined && options.forceFlashback === undefined && !bypassPriority && !options.isModeSelected) {
+            const { priority: PriorityProcessor } = getProcessors(state);
+            const hasFlashback = RuleUtils.hasKeyword(cardToPlay, 'Flashback') && cardToPlay.zone === Zone.Graveyard;
+            const freeCastEffect = PriorityProcessor.findFreeCastPermission(state, playerId, cardToPlay.id);
+            const normalPermission = (cardToPlay.zone === Zone.Hand) ||
+                PriorityProcessor.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, cardToPlay.id) ||
+                PriorityProcessor.findPermissionEffect(state, playerId, EffectType.AllowPlayExiled, cardToPlay.id);
+
+            const castModes: ChoiceOption[] = [];
+            if (normalPermission) {
+                castModes.push({ label: `Cast Normally (${cardToPlay.definition.manaCost})`, value: 'CAST_MODE_NORMAL' });
+            }
+            if (hasFlashback) {
+                castModes.push({ label: `Cast via Flashback (${cardToPlay.definition.flashbackCost || cardToPlay.definition.manaCost})`, value: 'CAST_MODE_FLASHBACK' });
+            }
+            if (freeCastEffect) {
+                castModes.push({ label: `Cast for Free ({0})`, value: 'CAST_MODE_FREE' });
+            }
+
+            if (castModes.length > 1) {
+                const { choiceGenerator: ChoiceGenerator, action: ActionProcessor } = getProcessors(state);
+                state.pendingAction = ActionProcessor.prepareAction(state, ChoiceGenerator.createModalChoice(state, {
+                    label: `Cast ${cardToPlay.definition.name}: Choose Method`,
+                    playerId: playerId,
+                    sourceId: cardToPlay.id,
+                    actionType: ActionType.ModalSelection
+                }, castModes));
+                state.priorityPlayerId = null;
+                return true;
+            }
+        }
+
         const currentDefinition = cardToPlay.selectedFaceDefinition || cardToPlay.definition;
 
         // --- HAND ACTION SELECTION (e.g. Visionary's Dance, Channel, Cycling) ---
@@ -169,7 +204,7 @@ export class SpellProcessor {
                 PriorityProcessor.canAbilityBeActivated(state, playerId, cardToPlay.id, idx, bypassPriority)
             );
 
-            const isSpellPlayable = PriorityProcessor.canObjectBePlayed(state, playerId, cardToPlay.id, bypassPriority);
+            const isSpellPlayable = PriorityProcessor.canObjectBePlayed(state, playerId, cardToPlay.id, bypassPriority, undefined, undefined, true);
 
             // CASE A: Multiple valid abilities OR (1+ abilities AND spell is playable) -> Show Modal
             if (validAbilities.length > 1 || (validAbilities.length > 0 && isSpellPlayable)) {
@@ -288,7 +323,7 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        let { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
+        let { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition, options.forceFlashback);
         cardToPlay.usedAlternativeCostId = usedAlternativeCostId;
         if (isFlashback) cardToPlay.isFlashbackCast = true;
 
@@ -813,6 +848,11 @@ export class SpellProcessor {
 
         state.consecutivePasses = 0;
         TriggerProcessor.onEvent(state, { type: TriggerEvent.CastSpell, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });
+
+        // Increment limit counter for free cast permissions (e.g. Zaffai)
+        if (cardToPlay.usedAlternativeCostId) {
+            state.turnState.triggeredAbilitiesUsedThisTurn[cardToPlay.usedAlternativeCostId] = (state.turnState.triggeredAbilitiesUsedThisTurn[cardToPlay.usedAlternativeCostId] || 0) + 1;
+        }
 
         if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });
         if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });

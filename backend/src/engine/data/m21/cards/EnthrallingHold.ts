@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const EnthrallingHold: CardDefinition = {
     name: "Enthralling Hold",
     manaCost: "{3}{U}{U}",
-    scryfall_id: "d3bc7176-abe0-47cf-a242-cf22a1f590be",
-    image_url: "https://cards.scryfall.io/normal/front/d/3/d3bc7176-abe0-47cf-a242-cf22a1f590be.jpg?1594735471",
+
     oracleText: "Enchant creature\nYou can't choose an untapped creature as this spell's target as you cast it.\nYou control enchanted creature.",
     colors: ["U"],
     types: ["Enchantment"],
@@ -28,5 +27,9 @@ export const EnthrallingHold: CardDefinition = {
                 targetControllerId: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "d3bc7176-abe0-47cf-a242-cf22a1f590be",
+    image_url: "https://cards.scryfall.io/normal/front/d/3/d3bc7176-abe0-47cf-a242-cf22a1f590be.jpg?1594735471",
+    rarity: "uncommon"
 };
+

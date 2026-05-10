@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const GloriousDecay: CardDefinition = {
     name: "Glorious Decay",
     manaCost: "{1}{G}",
-    scryfall_id: "a335f396-1004-4fee-842a-a35ff6ba17f2",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
+
+
     colors: ["G"],
     types: ["Instant"],
     subtypes: [],
@@ -18,7 +17,7 @@ export const GloriousDecay: CardDefinition = {
                     label: "Destroy target artifact",
                     targetDefinitions: [{
                         type: TargetType.Artifact,
-                        count: 1,
+                        count: 1
                     }],
                     effects: [
                         {
@@ -62,7 +61,9 @@ export const GloriousDecay: CardDefinition = {
                 }
             ]
         }
-    ]
-
-
+    ],
+    scryfall_id: "a335f396-1004-4fee-842a-a35ff6ba17f2",
+    image_url: "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
+    rarity: "common"
 };
+

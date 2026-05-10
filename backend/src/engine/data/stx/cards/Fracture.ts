@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const Fracture: CardDefinition = {
     name: 'Fracture',
     manaCost: '{W}{B}',
-    scryfall_id: "a11224f8-06ea-4ec3-85e6-d5c8d906840c",
-    image_url: "https://cards.scryfall.io/normal/front/a/1/a11224f8-06ea-4ec3-85e6-d5c8d906840c.jpg?1627429052",
+
     colors: ['W', 'B'],
     types: ['Instant'],
     oracleText: "Destroy target artifact, enchantment, or planeswalker.",
@@ -22,6 +21,9 @@ export const Fracture: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a11224f8-06ea-4ec3-85e6-d5c8d906840c",
+    image_url: "https://cards.scryfall.io/normal/front/a/1/a11224f8-06ea-4ec3-85e6-d5c8d906840c.jpg?1627429052",
+    rarity: "uncommon"
 };
 

@@ -10,11 +10,15 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328",
       "cmc": 2,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{1}{U}",
       "keywords": [
         "Opus"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
@@ -25,9 +29,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
       "cmc": 2,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{1}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
@@ -38,9 +46,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
       "cmc": 2,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{1}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "local-Sanar, Unfinished Genius // Wild Idea",
@@ -52,11 +64,16 @@
       ],
       "image_url": "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
       "cmc": 2,
-      "type_line": "",
+      "type_line": "Legendary Creature",
       "mana_cost": "{U}{R}",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [
+        "Legendary",
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a95b6baf-01e6-49c3-9a26-394b127d53c3",
@@ -71,7 +88,9 @@
       "mana_cost": "{2}{U}",
       "keywords": [
         "Prepared"
-      ]
+      ],
+      "types": [],
+      "supertypes": []
     },
     {
       "scryfall_id": "460c6afd-cddf-4fea-925f-b27517ff250a",
@@ -82,9 +101,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
       "cmc": 3,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{2}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
@@ -95,9 +118,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
       "cmc": 3,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{2}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "06dd56bd-de92-4202-af31-7e881c34d799",
@@ -108,12 +135,16 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851",
       "cmc": 5,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{4}{R}",
       "keywords": [
         "Reach",
         "Haste"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "4d611278-9948-4345-b4dd-aa6eaf21b233",
@@ -124,12 +155,16 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816",
       "cmc": 6,
-      "type_line": "",
+      "type_line": "Creature",
       "mana_cost": "{2/R}{2/R}{2/R}",
       "keywords": [
         "Trample",
         "Reach"
-      ]
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "1edb449d-620f-4e21-9d76-2c840635eb9d",
@@ -140,9 +175,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356",
       "cmc": 1,
-      "type_line": "",
+      "type_line": "Instant",
       "mana_cost": "{X}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "969b6657-c3b9-47e1-a42e-95bbcccf452d",
@@ -154,9 +193,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612",
       "cmc": 5,
-      "type_line": "",
+      "type_line": "Sorcery",
       "mana_cost": "{1}{U}{U}{R}{R}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
@@ -167,11 +210,15 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787",
       "cmc": 7,
-      "type_line": "",
+      "type_line": "Sorcery",
       "mana_cost": "{5}{R}{R}",
       "keywords": [
         "Paradigm"
-      ]
+      ],
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
@@ -182,9 +229,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307",
       "cmc": 3,
-      "type_line": "",
+      "type_line": "Instant",
       "mana_cost": "{1}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0",
@@ -195,9 +246,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369",
       "cmc": 4,
-      "type_line": "",
+      "type_line": "Instant",
       "mana_cost": "{3}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "6e4a1f82-b0b1-4608-91f8-130bee731435",
@@ -208,9 +263,13 @@
       ],
       "image_url": "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280",
       "cmc": 6,
-      "type_line": "",
+      "type_line": "Instant",
       "mana_cost": "{4}{U}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a0a66f7b-eab4-45da-8895-c2c2c7eb05f8",
@@ -219,9 +278,13 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "a0a66f7b-eab4-45da-8895-c2c2c7eb05f8",
@@ -230,9 +293,13 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Land",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Land"
+      ],
+      "supertypes": []
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -241,9 +308,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -252,9 +325,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -263,9 +342,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -274,9 +359,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -285,9 +376,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -296,9 +393,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -307,9 +410,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -318,9 +427,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -329,9 +444,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -340,9 +461,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -351,9 +478,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -362,9 +495,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -373,9 +512,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -384,9 +529,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -395,9 +546,15 @@
       "color": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "",
+      "type_line": "Basic Basic",
       "mana_cost": "",
-      "keywords": []
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
     },
     {
       "scryfall_id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
@@ -410,7 +567,9 @@
       "cmc": 5,
       "type_line": "",
       "mana_cost": "{4}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [],
+      "supertypes": []
     },
     {
       "scryfall_id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
@@ -423,7 +582,9 @@
       "cmc": 5,
       "type_line": "",
       "mana_cost": "{4}{U}",
-      "keywords": []
+      "keywords": [],
+      "types": [],
+      "supertypes": []
     }
   ],
   "cardCount": 34,

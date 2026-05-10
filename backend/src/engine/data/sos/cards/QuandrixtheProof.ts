@@ -22,5 +22,9 @@ export const QuandrixtheProof: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "015afe31-af3c-4c9b-9997-d7c33b915a33",
+    image_url: "https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517",
+    rarity: "mythic"
 };
+

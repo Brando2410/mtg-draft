@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
 export const CombatProfessor: CardDefinition = {
     name: 'Combat Professor',
     manaCost: '{3}{W}',
-    scryfall_id: "3f669ac4-98ed-4e23-91a9-281f8277ab04",
-    image_url: "https://cards.scryfall.io/normal/front/3/f/3f669ac4-98ed-4e23-91a9-281f8277ab04.jpg?1624589275",
+
     colors: ['W'],
     types: ['Creature'],
     subtypes: ['Bird', 'Cleric'],
@@ -30,5 +29,9 @@ export const CombatProfessor: CardDefinition = {
                 abilitiesToAdd: ['Vigilance']
             }]
         }
-    ]
+    ],
+    scryfall_id: "3f669ac4-98ed-4e23-91a9-281f8277ab04",
+    image_url: "https://cards.scryfall.io/normal/front/3/f/3f669ac4-98ed-4e23-91a9-281f8277ab04.jpg?1624589275",
+    rarity: "common"
 };
+

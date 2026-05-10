@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const MazemindTome: CardDefinition = {
     name: "Mazemind Tome",
     manaCost: "{2}",
-    scryfall_id: "9fd761f3-6b43-4150-8595-dc3abd85b06c",
-    image_url: "https://cards.scryfall.io/normal/front/9/f/9fd761f3-6b43-4150-8595-dc3abd85b06c.jpg?1594737505",
+
     oracleText: "{T}, Put a page counter on this artifact: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\n{2}, {T}, Put a page counter on this artifact: Draw a card.\nWhen there are four or more page counters on this artifact, exile it. If you do, you gain 4 life.",
     colors: [],
     types: ["Artifact"],
@@ -37,5 +36,9 @@ export const MazemindTome: CardDefinition = {
                 { type: EffectType.GainLife, amount: 4, targetMapping: TargetMapping.Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f45072cd-e3f2-4090-b984-50ec8d360bf2",
+    image_url: "https://cards.scryfall.io/normal/front/f/4/f45072cd-e3f2-4090-b984-50ec8d360bf2.jpg?1730491155",
+    rarity: "rare"
 };
+

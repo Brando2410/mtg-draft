@@ -21,6 +21,9 @@ export const PillardropRescuer: CardDefinition = {
             }],
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "0884666e-8f9b-44b1-a1e3-c1c8941e2152",
+    image_url: "https://cards.scryfall.io/normal/front/0/8/0884666e-8f9b-44b1-a1e3-c1c8941e2152.jpg?1624589600",
+    rarity: "common"
 };
 

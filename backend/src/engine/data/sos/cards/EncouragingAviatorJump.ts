@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const EncouragingAviatorJump: CardDefinition = {
     name: "Encouraging Aviator // Jump",
     manaCost: "{2}{U} // {U}",
-    scryfall_id: "72654b84-9902-41db-92ab-a3499c31221c",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230",
+
+
     colors: [
         "U"
     ],
@@ -34,7 +33,7 @@ export const EncouragingAviatorJump: CardDefinition = {
     ],
     preparedFace: {
         name: "Jump",
-        image_url: "https://cards.scryfall.io/png/front/2/e/2edd7be9-9334-4684-b642-1aaf2000e054.png?1561975305",
+
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
@@ -55,6 +54,11 @@ export const EncouragingAviatorJump: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "72654b84-9902-41db-92ab-a3499c31221c",
+    image_url: "https://cards.scryfall.io/png/front/2/e/2edd7be9-9334-4684-b642-1aaf2000e054.png?1561975305",
+    rarity: "uncommon"
 };
+

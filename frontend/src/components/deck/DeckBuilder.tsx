@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, AlertTriangle, Database, Clipboard as ClipboardIcon, Menu, Filter, Save, ArrowRight } from 'lucide-react';
-import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified, enrichCardsWithScryfall } from '../../services/registry';
+import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, Database, Save, ArrowRight } from 'lucide-react';
+import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified } from '../../services/registry';
 import type { SimplifiedCard } from '../../services/scryfall';
 import { StatsModal } from '../shared/StatsModal';
-import { CardGridItem } from '../shared/CardGridItem';
+import { SideboardSidebar } from './SideboardSidebar';
 
 interface DeckBuilderProps {
   onBack?: () => void;
@@ -13,68 +13,45 @@ interface DeckBuilderProps {
   onConfirm?: (deck: any[]) => void;
 }
 
-interface PoolCardImageProps {
-  card: SimplifiedCard;
-}
-
-const PoolCardImage = ({ card }: PoolCardImageProps) => {
-  const [error, setError] = useState(false);
-  
-  if (error || !card.image_url) {
+const PoolCardImage = ({ card }: { card: SimplifiedCard }) => {
+  if (!card.image_url) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-3 bg-gradient-to-br from-slate-900 to-slate-950 text-center border border-white/5">
-        <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 mb-1">Image Lost</span>
-        <span className="text-[10px] font-black text-white italic leading-tight uppercase line-clamp-3">{card.name}</span>
-        <div className="mt-auto pt-1 border-t border-white/5 w-full">
-           <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">{card.mana_cost || 'No Cost'}</span>
-        </div>
+      <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-slate-900 text-center border border-white/5">
+        <span className="text-[6px] font-black uppercase text-indigo-400">Lost</span>
+        <span className="text-[8px] font-black text-white uppercase truncate w-full px-1">{card.name}</span>
       </div>
     );
   }
-
-  return (
-    <img 
-      src={card.image_url} 
-      alt={card.name}
-      onError={() => setError(true)}
-      className="w-full h-full object-cover" 
-    />
-  );
+  return <img src={card.image_url} alt={card.name} className="w-full h-full object-top object-cover" />;
 };
 
 export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilderProps) => {
-  // --- STATO DEL MAZZO ---
-  const [deckName, setDeckName] = useState(initialDeck?.name || 'Nuovo Mazzo');
+  // --- STATO ---
+  const [deckName, setDeckName] = useState(initialDeck?.name || 'New Deck');
   const [isEditingName, setIsEditingName] = useState(false);
   const [deckCards, setDeckCards] = useState<SimplifiedCard[]>(initialDeck?.cards || []);
+  const [sideboardCards, setSideboardCards] = useState<SimplifiedCard[]>(initialDeck?.sideboard || []);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [isSideboardCollapsed, setIsSideboardCollapsed] = useState(true);
+  const [flippedIds, setFlippedIds] = useState<Set<string>>(new Set());
+  const [splitPercent, setSplitPercent] = useState(45); // % height for pool area
 
-  // --- STATO SEARCH & UI ---
+  // --- SEARCH & FILTERS ---
   const [addQuery, setAddQuery] = useState('');
   const [apiSuggestions, setApiSuggestions] = useState<SimplifiedCard[]>([]);
   const [isApiLoading, setIsApiLoading] = useState(false);
-  const [zoomCard, setZoomCard] = useState<SimplifiedCard | null>(null);
-  const [isZoomFlipped, setIsZoomFlipped] = useState(false);
-  const [showStats, setShowStats] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [poolFilterColors, setPoolFilterColors] = useState<string[]>([]);
+  const [poolFilterCmc, setPoolFilterCmc] = useState<number | null>(null);
+  const [poolFilterLand, setPoolFilterLand] = useState(false);
 
-  // --- STATO IMPORT ---
+  // --- MODALS & UI ---
+  const [zoomCard, setZoomCard] = useState<{ card: SimplifiedCard, flipped: boolean } | null>(null);
+  const [showStats, setShowStats] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [importErrors, setImportErrors] = useState<string[]>([]);
 
-  // --- FILTRI ---
-  const [filterQuery, setFilterQuery] = useState('');
-  const [filterCmc, setFilterCmc] = useState<number | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-
-  // --- FILTRI POOL ---
-  const [poolFilterColors, setPoolFilterColors] = useState<string[]>([]);
-  const [poolFilterRarity, setPoolFilterRarity] = useState<string | null>(null);
-  const [poolFilterCmc, setPoolFilterCmc] = useState<number | null>(null);
-
-  // Mappa simboli Scryfall
   const manaSymbols: Record<string, string> = {
     'W': 'https://svgs.scryfall.io/card-symbols/W.svg',
     'U': 'https://svgs.scryfall.io/card-symbols/U.svg',
@@ -91,329 +68,497 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
     { name: 'Forest', color: 'G' },
   ];
 
-  // Initial load and Debounce per Local Registry Search
+  // Logic for Pool loading/filtering
   useEffect(() => {
-    if (pool) {
-      // If pool is provided, we don't fetch from registry
-      const mappedPool = pool.map(c => ({
-        scryfall_id: c.scryfall_id || c.id,
-        name: c.name,
-        rarity: c.rarity || 'common',
-        color: c.colors || [],
-        image_url: c.image_url || c.image_uris?.normal || '',
-        back_image_url: c.back_image_url,
-        cmc: c.cmc || 0,
-        type_line: c.type_line,
-        mana_cost: c.manaCost || '',
-        keywords: c.keywords || []
-      }));
-      
-      const filtered = mappedPool.filter(c => {
-        const matchesName = c.name.toLowerCase().includes(addQuery.toLowerCase());
-        const matchesColor = poolFilterColors.length === 0 || poolFilterColors.some(col => c.color.includes(col));
-        const matchesRarity = !poolFilterRarity || c.rarity.toLowerCase() === poolFilterRarity.toLowerCase();
-        const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
-        return matchesName && matchesColor && matchesRarity && matchesCmc;
-      });
-        
-      setApiSuggestions(filtered as any);
-      return;
-    }
-
     const loadCards = async () => {
       setIsApiLoading(true);
-      let results = [];
-      if (addQuery.length >= 2) {
-        results = await fetchRegistryCards(addQuery);
-      } else {
-        // Se la query è vuota, mostriamo le prime 50 carte implementate
-        const all = await fetchRegistryCards();
-        results = all.slice(0, 50);
-      }
 
-      // Filtriamo per implementate (manteniamo tutte, anche senza immagine locale)
-      const implemented = results.filter(c => c.engineStatus === 'IMPLEMENTED');
-      
-      // Arricchiamo con Scryfall (immagini, ecc.)
-      const enriched = await enrichCardsWithScryfall(implemented);
-      
-      setApiSuggestions(enriched.map(mapRegistryToSimplified));
+      if (pool) {
+        const poolCards: SimplifiedCard[] = pool.map(c => ({
+          scryfall_id: c.scryfall_id || c.id,
+          name: c.name,
+          rarity: c.rarity || 'common',
+          color: c.colors || [],
+          image_url: c.image_url || c.image_uris?.normal || '',
+          back_image_url: c.back_image_url,
+          cmc: c.cmc || 0,
+          type_line: c.type_line || '',
+          mana_cost: c.manaCost || c.mana_cost || '',
+          types: c.types || [],
+          supertypes: c.supertypes || [],
+          keywords: c.keywords || []
+        }));
+
+        const filtered = poolCards.filter(c => {
+          const matchesName = !addQuery || c.name.toLowerCase().includes(addQuery.toLowerCase());
+          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => c.color.includes(col));
+          const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
+          const matchesLand = !poolFilterLand || (c.types || []).some(t => t.toLowerCase() === 'land');
+          return matchesName && matchesColor && matchesCmc && matchesLand;
+        });
+
+        setApiSuggestions(filtered.slice(0, 75));
+      } else {
+        const results = await fetchRegistryCards(addQuery.length >= 2 ? addQuery : undefined);
+        const filtered = results.filter(c => {
+          const matchesName = !addQuery || c.name.toLowerCase().includes(addQuery.toLowerCase());
+          const cardColors = c.colors || [];
+          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => cardColors.includes(col));
+          const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? (c.cmc || 0) >= 6 : (c.cmc || 0) === poolFilterCmc);
+          const matchesLand = !poolFilterLand || (c.types || []).some(t => t.toLowerCase() === 'land');
+          return matchesName && matchesColor && matchesCmc && matchesLand;
+        });
+
+        const limited = filtered.slice(0, 75);
+        setApiSuggestions(limited.map(mapRegistryToSimplified));
+      }
       setIsApiLoading(false);
     };
 
-    const timeoutId = setTimeout(loadCards, addQuery.length >= 2 ? 300 : 0);
+    const timeoutId = setTimeout(loadCards, 300);
     return () => clearTimeout(timeoutId);
-  }, [addQuery, poolFilterColors, poolFilterRarity, poolFilterCmc]);
+  }, [addQuery, poolFilterColors, poolFilterCmc, poolFilterLand, pool]);
 
   const handleAddCard = async (cardName: string) => {
     setIsApiLoading(true);
     const results = await fetchRegistryCards(cardName);
     const match = results.find(c => c.name.toLowerCase() === cardName.toLowerCase());
-    
-    if (match && match.engineStatus === 'IMPLEMENTED') {
-      const enriched = await enrichCardsWithScryfall([match]);
-      setDeckCards(prev => [...prev, mapRegistryToSimplified(enriched[0])]);
-    } else {
-      if (match) {
-        alert(`${cardName} non è ancora stata implementata nell'engine.`);
-      }
+    if (match) {
+      setDeckCards(prev => [...prev, mapRegistryToSimplified(match)]);
     }
     setIsApiLoading(false);
   };
 
-  const removeCard = (scryfallId: string) => {
+  const moveCardToSideboard = (card: SimplifiedCard) => {
+    const scryfallId = card.scryfall_id;
+    // Remove from deck
     setDeckCards(prev => {
-      const idx = prev.findIndex(c => c.scryfall_id === scryfallId);
-      if (idx === -1) return prev;
       const next = [...prev];
-      next.splice(idx, 1);
+      const targetIdx = next.findLastIndex(c => c.scryfall_id === scryfallId);
+      if (targetIdx !== -1) next.splice(targetIdx, 1);
+      return next;
+    });
+
+    // Add to sideboard
+    setSideboardCards(prev => [...prev, card]);
+  };
+
+  const moveCardToMainboard = (card: SimplifiedCard) => {
+    setDeckCards(prev => [...prev, card]);
+    setSideboardCards(prev => {
+      const next = prev.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
       return next;
     });
   };
 
-  const handleImportSubmit = async () => {
-    if (!importText.trim()) return;
-    setIsImporting(true);
-    setImportErrors([]);
-    const names = importText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    try {
-      const { found, notFound } = await fetchRegistryCardsBatch(names);
-      if (found.length > 0) setDeckCards(prev => [...prev, ...found]);
-      if (notFound.length > 0) setImportErrors(notFound);
-      else { setIsImportModalOpen(false); setImportText(''); }
-    } catch (err) { alert('Errore import.'); } finally { setIsImporting(false); }
+  const removeCardFromDeck = (card: SimplifiedCard) => {
+    const scryfallId = card.scryfall_id;
+    setDeckCards(prev => {
+      const next = [...prev];
+      const idx = next.findLastIndex(c => c.scryfall_id === scryfallId);
+      if (idx !== -1) next.splice(idx, 1);
+      return next;
+    });
+  };
+
+  const removeCardFromSideboard = (card: SimplifiedCard) => {
+    setSideboardCards(prev => {
+      const next = prev.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
+      return next;
+    });
   };
 
   const saveDeck = async () => {
     setSaveStatus('saving');
-    const deckData = { name: deckName, cards: deckCards, cardCount: deckCards.length, lastUpdated: new Date().toISOString() };
     try {
       const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/decks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(deckData)
+        body: JSON.stringify({
+          name: deckName,
+          cards: deckCards,
+          sideboard: sideboardCards,
+          cardCount: deckCards.length,
+          lastUpdated: new Date().toISOString()
+        })
       });
-      if (!res.ok) throw new Error('Errore salvataggio');
+      if (!res.ok) throw new Error();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } catch (e: any) { alert(`Errore: ${e.message}`); setSaveStatus('idle'); }
+    } catch (e) { setSaveStatus('idle'); }
   };
 
-  const groupedCards = useMemo(() => {
-    const filtered = deckCards.filter(card => {
-      const matchesQuery = card.name.toLowerCase().includes(filterQuery.toLowerCase());
-      const matchesCmc = filterCmc === null || (filterCmc === 6 ? card.cmc >= 6 : card.cmc === filterCmc);
-      return matchesQuery && matchesCmc;
+  const toggleFlip = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setFlippedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
-    const groups: Map<string, { card: SimplifiedCard, count: number }> = new Map();
-    filtered.forEach(card => {
-      const existing = groups.get(card.scryfall_id);
-      if (existing) existing.count++;
-      else groups.set(card.scryfall_id, { card, count: 1 });
+  };
+
+  // Group deck cards into CMC columns
+  const cmcColumns = useMemo(() => {
+    const columns: Record<number, SimplifiedCard[]> = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+
+    deckCards.forEach(card => {
+      const cmc = Math.min(card.cmc || 0, 6);
+      columns[cmc].push(card);
     });
-    return Array.from(groups.values()).sort((a,b) => a.card.cmc - b.card.cmc || a.card.name.localeCompare(b.card.name));
-  }, [deckCards, filterQuery, filterCmc]);
+
+    // Sort each column by name for a clean layout
+    Object.keys(columns).forEach(cmcKey => {
+      const cmc = parseInt(cmcKey);
+      columns[cmc].sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    return columns;
+  }, [deckCards]);
+
+  const renderManaSymbols = (manaCost: string) => {
+    if (!manaCost) return null;
+    const symbols = manaCost.match(/\{[^}]+\}/g) || [];
+    return (
+      <div className="flex gap-0.5">
+        {symbols.map((s, i) => {
+          const sym = s.replace(/[{}]/g, '');
+          const url = `https://svgs.scryfall.io/card-symbols/${sym}.svg`;
+          return <img key={i} src={url} className="w-3 h-3" alt={sym} />;
+        })}
+      </div>
+    );
+  };
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto min-h-screen pb-40 lg:p-10 lg:space-y-12 animate-in fade-in duration-700 overflow-x-hidden">
-      
-      {/* MOBILE HEADER */}
-      <div className="lg:hidden sticky top-0 z-[100] bg-slate-950/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-         <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-2 text-slate-400 hover:text-white transition-colors"><Home className="w-6 h-6" /></button>
-            <div className="space-y-0.5">
-               <h2 className="text-xl font-black text-white uppercase italic tracking-tighter truncate max-w-[150px]">{deckName}</h2>
-               <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none">Cards: {deckCards.length}</p>
-            </div>
-         </div>
-         <div className="flex items-center gap-2">
-            <button onClick={saveDeck} className={`p-2.5 rounded-xl transition-all ${saveStatus === 'saved' ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white shadow-lg active:scale-95'}`}>{saveStatus === 'saving' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}</button>
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2.5 bg-slate-900 border border-white/5 rounded-xl text-slate-400 active:bg-slate-800"><Menu className="w-5 h-5" /></button>
-         </div>
-      </div>
+    <div className="fixed inset-0 bg-[#0a0a0c] text-white flex flex-col overflow-hidden font-sans select-none">
 
-      {/* DESKTOP HEADER */}
-      <div className="hidden lg:flex items-center justify-between gap-8 pb-10 border-b border-white/5">
-        <div className="flex items-center gap-6">
-          <button onClick={onBack} className="p-4 bg-slate-900/50 hover:bg-slate-800 text-slate-500 rounded-3xl border border-white/5 transition-all shadow-xl"><Home className="w-6 h-6" /></button>
-          <div className="space-y-1">
-            {isEditingName ? (
-              <input value={deckName} onChange={e => setDeckName(e.target.value)} onBlur={() => setIsEditingName(false)} autoFocus className="bg-slate-950 border-b-2 border-indigo-500 text-3xl font-black text-white outline-none uppercase italic" />
-            ) : (
-              <h2 onClick={() => setIsEditingName(true)} className="text-4xl sm:text-6xl font-black text-white uppercase italic tracking-tighter cursor-pointer hover:text-indigo-400 transition-colors">{deckName}</h2>
-            )}
-            <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Deck Builder & Strategy Lab</p>
+      {/* TOP BAR */}
+      <div className="h-[clamp(44px,6vh,64px)] bg-black/60 backdrop-blur-md border-b border-white/5 flex items-center px-4 justify-between shrink-0 z-50">
+        <div className="flex items-center gap-[clamp(8px,1vw,16px)]">
+          <button onClick={onBack} className="p-[clamp(4px,0.5vw,8px)] hover:bg-white/5 rounded-lg transition-colors"><Home className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)] text-slate-400" /></button>
+          <div className="h-4 w-px bg-white/10" />
+          <div className="relative group w-[12vw] min-w-[160px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[clamp(12px,1vw,16px)] h-[clamp(12px,1vw,16px)] text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+            <input
+              value={addQuery}
+              onChange={e => setAddQuery(e.target.value)}
+              placeholder="Search..."
+              className="w-full bg-white/5 border border-white/5 rounded-full pl-9 pr-4 py-1 text-[clamp(10px,0.8vw,12px)] outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600"
+            />
+            {isApiLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-indigo-500 animate-spin" />}
           </div>
         </div>
-        <div className="flex items-center gap-4 w-full lg:max-w-3xl">
-          <div className="relative flex-1 group"><Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" /><input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Cerca tra le carte implementate..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-emerald-500/50 transition-all font-bold text-lg" />{isApiLoading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />}</div>
-          <button onClick={() => setIsImportModalOpen(true)} className="p-5 bg-slate-900/50 text-indigo-400 rounded-[2rem] border border-white/5"><FileText className="w-6 h-6" /></button>
+
+        <div className="flex items-center gap-[clamp(12px,1.5vw,24px)]">
+          <div className="flex items-center gap-1 bg-black/20 p-0.5 rounded-full border border-white/5 px-1.5">
+            {['W', 'U', 'B', 'R', 'G'].map(col => (
+              <button
+                key={col}
+                onClick={() => setPoolFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
+                className={`w-[clamp(24px,2.5vh,32px)] h-[clamp(24px,2.5vh,32px)] rounded-full flex items-center justify-center transition-all ${poolFilterColors.includes(col) ? 'bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.5)] scale-110' : 'opacity-30 hover:opacity-100 grayscale hover:grayscale-0'}`}
+              >
+                <img src={manaSymbols[col]} className="w-1/2 h-1/2" alt={col} />
+              </button>
+            ))}
+            <div className="w-px h-4 bg-white/10 mx-1" />
+            <button
+              onClick={() => setPoolFilterLand(!poolFilterLand)}
+              className={`w-[clamp(24px,2.5vh,32px)] h-[clamp(24px,2.5vh,32px)] rounded-full flex items-center justify-center transition-all ${poolFilterLand ? 'bg-amber-600 shadow-[0_0_8px_rgba(217,119,6,0.5)] scale-110' : 'opacity-30 hover:opacity-100 grayscale hover:grayscale-0'}`}
+              title="Toggle Lands Only"
+            >
+              <img src="/land_symbol.png" className="w-3/4 h-3/4 object-contain" alt="Lands" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-0.5 bg-black/20 p-0.5 rounded-full border border-white/5 px-1.5">
+            {[0, 1, 2, 3, 4, 5, 6].map(val => (
+              <button
+                key={val}
+                onClick={() => setPoolFilterCmc(poolFilterCmc === val ? null : val)}
+                className={`w-[clamp(24px,2.5vh,32px)] h-[clamp(24px,2.5vh,32px)] rounded-full flex items-center justify-center text-[clamp(8px,0.7vw,10px)] font-black transition-all ${poolFilterCmc === val ? 'bg-white text-black' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+              >
+                {val === 6 ? '6+' : val}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button onClick={() => setIsImportModalOpen(true)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Import"><FileText className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)]" /></button>
+          <button onClick={() => setShowStats(true)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Stats"><BarChart2 className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)]" /></button>
+        </div>
+      </div>
+
+      {/* ═══ POOL AREA (top half, full width) ═══ */}
+      <div className="shrink-0 border-b border-white/5 relative overflow-hidden transition-all duration-300" style={{ height: `${splitPercent}%` }}>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e12] to-[#0a0a0c] pointer-events-none" />
+        <div className="relative h-full overflow-y-auto overflow-x-hidden custom-scrollbar p-3">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-14 gap-2 content-start">
+            {apiSuggestions.map((card, i) => (
+              <button
+                key={card.scryfall_id + '-' + i}
+                onClick={() => {
+                  setDeckCards(prev => [...prev, card]);
+                }}
+                onContextMenu={(e) => { e.preventDefault(); setZoomCard({ card, flipped: false }); }}
+                className="relative aspect-[2.5/3.5] rounded-lg overflow-hidden shadow-xl border border-white/10 hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] active:scale-95 transition-all group"
+              >
+                <PoolCardImage card={card} />
+              </button>
+            ))}
+            {apiSuggestions.length === 0 && !isApiLoading && (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 gap-3 py-12">
+                <Search className="w-10 h-10 opacity-15" />
+                <p className="text-[10px] font-black uppercase tracking-widest">No cards found</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ DIVIDER with expand arrows ═══ */}
+      <div className="relative h-5 shrink-0 flex items-center justify-center bg-[#0a0a0c] z-40">
+        <div className="flex items-center gap-3 px-4 py-0.5 bg-white/5 border border-white/10 rounded-full shadow-lg">
+          <button
+            onClick={() => {
+              if (splitPercent !== 45) setSplitPercent(45);
+              else setSplitPercent(15);
+            }}
+            className={`transition-all p-0.5 ${splitPercent <= 20 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
+            title="Maximize Deck / Restore"
+          >
+            <svg viewBox="0 0 10 6" className="w-3 h-3 fill-current"><polygon points="5,0 10,6 0,6" /></svg>
+          </button>
+          <div className="h-3 w-px bg-white/10" />
+          <button
+            onClick={() => {
+              if (splitPercent !== 45) setSplitPercent(45);
+              else setSplitPercent(80);
+            }}
+            className={`transition-all p-0.5 ${splitPercent >= 75 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
+            title="Maximize Pool / Restore"
+          >
+            <svg viewBox="0 0 10 6" className="w-3 h-3 fill-current"><polygon points="5,6 10,0 0,0" /></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ═══ LOWER SECTION (Deck + Sideboard side by side) ═══ */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+
+        {/* DECK AREA (CMC Columns with stacked card strips) */}
+        <div className="flex-1 bg-[#0b0b0d] relative overflow-x-auto overflow-y-hidden flex gap-2 px-3 pt-3 custom-scrollbar-h">
+          {[0, 1, 2, 3, 4, 5, 6].map(cmc => {
+            const cards = cmcColumns[cmc];
+            return (
+              <div key={cmc} className="flex-1 min-w-[80px] sm:min-w-[100px] md:min-w-[120px] flex flex-col relative">
+                {/* Scrollable Column Content — uniform 30px fan */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                  <div className="relative w-full" style={{ height: `${40 * (cards.length - 1) + 160}px` }}>
+                    {cards.map((card, cardIdx) => (
+                      <div
+                        key={cardIdx}
+                        className="absolute inset-x-0 aspect-[2.5/3.5] rounded-lg overflow-hidden border border-white/10 shadow-lg cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] hover:z-[100] transition-all"
+                        style={{ top: `${cardIdx * 40}px`, zIndex: cardIdx }}
+                        onClick={() => moveCardToSideboard(card)}
+                        onContextMenu={(e) => { e.preventDefault(); removeCardFromDeck(card); }}
+                      >
+                        <PoolCardImage card={card} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* SIDEBOARD (only in bottom half) */}
+        <SideboardSidebar
+          sideboard={sideboardCards}
+          isSideboardCollapsed={isSideboardCollapsed}
+          flippedIds={flippedIds}
+          onToggleFlip={toggleFlip}
+          onToggleCollapse={() => setIsSideboardCollapsed(!isSideboardCollapsed)}
+          onMoveToMainboard={moveCardToMainboard}
+          onRemoveFromSideboard={removeCardFromSideboard}
+          onDragStart={() => { }}
+          onDrop={() => { }}
+          renderManaSymbols={renderManaSymbols}
+        />
+      </div>
+
+      {/* BOTTOM BAR */}
+      <div className="h-[clamp(48px,7vh,72px)] bg-[#08080a] border-t border-white/5 flex items-center px-6 justify-between shrink-0 z-50">
+        <div className="flex items-center gap-[clamp(12px,2vw,32px)]">
+          <div className="flex flex-col leading-tight">
+            {isEditingName ? (
+              <input
+                value={deckName}
+                onChange={e => setDeckName(e.target.value)}
+                onBlur={() => setIsEditingName(false)}
+                autoFocus
+                className="bg-transparent border-b border-indigo-500 text-[clamp(12px,1vw,14px)] font-black text-white outline-none uppercase italic"
+              />
+            ) : (
+              <h2 onClick={() => setIsEditingName(true)} className="text-[clamp(12px,1vw,14px)] font-black text-white uppercase italic tracking-tighter cursor-pointer hover:text-indigo-400 transition-colors">
+                {deckName}
+              </h2>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-[clamp(8px,0.7vw,10px)] font-black text-indigo-400 uppercase tracking-widest">{deckCards.length} / 60 Cards</span>
+              <div className="flex gap-0.5">
+                {['W', 'U', 'B', 'R', 'G'].map(c => {
+                  const count = deckCards.filter(card => card.color.includes(c)).length;
+                  if (count === 0) return null;
+                  return <img key={c} src={manaSymbols[c]} className="w-[clamp(8px,0.8vw,12px)] h-[clamp(8px,0.8vw,12px)]" alt={c} />;
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="h-6 w-px bg-white/5" />
+
+          <div className="flex items-center gap-[clamp(8px,1vw,16px)]">
+            <Sun className="w-[clamp(12px,1vw,16px)] h-[clamp(12px,1vw,16px)] text-amber-500" />
+            <div className="flex gap-1">
+              {basicLands.map(land => (
+                <button
+                  key={land.name}
+                  onClick={() => handleAddCard(land.name)}
+                  className="w-[clamp(28px,4vh,36px)] h-[clamp(28px,4vh,36px)] rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/5 active:scale-90"
+                >
+                  <img src={manaSymbols[land.color]} className="w-1/2 h-1/2" alt={land.color} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
           {onConfirm ? (
-            <button onClick={() => onConfirm(deckCards)} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all bg-emerald-600 text-white shadow-lg active:scale-95`}>
-               Conferma Mazzo <ArrowRight className="w-5 h-5" />
+            <button
+              onClick={() => onConfirm?.(deckCards)}
+              className="px-[clamp(16px,2vw,32px)] py-[clamp(6px,1vh,12px)] bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-black uppercase text-[clamp(9px,0.8vw,11px)] tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
+            >
+              Done <ArrowRight className="w-[clamp(10px,1vw,14px)] h-[clamp(10px,1vw,14px)]" />
             </button>
           ) : (
-            <button onClick={saveDeck} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all ${saveStatus === 'saved' ? 'bg-emerald-600' : 'bg-indigo-600 text-white'}`}>{saveStatus === 'saving' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} {saveStatus === 'saved' ? 'Saved' : 'Save'}</button>
+            <button
+              onClick={saveDeck}
+              className={`px-[clamp(16px,2vw,32px)] py-[clamp(6px,1vh,12px)] rounded-full font-black uppercase text-[clamp(9px,0.8vw,11px)] tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 ${saveStatus === 'saved' ? 'bg-emerald-600 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-900/20'
+                }`}
+            >
+              {saveStatus === 'saving' ? <Loader2 className="w-[clamp(10px,1vw,14px)] h-[clamp(10px,1vw,14px)] animate-spin" /> : <Save className="w-[clamp(10px,1vw,14px)] h-[clamp(10px,1vw,14px)]" />}
+              {saveStatus === 'saved' ? 'Saved' : 'Save Deck'}
+            </button>
           )}
         </div>
       </div>
 
-      {/* MOBILE MENU */}
-      <AnimatePresence>
-         {isMobileMenuOpen && (
-            <>
-               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden fixed inset-0 z-[150] bg-slate-950/60 backdrop-blur-sm" />
-               <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="lg:hidden fixed right-0 top-0 bottom-0 w-[80%] max-w-sm z-[200] bg-slate-900 border-l border-white/5 p-8 flex flex-col gap-6 shadow-4xl">
-                  <div className="flex items-center justify-between"><h3 className="text-2xl font-black text-white uppercase italic">Opzioni</h3><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500"><X className="w-6 h-6" /></button></div>
-                  <div className="space-y-4">
-                     <button onClick={() => { setShowStats(true); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-4 p-5 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-indigo-400 font-black uppercase tracking-widest text-xs"><BarChart2 className="w-5 h-5" /> Analytics</button>
-                     <button onClick={() => { setIsImportModalOpen(true); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-4 p-5 bg-slate-800 border border-white/5 rounded-2xl text-white font-black uppercase tracking-widest text-xs"><FileText className="w-5 h-5" /> Import</button>
-                  </div>
-                  <div className="mt-4 space-y-4">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-2 block">Quick Add Lands</span>
-                     <div className="grid grid-cols-5 gap-2">{basicLands.map(land => (<button key={land.name} onClick={() => handleAddCard(land.name)} className="aspect-square bg-slate-800 rounded-xl flex items-center justify-center p-2 border border-white/5 active:bg-slate-700"><img src={manaSymbols[land.color as keyof typeof manaSymbols]} className="w-full h-full" alt={land.name} /></button>))}</div>
-                  </div>
-               </motion.div>
-            </>
-         )}
-      </AnimatePresence>
+      {/* MODALS */}
+      <StatsModal isOpen={showStats} onClose={() => setShowStats(false)} cards={deckCards} title="Deck Analytics" />
 
-      <div className="p-4 lg:p-0 space-y-8">
-         <div className="lg:hidden relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500" />
-            <input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Search Implemented..." className="w-full bg-slate-900 border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none" />
-            {isApiLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />}
-         </div>
-
-         {apiSuggestions.length > 0 && (
-            <div className="flex flex-col gap-4 mb-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
-                  {['W', 'U', 'B', 'R', 'G'].map(col => (
-                    <button 
-                      key={col} 
-                      onClick={() => setPoolFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${poolFilterColors.includes(col) ? 'bg-indigo-600 shadow-lg scale-110' : 'opacity-40 hover:opacity-100 grayscale hover:grayscale-0'}`}
-                    >
-                      <img src={manaSymbols[col]} className="w-5 h-5" alt={col} />
-                    </button>
-                  ))}
-                </div>
-                
-                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
-                  {['Common', 'Uncommon', 'Rare', 'Mythic'].map(rar => (
-                    <button 
-                      key={rar} 
-                      onClick={() => setPoolFilterRarity(poolFilterRarity === rar ? null : rar)}
-                      className={`px-3 h-8 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${poolFilterRarity === rar ? 'bg-white text-slate-950' : 'text-slate-500 hover:text-white'}`}
-                    >
-                      {rar[0]}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
-                  {[0,1,2,3,4,5,6].map(val => (
-                    <button 
-                      key={val} 
-                      onClick={() => setPoolFilterCmc(poolFilterCmc === val ? null : val)}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] transition-all ${poolFilterCmc === val ? 'bg-white text-slate-950' : 'text-slate-500 hover:text-white'}`}
-                    >
-                      {val === 6 ? '6+' : val}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-         <AnimatePresence>
-           {apiSuggestions.length > 0 && (
-             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex lg:grid gap-4 p-4 lg:p-8 bg-indigo-950/20 border border-indigo-500/20 rounded-[1.5rem] lg:rounded-[3rem] shadow-2xl overflow-x-auto lg:overflow-x-visible lg:grid-cols-8 custom-scrollbar mb-8">
-                {apiSuggestions.map(card => (
-                  <button 
-                    key={card.scryfall_id} 
-                    onClick={() => setDeckCards(prev => [...prev, card])} 
-                    className="relative min-w-[120px] lg:min-w-0 aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/5 bg-slate-900 group"
-                  >
-                    <PoolCardImage card={card} />
-                  </button>
-                ))}
-             </motion.div>
-           )}
-         </AnimatePresence>
-
-         <div className="space-y-6 lg:space-y-8">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 px-2">
-               <div className="flex items-center justify-between w-full lg:w-auto gap-4"><h3 className="text-xl lg:text-2xl font-black text-white uppercase italic tracking-tight">Main Deck ({deckCards.length})</h3><button onClick={() => setShowFilters(!showFilters)} className="lg:hidden p-3 bg-slate-900 border border-white/5 rounded-xl text-slate-400 active:bg-slate-800"><Filter className="w-5 h-5" /></button></div>
-               <AnimatePresence>{(showFilters || window.innerWidth > 1024) && (<motion.div initial={window.innerWidth < 1024 ? { height: 0, opacity: 0 } : {}} animate={window.innerWidth < 1024 ? { height: 'auto', opacity: 1 } : {}} exit={window.innerWidth < 1024 ? { height: 0, opacity: 0 } : {}} className="flex flex-col lg:flex-row items-center gap-4 w-full lg:w-auto overflow-hidden"><div className="relative w-full lg:w-64"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" /><input value={filterQuery} onChange={e => setFilterQuery(e.target.value)} placeholder="Filter deck..." className="w-full bg-slate-900/50 border border-white/5 pl-10 pr-4 py-2.5 rounded-xl text-sm font-bold text-white outline-none" /></div><div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 w-full lg:w-auto overflow-x-auto justify-center">{[0,1,2,3,4,5,6].map(val => (<button key={val} onClick={() => setFilterCmc(filterCmc === val ? null : val)} className={`min-w-[32px] h-8 rounded-lg flex items-center justify-center font-black text-[10px] transition-all ${filterCmc === val ? 'bg-white text-slate-950' : 'text-slate-500 hover:text-white'}`}>{val === 6 ? '6+' : val}</button>))}</div></motion.div>)}</AnimatePresence>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-6">
-               {groupedCards.map(({ card, count }) => (<CardGridItem key={card.scryfall_id} card={card} count={count} onZoom={() => setZoomCard(card)} onRemove={() => removeCard(card.scryfall_id)} onQuickAdd={() => handleAddCard(card.name)} />))}
-               {groupedCards.length === 0 && (<div className="col-span-full py-20 bg-slate-900/10 border border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center gap-4"><AlertTriangle className="w-10 h-10 text-slate-700" /><p className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Nessuna carta trovata</p></div>)}
-            </div>
-
-            {/* LOWER ACTIONS */}
-            {/* PREMIUM DECK FOOTER UTILITIES */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pt-12 mt-12 border-t border-white/5">
-              <div className="bg-[#0f172a]/80 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 space-y-6 shadow-2xl relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
-                <div className="flex items-center gap-3 px-2 relative"><Sun className="w-5 h-5 text-amber-400" /><span className="text-xs font-black uppercase tracking-[0.2em] text-slate-300">Terre Base Fast-Add</span></div>
-                <div className="flex justify-between gap-4 relative">
-                    {basicLands.map(land => (
-                        <button 
-                            key={land.name} 
-                            onClick={() => handleAddCard(land.name)} 
-                            className="group flex-1 flex flex-col items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-[2rem] hover:bg-white/10 hover:border-indigo-500/30 transition-all active:scale-90"
-                        >
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center p-2 shadow-lg ${land.color === 'W' ? 'bg-amber-100 text-amber-600' : land.color === 'U' ? 'bg-blue-100 text-blue-600' : land.color === 'B' ? 'bg-slate-800 text-slate-100' : land.color === 'R' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                                <img src={manaSymbols[land.color as keyof typeof manaSymbols]} className="w-full h-full" alt={land.color} />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">{land.name}</span>
-                        </button>
-                    ))}
-                </div>
-              </div>
-
-              <button 
-                onClick={() => setShowStats(true)} 
-                className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/30 p-8 rounded-[3rem] flex items-center justify-center gap-8 group transition-all shadow-2xl relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <BarChart2 className="w-14 h-14 text-indigo-400 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
-                <div className="text-left relative">
-                    <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter">Analisi Mazzo</h4>
-                    <p className="text-indigo-400/80 font-black uppercase text-[10px] tracking-[0.3em] mt-1">Deep stats & Mana Curve Distribution</p>
-                </div>
-              </button>
-            </div>
-         </div>
-      </div>
-
-      <StatsModal isOpen={showStats} onClose={() => setShowStats(false)} cards={deckCards} title="Deck Strategy Analytics" />
-
-      {/* MODAL IMPORT */}
       <AnimatePresence>
         {isImportModalOpen && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/90 backdrop-blur-xl p-4 sm:p-6 animate-in fade-in duration-300">
-             <div className="bg-slate-900 w-full max-w-2xl rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
-                <div className="p-6 sm:p-8 border-b border-white/5 flex items-center justify-between"><div className="flex items-center gap-3 sm:gap-4"><div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400"><FileText className="w-5 h-5 sm:w-6 sm:h-6" /></div><div><h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">Importazione</h3><p className="text-slate-500 text-[8px] sm:text-[10px] uppercase font-black tracking-widest">Uno per riga</p></div></div><button onClick={async () => { try { const text = await navigator.clipboard.readText(); if (text) setImportText(prev => prev ? prev + '\n' + text : text); } catch(e) { } }} className="p-3 bg-slate-800 text-slate-300 rounded-xl border border-white/5"><ClipboardIcon className="w-5 h-5" /></button></div>
-                <div className="p-6 sm:p-8 flex-1 overflow-y-auto space-y-6 custom-scrollbar"><textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="Counterspell\nLightning Bolt" className="w-full h-48 sm:h-64 bg-slate-950 border border-slate-800 rounded-3xl p-4 sm:p-6 text-slate-200 font-mono text-sm outline-none resize-none" disabled={isImporting} />{importErrors.length > 0 && <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-2xl space-y-4"><div className="flex items-center gap-3 text-red-500"><AlertTriangle className="w-5 h-5" /><span className="text-xs font-black uppercase">Mancanti ({importErrors.length})</span></div><div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">{importErrors.map((name, i) => (<div key={i} className="text-[10px] text-slate-400 bg-slate-950/50 p-2 rounded-lg border border-red-500/10 truncate font-bold">{name}</div>))}</div></div>}</div>
-                <div className="p-6 sm:p-8 border-t border-white/5 bg-slate-950/30 flex gap-4"><button onClick={() => setIsImportModalOpen(false)} className="flex-1 py-4 text-slate-400 font-black uppercase text-[10px]">Annulla</button><button onClick={handleImportSubmit} className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-3">{isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Database className="w-5 h-5" />} {isImporting ? '...' : 'Import'}</button></div>
-             </div>
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-xl p-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-[#121214] w-full max-w-2xl rounded-3xl border border-white/10 shadow-4xl overflow-hidden flex flex-col"
+            >
+              <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">Import Deck</h3>
+                <button onClick={() => setIsImportModalOpen(false)} className="p-2 text-slate-500 hover:text-white"><X size={20} /></button>
+              </div>
+              <div className="p-8 space-y-6">
+                <textarea
+                  value={importText}
+                  onChange={e => setImportText(e.target.value)}
+                  placeholder="1 Counterspell&#10;4 Island"
+                  className="w-full h-64 bg-black/40 border border-white/5 rounded-2xl p-6 text-sm font-mono outline-none focus:border-indigo-500/30 transition-all resize-none"
+                />
+                {importErrors.length > 0 && (
+                  <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-2">
+                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Errors ({importErrors.length} cards not found)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {importErrors.map((err, i) => <span key={i} className="text-[9px] bg-black/40 px-2 py-1 rounded border border-white/5 text-slate-400">{err}</span>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="p-6 bg-black/20 flex gap-4">
+                <button onClick={() => setIsImportModalOpen(false)} className="flex-1 py-3 text-slate-400 font-black uppercase text-[10px]">Cancel</button>
+                <button
+                  onClick={async () => {
+                    if (!importText.trim()) return;
+                    setIsImporting(true);
+                    setImportErrors([]);
+                    const lines = importText.split('\n').filter(l => l.trim());
+                    try {
+                      const { found, notFound } = await fetchRegistryCardsBatch(lines);
+                      if (found.length > 0) setDeckCards(prev => [...prev, ...found]);
+                      if (notFound.length > 0) setImportErrors(notFound);
+                      else { setIsImportModalOpen(false); setImportText(''); }
+                    } catch (err) { alert('Import error'); } finally { setIsImporting(false); }
+                  }}
+                  className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black uppercase text-xs flex items-center justify-center gap-3 active:scale-95 transition-all"
+                >
+                  {isImporting ? <Loader2 size={16} className="animate-spin" /> : <Database size={16} />}
+                  Import
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* ZOOM MODAL */}
+      {/* ZOOM VIEW */}
       <AnimatePresence>
         {zoomCard && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1100] bg-slate-950/95 backdrop-blur-3xl flex flex-col items-center justify-center p-4 sm:p-10" onClick={() => setZoomCard(null)}>
-             <motion.img layoutId={`card-${zoomCard.scryfall_id}`} src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : zoomCard.image_url} className="max-h-[80dvh] w-auto rounded-[2rem] sm:rounded-[3rem] shadow-4xl border-4 sm:border-8 border-white/5" /><div className="mt-8 flex gap-4">{zoomCard.back_image_url && (<button onClick={(e) => { e.stopPropagation(); setIsZoomFlipped(!isZoomFlipped); }} className="px-6 sm:px-8 py-4 bg-indigo-600 text-white font-black uppercase rounded-2xl flex items-center gap-3"><RefreshCw className="w-5 h-5" /> Gira </button>)}<button onClick={() => setZoomCard(null)} className="px-6 sm:px-8 py-4 bg-slate-800 text-white font-black uppercase rounded-2xl">Chiudi</button></div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-10"
+            onClick={() => setZoomCard(null)}
+          >
+            {(() => {
+              const z = zoomCard;
+              return (
+                <>
+                  <motion.div
+                    layoutId={`card-${z.card.scryfall_id}`}
+                    className="relative group"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <img
+                      src={z.flipped && z.card.back_image_url ? z.card.back_image_url : z.card.image_url}
+                      className="max-h-[75dvh] w-auto rounded-[2.5rem] shadow-4xl border border-white/10"
+                    />
+                    {z.card.back_image_url && (
+                      <button
+                        onClick={() => setZoomCard(prev => prev ? { ...prev, flipped: !prev.flipped } : null)}
+                        className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-indigo-600 rounded-2xl shadow-xl hover:scale-110 active:scale-90 transition-all"
+                      >
+                        <RefreshCw size={24} className={z.flipped ? 'rotate-180 transition-transform' : ''} />
+                      </button>
+                    )}
+                  </motion.div>
+                  <div className="mt-12 flex flex-col items-center gap-4">
+                    <h2 className="text-3xl font-black uppercase italic tracking-tighter">{z.card.name}</h2>
+                    <button onClick={() => setZoomCard(null)} className="px-10 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all">Close</button>
+                  </div>
+                </>
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };

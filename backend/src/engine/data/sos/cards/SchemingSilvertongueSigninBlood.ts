@@ -9,7 +9,7 @@ export const SchemingSilvertongueSigninBlood: CardDefinition = {
     oracleText: "Flying, lifelink\nAt the beginning of your second main phase, if you gained 2 or more life this turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "1",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.png?1775937600",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -25,7 +25,7 @@ export const SchemingSilvertongueSigninBlood: CardDefinition = {
     ],
     preparedFace: {
         name: "Sign in Blood",
-        image_url: "https://cards.scryfall.io/png/front/3/7/37096e0c-cbf2-4931-a9f9-2b002882aee1.png?1623548332",
+
         manaCost: "{B}{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -49,6 +49,10 @@ export const SchemingSilvertongueSigninBlood: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    rarity: "rare",
+    scryfall_id: "fe85a124-0d8b-4a29-8df1-65888a39147f",
+    image_url: "https://cards.scryfall.io/normal/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.jpg?1778165124",
 };

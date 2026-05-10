@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const ElderGargaroth: CardDefinition = {
     name: "Elder Gargaroth",
     manaCost: "{3}{G}{G}",
-    scryfall_id: "d51269cf-a333-4a64-94cd-245798d840d2",
-    image_url: "https://cards.scryfall.io/normal/front/d/5/d51269cf-a333-4a64-94cd-245798d840d2.jpg?1594736944",
+
     oracleText: "Vigilance, reach, trample\nWhenever Elder Gargaroth attacks or blocks, choose one —\n• Create a 3/3 green Beast creature token.\n• You gain 3 life.\n• Draw a card.",
     colors: ["G"],
     types: ["Creature"],
@@ -27,7 +26,7 @@ export const ElderGargaroth: CardDefinition = {
                             tokenBlueprint: {
                                 name: 'Beast', power: '3', toughness: '3', colors: ['G'],
                                 types: ['Creature'], subtypes: ['Beast'],
-                                image_url: 'https://cards.scryfall.io/large/front/4/e/4e178129-8422-42fe-bed1-073f114620f4.jpg?1594733661'
+
                             },
                             targetMapping: TargetMapping.Controller
                         }]
@@ -48,8 +47,12 @@ export const ElderGargaroth: CardDefinition = {
                             targetMapping: TargetMapping.Controller
                         }]
                     }
-                ],
+                ]
             }]
         }
-    ]
+    ],
+    scryfall_id: "d51269cf-a333-4a64-94cd-245798d840d2",
+    image_url: "https://cards.scryfall.io/normal/front/d/5/d51269cf-a333-4a64-94cd-245798d840d2.jpg?1594736944",
+    rarity: "mythic"
 };
+

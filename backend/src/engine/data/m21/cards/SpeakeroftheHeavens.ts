@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
 export const SpeakeroftheHeavens: CardDefinition = {
     name: "Speaker of the Heavens",
     manaCost: "{W}",
-    scryfall_id: "1f44b56a-0a44-43a4-8f9e-72f7c00bb4a6",
-    image_url: "https://cards.scryfall.io/normal/front/1/f/1f44b56a-0a44-43a4-8f9e-72f7c00bb4a6.jpg?1594735210",
+
     oracleText: "Vigilance, lifelink\n{T}: Create a 4/4 white Angel creature token with flying. Activate only if you have at least 7 more life than your starting life total and only as a sorcery.",
     colors: ["W"],
     types: ["Creature"],
@@ -30,11 +29,15 @@ export const SpeakeroftheHeavens: CardDefinition = {
                         types: ['Creature'], 
                         subtypes: ['Angel'], 
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/large/front/9/e/9e12d954-3ec2-46e3-b01f-1fd63159e8a4.jpg?1594733473'
+
                     }, 
                     targetMapping: TargetMapping.Controller 
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "1f44b96a-8498-414a-a4ac-54c80dfa9f23",
+    image_url: "https://cards.scryfall.io/normal/front/1/f/1f44b96a-8498-414a-a4ac-54c80dfa9f23.jpg?1594735262",
+    rarity: "rare"
 };
+

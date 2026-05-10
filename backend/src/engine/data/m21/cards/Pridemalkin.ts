@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const Pridemalkin: CardDefinition = {
     name: "Pridemalkin",
     manaCost: "{2}{G}",
-    scryfall_id: "df520254-0c72-496b-9222-263ca9d3c5d5",
-    image_url: "https://cards.scryfall.io/normal/front/d/f/df520254-0c72-496b-9222-263ca9d3c5d5.jpg?1594737133",
+
     oracleText: "When this creature enters, put a +1/+1 counter on target creature you control. Each creature you control with a +1/+1 counter on it has trample.",
     colors: ["G"],
     types: ["Creature"],
@@ -37,5 +36,9 @@ export const Pridemalkin: CardDefinition = {
                 restrictions: [Restriction.Creature, Restriction.HasP1P1Counter]
             }]
         }
-    ]
+    ],
+    scryfall_id: "c56cf35b-ca17-4691-9a1d-3a1a8f569c27",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c56cf35b-ca17-4691-9a1d-3a1a8f569c27.jpg?1682209587",
+    rarity: "common"
 };
+

@@ -3,8 +3,8 @@ import type { SimplifiedCard } from '../../services/scryfall';
 import { DeckHeader } from './DeckHeader';
 import { MainboardGrid } from './MainboardGrid';
 import { SideboardSidebar } from './SideboardSidebar';
-import { StatsModal } from './StatsModal';
-import { X, RefreshCw } from 'lucide-react';
+import { StatsModal } from '../shared/StatsModal';
+import { Search, X, RefreshCw } from 'lucide-react';
 
 interface DeckReviewProps {
   pool: SimplifiedCard[];
@@ -32,7 +32,7 @@ export const DeckReviewView = ({
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
   const [filterCmc, setFilterCmc] = useState<number | null>(null);
 
-  const [draggedCardIndex, setDraggedCardIndex] = useState<{ index: number, source: 'main' | 'side' } | null>(null);
+  const [draggedCard, setDraggedCard] = useState<{ card: SimplifiedCard, source: 'main' | 'side' } | null>(null);
   const [isSideboardCollapsed, setIsSideboardCollapsed] = useState(true);
   const [separateByType, setSeparateByType] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -68,20 +68,16 @@ export const DeckReviewView = ({
     });
   }, [pool, filterQuery, filterColors, filterRarity, filterCmc]);
 
-  // We still want to manage main/side but we filter what we SEE
   const [mainboard, setMainboard] = useState<SimplifiedCard[]>(pool);
   const [sideboard, setSideboard] = useState<SimplifiedCard[]>([]);
   
-  // Re-sync mainboard when pool changes (new pick)
   useEffect(() => {
       setMainboard(() => {
-          // Keep existing sideboard cards in sideboard, new cards go to main
           const sideIds = new Set(sideboard.map(c => c.scryfall_id + (c as any).id));
           const newMain = pool.filter(c => !sideIds.has(c.scryfall_id + (c as any).id));
           return newMain;
       });
   }, [pool]);
-// Sideboard is not a dependency here because we want to stick to what's in it, not re-run when it changes via UI
 
   const displayedMain = useMemo(() => {
       return mainboard.filter(c => filteredPool.some(f => (f.scryfall_id + (f as any).id) === (c.scryfall_id + (c as any).id)));
@@ -105,47 +101,6 @@ export const DeckReviewView = ({
     return cols;
   }, [displayedMain]);
 
-  const stats = useMemo(() => {
-    const creatures = displayedMain.filter((c) => c.type_line?.toLowerCase().includes('creature')).length;
-    const nonCreatures = displayedMain.length - creatures;
-    const manaCurve = new Array(9).fill(0);
-    
-    displayedMain.forEach((c) => {
-      const cmc = Math.floor(c.cmc || 0);
-      const idx = Math.min(cmc, 8);
-      manaCurve[idx]++;
-    });
-
-    const colorSymbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
-    let totalColorSymbols = 0;
-
-    displayedMain.forEach((c) => {
-      const manaCost = c.mana_cost || "";
-      const matches = manaCost.match(/\{([^}]+)\}/g) || [];
-      matches.forEach((sym: string) => {
-         const s = sym.replace(/[{}]/g, '');
-         ['W','U','B','R','G'].forEach(col => {
-            if (s.includes(col)) {
-               colorSymbols[col]++;
-               totalColorSymbols++;
-            }
-         });
-      });
-    });
-
-    const colorPercentages: Record<string, string> = { W: "0", U: "0", B: "0", R: "0", G: "0" };
-    if (totalColorSymbols > 0) {
-       Object.keys(colorSymbols).forEach(col => {
-          colorPercentages[col] = ((colorSymbols[col] / totalColorSymbols) * 100).toFixed(1);
-       });
-    }
-
-    const totalCmc = displayedMain.reduce((acc: number, c) => acc + (c.cmc || 0), 0);
-    const avgCmc = displayedMain.length > 0 ? (totalCmc / displayedMain.length).toFixed(1) : "0.0";
-    
-    return { creatures, nonCreatures, manaCurve, colorSymbols, colorPercentages, avgCmc };
-  }, [displayedMain]);
-
   const activeCmcs = useMemo(() => {
     return [0, 1, 2, 3, 4, 5, 6].filter(cmc => columns[cmc].all.length > 0);
   }, [columns]);
@@ -155,39 +110,42 @@ export const DeckReviewView = ({
     if (onPoolUpdate) onPoolUpdate(newMain, newSide);
   }, [onUpdatePool, onPoolUpdate]);
 
-  const moveToSideboard = useCallback((index: number) => {
-    const card = mainboard[index];
-    const newMain = mainboard.filter((_, i) => i !== index);
+  const moveToSideboard = useCallback((card: SimplifiedCard) => {
+    const newMain = mainboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
     const newSide = [...sideboard, card];
     setMainboard(newMain);
     setSideboard(newSide);
     syncPool(newMain, newSide);
   }, [mainboard, sideboard, syncPool]);
 
-  const moveToMainboard = useCallback((index: number) => {
-    const card = sideboard[index];
-    const newSide = sideboard.filter((_, i) => i !== index);
+  const moveToMainboard = useCallback((card: SimplifiedCard) => {
+    const newSide = sideboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
     const newMain = [...mainboard, card];
     setSideboard(newSide);
     setMainboard(newMain);
     syncPool(newMain, newSide);
   }, [mainboard, sideboard, syncPool]);
 
-  const handleDragStart = useCallback((index: number, source: 'main' | 'side') => {
-    setDraggedCardIndex({ index, source });
+  const removeCardFromSideboard = useCallback((card: SimplifiedCard) => {
+    const newSide = sideboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
+    setSideboard(newSide);
+    syncPool(mainboard, newSide);
+  }, [mainboard, sideboard, syncPool]);
+
+  const handleDragStart = useCallback((card: SimplifiedCard, source: 'main' | 'side') => {
+    setDraggedCard({ card, source });
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent, target: 'main' | 'side') => {
-    e.preventDefault();
-    if (!draggedCardIndex) return;
+  const handleDrop = useCallback((target: 'main' | 'side') => {
+    if (!draggedCard) return;
 
-    if (draggedCardIndex.source === 'main' && target === 'side') {
-      moveToSideboard(draggedCardIndex.index);
-    } else if (draggedCardIndex.source === 'side' && target === 'main') {
-      moveToMainboard(draggedCardIndex.index);
+    if (draggedCard.source === 'main' && target === 'side') {
+      moveToSideboard(draggedCard.card);
+    } else if (draggedCard.source === 'side' && target === 'main') {
+      moveToMainboard(draggedCard.card);
     }
-    setDraggedCardIndex(null);
-  }, [draggedCardIndex, moveToMainboard, moveToSideboard]);
+    setDraggedCard(null);
+  }, [draggedCard, moveToMainboard, moveToSideboard]);
 
   const renderManaSymbols = useCallback((manaCost: string) => {
     if (!manaCost) return <span className="text-[8px] text-slate-600 font-bold uppercase">No Cost</span>;
@@ -229,50 +187,88 @@ export const DeckReviewView = ({
         formatTime={formatTime}
       />
 
-      {/* FILTERS BAR */}
-      <div className="bg-slate-900/50 border-b border-white/5 p-4 flex flex-wrap items-center gap-6 z-10">
-          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 shadow-inner">
-            {['W', 'U', 'B', 'R', 'G'].map(col => (
-              <button 
-                key={col} 
-                onClick={() => setFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
-                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${filterColors.includes(col) ? 'bg-indigo-600 shadow-lg scale-110 active:scale-95' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
-              >
-                <img src={manaSymbols[col]} className="w-6 h-6" alt={col} />
-              </button>
-            ))}
+      {/* PREMIUM FILTERS BAR */}
+      <div className="bg-slate-950/40 backdrop-blur-2xl border-b border-white/[0.03] px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-3 sm:gap-8 z-[60] shadow-2xl relative">
+          {/* Ambient light for filter bar */}
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+
+          {/* COLOR FILTERS */}
+          <div className="flex items-center gap-2 sm:gap-3">
+             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hidden md:block">Identity</span>
+             <div className="flex gap-1 sm:gap-1.5 bg-black/40 p-0.5 sm:p-1 rounded-2xl border border-white/5 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
+                {['W', 'U', 'B', 'R', 'G'].map(col => (
+                  <button 
+                    key={col} 
+                    onClick={() => setFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
+                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-300 relative group ${
+                      filterColors.includes(col) 
+                        ? 'bg-indigo-600/20 border border-indigo-500/50 shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
+                        : 'hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <img 
+                      src={manaSymbols[col]} 
+                      className={`w-6 h-6 sm:w-7 sm:h-7 transition-all duration-500 ${filterColors.includes(col) ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-105'}`} 
+                      alt={col} 
+                    />
+                    {filterColors.includes(col) && (
+                      <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-[0_0_5px_white]" />
+                    )}
+                  </button>
+                ))}
+             </div>
           </div>
 
-          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 h-12 items-center px-1">
-            {['Common', 'Uncommon', 'Rare', 'Mythic'].map(rar => (
-              <button 
-                key={rar} 
-                onClick={() => setFilterRarity(filterRarity === rar ? null : rar)}
-                className={`px-4 h-10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterRarity === rar ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                {rar[0]}
-              </button>
-            ))}
+          {/* RARITY FILTERS */}
+          <div className="flex items-center gap-2 sm:gap-3">
+             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hidden md:block">Rarity</span>
+             <div className="flex gap-1 sm:gap-1.5 bg-black/40 p-0.5 sm:p-1 rounded-2xl border border-white/5 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
+                {['Common', 'Uncommon', 'Rare', 'Mythic'].map(rar => (
+                  <button 
+                    key={rar} 
+                    onClick={() => setFilterRarity(filterRarity === rar ? null : rar)}
+                    className={`px-3 sm:px-5 h-9 sm:h-11 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-tighter transition-all duration-300 border ${
+                      filterRarity === rar 
+                        ? 'bg-white text-slate-950 border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
+                        : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-white/5'
+                    }`}
+                  >
+                    {rar[0]}
+                  </button>
+                ))}
+             </div>
           </div>
 
-          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 h-12 items-center px-1">
-            {[0,1,2,3,4,5,6].map(val => (
-              <button 
-                key={val} 
-                onClick={() => setFilterCmc(filterCmc === val ? null : val)}
-                className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-[11px] transition-all ${filterCmc === val ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                {val === 6 ? '6+' : val}
-              </button>
-            ))}
+          {/* CMC FILTERS */}
+          <div className="flex items-center gap-2 sm:gap-3">
+             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hidden md:block">Value</span>
+             <div className="flex gap-1 sm:gap-1.5 bg-black/40 p-0.5 sm:p-1 rounded-2xl border border-white/5 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
+                {[0,1,2,3,4,5,6].map(val => (
+                  <button 
+                    key={val} 
+                    onClick={() => setFilterCmc(filterCmc === val ? null : val)}
+                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center font-black text-[11px] sm:text-[12px] transition-all duration-300 border ${
+                      filterCmc === val 
+                        ? 'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]' 
+                        : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-white/5'
+                    }`}
+                  >
+                    {val === 6 ? '6+' : val}
+                  </button>
+                ))}
+             </div>
           </div>
 
-          <div className="flex-1 min-w-[200px] relative">
+          {/* SEARCH BOX */}
+          <div className="flex-1 min-w-[200px] sm:min-w-[280px] relative group">
+             <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search className="w-4 h-4 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
+             </div>
              <input 
                 value={filterQuery} 
                 onChange={e => setFilterQuery(e.target.value)}
-                placeholder="Search in pool..."
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:border-indigo-500/50 transition-all shadow-inner"
+                placeholder="Search cards..."
+                className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 sm:py-3.5 text-[12px] sm:text-[13px] font-medium text-slate-200 outline-none focus:border-indigo-500/50 focus:bg-black/60 focus:shadow-[0_0_20px_rgba(79,70,229,0.1)] transition-all placeholder:text-slate-700 shadow-inner"
              />
           </div>
       </div>
@@ -298,31 +294,22 @@ export const DeckReviewView = ({
           onToggleFlip={toggleFlip}
           onToggleCollapse={() => setIsSideboardCollapsed(!isSideboardCollapsed)}
           onMoveToMainboard={moveToMainboard}
+          onRemoveFromSideboard={removeCardFromSideboard}
           onDragStart={handleDragStart}
           onDrop={handleDrop}
           renderManaSymbols={renderManaSymbols}
-          onZoom={(card, flipped) => { setZoomCard(card); setIsZoomFlipped(flipped); }}
         />
       </div>
       
-      {isStatsOpen && (
-        <StatsModal 
-          stats={stats} 
-          onClose={() => setIsStatsOpen(false)} 
-          manaSymbols={{
-            'W': 'https://svgs.scryfall.io/card-symbols/W.svg',
-            'U': 'https://svgs.scryfall.io/card-symbols/U.svg',
-            'B': 'https://svgs.scryfall.io/card-symbols/B.svg',
-            'R': 'https://svgs.scryfall.io/card-symbols/R.svg',
-            'G': 'https://svgs.scryfall.io/card-symbols/G.svg',
-          }}
-        />
-      )}
+      <StatsModal 
+        isOpen={isStatsOpen}
+        cards={displayedMain}
+        onClose={() => setIsStatsOpen(false)}
+        title="Deck Review Analysis"
+      />
 
-      {/* MODAL ZOOM - Deck Review View */}
       {zoomCard && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/90 backdrop-blur-3xl p-4 sm:p-10 animate-in fade-in duration-300" onClick={() => { setZoomCard(null); setIsZoomFlipped(false); }}>
-          {/* Pulsante di chiusura - Spostato in alto a destra fisso */}
           <button className="fixed top-4 right-4 sm:top-8 sm:right-8 text-white/40 hover:text-white transition-all p-3 bg-white/5 rounded-full backdrop-blur-md border border-white/5 z-50">
             <X className="w-8 h-8 sm:w-10 sm:h-10" />
           </button>

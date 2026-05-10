@@ -51,6 +51,9 @@ export const RubbleRouser: CardDefinition = {
         }
     ],
     power: "1",
-    toughness: "4"
+    toughness: "4",
+    scryfall_id: "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+    image_url: "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+    rarity: "common"
 };
 

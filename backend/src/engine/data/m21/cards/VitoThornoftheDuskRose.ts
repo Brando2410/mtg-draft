@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Eff
 export const VitoThornoftheDuskRose: CardDefinition = {
     name: "Vito, Thorn of the Dusk Rose",
     manaCost: "{2}{B}",
-    scryfall_id: "167523f0-fc89-4d8e-9087-73d744ec10f0",
-    image_url: "https://cards.scryfall.io/normal/front/1/6/167523f0-fc89-4d8e-9087-73d744ec10f0.jpg?1594736472",
+
     oracleText: "Whenever you gain life, target opponent loses that much life.\n{3}{B}{B}: Creatures you control gain lifelink until end of turn.",
     colors: ["B"],
     supertypes: ["Legendary"],
@@ -38,5 +37,9 @@ export const VitoThornoftheDuskRose: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "0fe79ee4-c3f3-4a6b-a967-203ca3b70ee5",
+    image_url: "https://cards.scryfall.io/normal/front/0/f/0fe79ee4-c3f3-4a6b-a967-203ca3b70ee5.jpg?1594736442",
+    rarity: "rare"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const ArchfiendsVessel: CardDefinition = {
     name: "Archfiend's Vessel",
     manaCost: "{B}",
-    scryfall_id: "83437022-ba00-4370-83c2-ce1260336fcc",
-    image_url: "https://cards.scryfall.io/normal/front/8/3/83437022-ba00-4370-83c2-ce1260336fcc.jpg?1594735964",
+
     oracleText: "Lifelink\nWhen Archfiend's Vessel enters the battlefield, if it entered from your graveyard or you cast it from your graveyard, exile it. If you do, create a 5/5 black Demon creature token with flying.",
     colors: ["B"],
     types: ["Creature"],
@@ -29,11 +28,15 @@ export const ArchfiendsVessel: CardDefinition = {
                         types: ['Creature'],
                         subtypes: ['Demon'],
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/large/front/b/8/b8fd1237-674e-4e45-813c-ccaa689ec170.jpg?1594733575'
+
                     },
                     targetMapping: TargetMapping.Controller
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "83437022-ba00-4370-83c2-ce1260336fcc",
+    image_url: "https://cards.scryfall.io/normal/front/8/3/83437022-ba00-4370-83c2-ce1260336fcc.jpg?1594735964",
+    rarity: "uncommon"
 };
+

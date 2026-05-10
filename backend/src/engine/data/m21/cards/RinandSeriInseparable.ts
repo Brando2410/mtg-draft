@@ -24,7 +24,7 @@ export const RinandSeriInseparable: CardDefinition = {
                     colors: ['G'],
                     types: ['Creature'],
                     subtypes: ['Cat'],
-                    image_url: 'https://cards.scryfall.io/large/front/d/a/dac6631b-483a-4424-81ae-432d43100693.jpg?1594733879'
+
                 },
                 targetMapping: TargetMapping.Controller
             }]
@@ -42,7 +42,7 @@ export const RinandSeriInseparable: CardDefinition = {
                     colors: ['W'],
                     types: ['Creature'],
                     subtypes: ['Dog'],
-                    image_url: 'https://cards.scryfall.io/large/front/1/7/17f65f37-124b-4493-85af-906963286348.jpg?1594733857'
+
                 },
                 targetMapping: TargetMapping.Controller
             }]
@@ -56,5 +56,9 @@ export const RinandSeriInseparable: CardDefinition = {
                 { type: EffectType.GainLife, amount: DynamicAmount.CatsYouControlCount, targetMapping: TargetMapping.Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "992b2dd3-87e7-48a4-bd8d-84973ff0ee1f",
+    image_url: "https://cards.scryfall.io/normal/front/9/9/992b2dd3-87e7-48a4-bd8d-84973ff0ee1f.jpg?1774995161",
+    rarity: "mythic"
 };
+

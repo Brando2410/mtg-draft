@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const ConfrontthePast: CardDefinition = {
     name: 'Confront the Past',
     manaCost: '{X}{B}',
-    scryfall_id: "e1951763-be97-400c-aa95-6b101f47bddf",
-    image_url: "https://cards.scryfall.io/normal/front/e/1/e1951763-be97-400c-aa95-6b101f47bddf.jpg?1637082105",
+
     colors: ['B'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
@@ -31,5 +30,9 @@ export const ConfrontthePast: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e1951763-be97-400c-aa95-6b101f47bddf",
+    image_url: "https://cards.scryfall.io/normal/front/e/1/e1951763-be97-400c-aa95-6b101f47bddf.jpg?1637082105",
+    rarity: "rare"
 };
+

@@ -31,7 +31,7 @@ export const SendinthePest: CardDefinition = {
                         power: "1",
                         toughness: "1",
                         oracleText: "Whenever this token attacks, you gain 1 life.",
-                        image_url: "https://cards.scryfall.io/normal/front/b/a/ba854032-6ad2-4654-990a-64006e7f92fd.jpg?1775828521",
+                        image_url: "https://cards.scryfall.io/normal/front/b/a/ba854032-6ad2-4654-990a-64006e7f92fd.jpg?1777982237",
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
@@ -45,5 +45,9 @@ export const SendinthePest: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "283b508b-89f0-4c23-9686-b049e402b73c",
+    image_url: "https://cards.scryfall.io/normal/front/2/8/283b508b-89f0-4c23-9686-b049e402b73c.jpg?1775937607",
+    rarity: "common"
 };
+

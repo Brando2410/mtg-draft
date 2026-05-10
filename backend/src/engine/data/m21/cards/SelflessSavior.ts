@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
 export const SelflessSavior: CardDefinition = {
     name: "Selfless Savior",
     manaCost: "{W}",
-    scryfall_id: "69172445-6615-4243-9843-d214c18011c2",
-    image_url: "https://cards.scryfall.io/normal/front/6/9/69172445-6615-4243-9843-d214c18011c2.jpg?1594735176",
+
     oracleText: "Sacrifice Selfless Savior: Another target creature you control gains indestructible until end of turn.",
     colors: ["W"],
     types: ["Creature"],
@@ -30,5 +29,9 @@ export const SelflessSavior: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6911759c-7177-402c-a95a-f9f46efaf521",
+    image_url: "https://cards.scryfall.io/normal/front/6/9/6911759c-7177-402c-a95a-f9f46efaf521.jpg?1594735224",
+    rarity: "uncommon"
 };
+

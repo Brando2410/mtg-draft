@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const PrismariCharm: CardDefinition = {
   name: 'Prismari Charm',
   manaCost: '{U}{R}',
-  scryfall_id: "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
-  rarity: "uncommon",
-  image_url: "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465",
+
+
   colors: ['U', 'R'],
   types: ['Instant'],
   subtypes: [],
@@ -26,7 +25,7 @@ export const PrismariCharm: CardDefinition = {
           targetDefinitions: [{
             count: 2,
             minCount: 1,
-            type: TargetType.AnyTarget,
+            type: TargetType.AnyTarget
           }],
           effects: [
             {
@@ -40,7 +39,7 @@ export const PrismariCharm: CardDefinition = {
           label: 'Return target nonland permanent to its owner\'s hand',
           targetDefinitions: [{
             type: TargetType.NonlandPermanent,
-            count: 1,
+            count: 1
           }],
           effects: [
             {
@@ -51,7 +50,9 @@ export const PrismariCharm: CardDefinition = {
         }
       ]
     }
-  ]
-
-
+  ],
+    scryfall_id: "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
+    image_url: "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465",
+    rarity: "uncommon"
 };
+

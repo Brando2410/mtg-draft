@@ -26,5 +26,9 @@ export const ShatteredSanctum: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5aa0c810-3b7d-4661-979e-e84fb327742d",
+    image_url: "https://cards.scryfall.io/normal/front/5/a/5aa0c810-3b7d-4661-979e-e84fb327742d.jpg?1775938816",
+    rarity: "rare"
 };
+

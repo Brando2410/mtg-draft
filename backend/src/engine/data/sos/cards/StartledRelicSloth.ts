@@ -38,5 +38,9 @@ export const StartledRelicSloth: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f143fd41-58c3-45a0-bef8-e9e4b4a502a5",
+    image_url: "https://cards.scryfall.io/normal/front/f/1/f143fd41-58c3-45a0-bef8-e9e4b4a502a5.jpg?1775938628",
+    rarity: "uncommon"
 };
+

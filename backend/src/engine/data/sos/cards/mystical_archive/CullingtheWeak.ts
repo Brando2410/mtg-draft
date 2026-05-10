@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction } from '
 
 export const CullingtheWeak: CardDefinition = {
     name: "Culling the Weak",
-    manaCost: "{B}",
-    scryfall_id: "6c84aa77-bcb0-4a59-b94c-8cb9cbf6af76",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/c/6c84aa77-bcb0-4a59-b94c-8cb9cbf6af76.jpg?1775936562",
+    manaCost: "{B}",
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -29,5 +26,9 @@ export const CullingtheWeak: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6c84aa77-bcb0-4a59-b94c-8cb9cbf6af76",
+    image_url: "https://cards.scryfall.io/normal/front/6/c/6c84aa77-bcb0-4a59-b94c-8cb9cbf6af76.jpg?1775936562",
+    rarity: "rare"
 };
+

@@ -41,6 +41,14 @@ export const EventConditions: Record<string, IConditionHandler> = {
             return card.ownerId !== controllerId;
         }
     },
+    "EVENT_OBJECT_OWNER_IS_YOU": {
+        matches(state, params, context) {
+            const { event, controllerId } = context;
+            const card = RuleUtils.getEventObject(event, state);
+            if (!card) return false;
+            return card.ownerId === controllerId;
+        }
+    },
     "EVENT_COUNTER_TYPE_MATCHES": {
         matches(state, params, context) {
             const { event } = context;

@@ -26,28 +26,38 @@ export const useChoiceModalLogic = (
 
     const meta = useMemo(() => getActionMeta(pendingAction), [pendingAction]);
 
-    const sourceObject = useMemo(() => {
+    const sourceObjects = useMemo(() => {
         const sourceId = pendingAction?.sourceId;
-        if (!sourceId) return null;
-        let obj = battlefield.find(c => c.id === sourceId);
-        if (obj) return obj;
-        const stackObj = stack.find(s => s.id === sourceId || s.sourceId === sourceId);
-        if (stackObj) {
-            return {
-                id: stackObj.id,
-                definition: stackObj.definition || (stackObj as any).cardData?.definition
-            } as GameObject;
-        }
-        obj = (me?.graveyard as any[])?.find(c => c.id === sourceId);
-        if (obj) return obj;
-        obj = (opponent?.graveyard as any[])?.find(c => c.id === sourceId);
-        if (obj) return obj;
-        obj = exile.find(c => c.id === sourceId);
-        if (obj) return obj;
-        obj = (me?.hand as any[])?.find(c => c.id === sourceId);
-        if (obj) return obj;
-        return null;
-    }, [pendingAction?.sourceId, battlefield, stack, me, opponent, exile]);
+        const meta = getActionMeta(pendingAction);
+        const involvedIds = (meta.involvedIds || []) as string[];
+        
+        const ids = new Set<string>();
+        if (sourceId) ids.add(sourceId);
+        involvedIds.forEach(id => ids.add(id));
+        
+        if (ids.size === 0) return [];
+
+        return Array.from(ids).map(id => {
+            let obj = battlefield.find(c => c.id === id);
+            if (obj) return obj;
+            const stackObj = stack.find(s => s.id === id || s.sourceId === id);
+            if (stackObj) {
+                return {
+                    id: stackObj.id,
+                    definition: stackObj.definition || (stackObj as any).cardData?.definition
+                } as GameObject;
+            }
+            obj = (me?.graveyard as any[])?.find(c => c.id === id);
+            if (obj) return obj;
+            obj = (opponent?.graveyard as any[])?.find(c => c.id === id);
+            if (obj) return obj;
+            obj = exile.find(c => c.id === id);
+            if (obj) return obj;
+            obj = (me?.hand as any[])?.find(c => c.id === id);
+            if (obj) return obj;
+            return null;
+        }).filter((obj): obj is GameObject => obj !== null);
+    }, [pendingAction, battlefield, stack, me, opponent, exile]);
 
     const isOrderTriggers = pendingAction?.type === ActionType.OrderTriggers;
     const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
@@ -119,7 +129,7 @@ export const useChoiceModalLogic = (
         orderedTriggers, setOrderedTriggers,
         scryState, setScryState,
         viewedPlayerId, setViewedPlayerId,
-        sourceObject,
+        sourceObjects,
         handleChoiceClick,
         handleChoiceRightClick,
         moveCard,

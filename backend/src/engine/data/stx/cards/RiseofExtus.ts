@@ -11,13 +11,16 @@ export const RiseofExtus: CardDefinition = {
       type: AbilityType.Spell,
       targetDefinitions: [{
         count: 1,
-        type: TargetType.CreatureOrPlaneswalker,
+        type: TargetType.CreatureOrPlaneswalker
       }],
       effects: [
         { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
         { type: EffectType.Learn }
       ]
     }
-  ]
+  ],
+    scryfall_id: "bbf97a71-485e-4d47-98de-bdf6f6dae0c2",
+    image_url: "https://cards.scryfall.io/normal/front/b/b/bbf97a71-485e-4d47-98de-bdf6f6dae0c2.jpg?1624739773",
+    rarity: "common"
 };
 

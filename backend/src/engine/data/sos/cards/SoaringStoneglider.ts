@@ -29,5 +29,9 @@ export const SoaringStoneglider: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2fbe446b-60fd-43da-8358-985392293af8",
+    image_url: "https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136",
+    rarity: "uncommon"
 };
+

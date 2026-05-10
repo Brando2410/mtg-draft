@@ -32,5 +32,9 @@ export const SkycoachWaypoint: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6747657b-5ce4-4dbd-b924-ca1f7119faf7",
+    image_url: "https://cards.scryfall.io/normal/front/6/7/6747657b-5ce4-4dbd-b924-ca1f7119faf7.jpg?1775938823",
+    rarity: "uncommon"
 };
+

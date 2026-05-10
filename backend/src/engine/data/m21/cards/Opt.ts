@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const Opt: CardDefinition = {
     name: "Opt",
     manaCost: "{U}",
-    scryfall_id: "323db259-d35e-467d-9a46-4adcb2fc107c",
-    image_url: "https://cards.scryfall.io/normal/front/3/2/323db259-d35e-467d-9a46-4adcb2fc107c.jpg?1652898493",
+
     oracleText: "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
     colors: ["U"],
     types: ["Instant"],
@@ -16,5 +15,9 @@ export const Opt: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "bbc99a51-1501-4525-a3cc-f48249b64bed",
+    image_url: "https://cards.scryfall.io/normal/front/b/b/bbc99a51-1501-4525-a3cc-f48249b64bed.jpg?1743206354",
+    rarity: "common"
 };
+

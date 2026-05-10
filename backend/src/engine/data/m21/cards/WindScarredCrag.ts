@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const WindScarredCrag: CardDefinition = {
     name: "Wind-Scarred Crag",
     manaCost: "",
-    scryfall_id: "cc3f0607-e54d-451e-b816-5b3f81e3da62",
-    image_url: "https://cards.scryfall.io/normal/front/c/c/cc3f0607-e54d-451e-b816-5b3f81e3da62.jpg?1594737901",
     oracleText: "Wind-Scarred Crag enters the battlefield tapped.\nWhen Wind-Scarred Crag enters the battlefield, you gain 1 life.\n{T}: Add {R} or {W}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +27,9 @@ export const WindScarredCrag: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4912e4d0-b16a-4aa6-a583-3430d26bd591",
+    image_url: "https://cards.scryfall.io/normal/front/4/9/4912e4d0-b16a-4aa6-a583-3430d26bd591.jpg?1748464664",
+    rarity: "common"
 };
+

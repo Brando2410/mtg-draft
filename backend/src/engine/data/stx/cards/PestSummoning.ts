@@ -21,7 +21,7 @@ export const PestSummoning: CardDefinition = {
               subtypes: ['Pest'],
               power: "1",
               toughness: "1",
-              image_url: 'https://cards.scryfall.io/large/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901',
+
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
                   type: AbilityType.Triggered,
@@ -34,7 +34,9 @@ export const PestSummoning: CardDefinition = {
           }
         ]
       }
-    ]
-  };
-
+    ],
+    scryfall_id: "6267e19a-a777-4767-8433-86b6624362b6",
+    image_url: "https://cards.scryfall.io/normal/front/6/2/6267e19a-a777-4767-8433-86b6624362b6.jpg?1637082369",
+    rarity: "common"
+};
 

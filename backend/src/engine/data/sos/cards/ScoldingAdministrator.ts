@@ -39,5 +39,9 @@ export const ScoldingAdministrator: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "69757177-aefa-44a6-81db-5ae9b5d2f117",
+    image_url: "https://cards.scryfall.io/normal/front/6/9/69757177-aefa-44a6-81db-5ae9b5d2f117.jpg?1775938562",
+    rarity: "uncommon"
 };
+

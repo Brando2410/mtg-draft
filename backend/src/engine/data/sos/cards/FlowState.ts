@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
 export const FlowState: CardDefinition = {
     name: "Flow State",
     manaCost: "{1}{U}",
-    scryfall_id: "47d6093b-b1b6-4956-8bfd-02cce899f832",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249",
+
+
     colors: ["U"],
     types: ["Sorcery"],
     subtypes: [],
@@ -40,5 +39,9 @@ export const FlowState: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "47d6093b-b1b6-4956-8bfd-02cce899f832",
+    image_url: "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249",
+    rarity: "uncommon"
 };
+

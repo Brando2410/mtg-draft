@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     export const PoisonersApprentice: CardDefinition = {
     name: "Poisoner's Apprentice",
     manaCost: "{2}{B}",
-    scryfall_id: "3755a2e9-af55-4625-a006-2a86c7893a96",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552",
+
+
     colors: [
         "B"
     ],
@@ -39,6 +38,9 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
         }
     ],
     power: "2",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "3755a2e9-af55-4625-a006-2a86c7893a96",
+    image_url: "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552",
+    rarity: "uncommon"
 };
-    
+

@@ -25,8 +25,9 @@ export const StrictProctor: CardDefinition = {
                     ]
                 }]
             }
-        ]
-    };
-
-
+        ],
+    scryfall_id: "95f1e36a-6838-49de-b7dc-697cbcd1e892",
+    image_url: "https://cards.scryfall.io/normal/front/9/5/95f1e36a-6838-49de-b7dc-697cbcd1e892.jpg?1722108774",
+    rarity: "rare"
+};
 

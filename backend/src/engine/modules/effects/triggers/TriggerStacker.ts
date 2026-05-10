@@ -7,6 +7,7 @@ import {
 } from "@shared/engine_types";
 import { getProcessors } from "../../ProcessorRegistry";
 import { LogCategory } from "../../../utils/EngineLogger";
+import { TargetingDispatcher } from "../../actions/targeting/TargetingDispatcher";
 
 /**
  * Triggered Abilities Module: Stack Management
@@ -124,46 +125,37 @@ export class TriggerStacker {
     sourceName: string,
     stackObj: StackObject,
   ) {
-    const { logger, targeting: TargetingProcessor } = getProcessors(state);
-    const legalTargetIds = [
-      ...state.battlefield.map(o => o.id),
-      ...state.stack.map(o => o.id),
-      ...Object.keys(state.players),
-    ].filter((tid) =>
-      TargetingProcessor.isLegalTarget(state, {
-        sourceId: stackObj.sourceId,
-        controllerId: stackObj.controllerId,
-        stackObject: stackObj,
-        targetDefinitions: targetDefinitions,
-        effects: [],
-        targets: []
-      }, tid)
-    );
+    const { logger } = getProcessors(state);
+    
+    // Phase 4: Use the centralized TargetingDispatcher to handle the first step of targeting.
+    // This provides auto-targeting for single opponents and correct UI labels/prompts,
+    // fixing the 'ChooseTargets' placeholder bug.
+    const result = TargetingDispatcher.dispatchTargetingStep({
+        state,
+        playerId: stackObj.controllerId,
+        sourceObj: stackObj,
+        targetDefinitions,
+        existingTargets: [],
+        xValue: stackObj.xValue || 0,
+        isSpellCasting: false, // It's a trigger resolution, not a cast
+    });
 
-    if (legalTargetIds.length === 0) {
-      if (stackObj.optional) {
-        logger.info(state, LogCategory.TARGETING, `[TRIGGER] ${sourceName}: No legal targets. Optional trigger skipped.`);
-        const onStack = state.stack.find((s) => s.id === stackId);
-        if (onStack) onStack.targets = [];
-      } else {
-        logger.warn(state, LogCategory.TARGETING, `[ERROR] ${sourceName}: No legal targets for required trigger. Ability removed (Rule 603.3d).`);
+    if (result === false) {
+        // Required trigger with no legal targets - Rule 603.3d
+        logger.warn(state, LogCategory.TARGETING, `[ERROR] ${sourceName}: No legal targets for required trigger. Ability removed.`);
         state.stack = state.stack.filter((s) => s.id !== stackId);
-      }
-      return;
+        return;
     }
 
-    state.pendingAction = {
-      type: ActionType.Targeting,
-      playerId: stackObj.controllerId,
-      sourceId: stackObj.sourceId,
-      data: {
-        label: "ChooseTargets",
-        targetDefinitions: targetDefinitions,
-        targets: legalTargetIds,
-        stackId: stackObj.id,
-        stackObj: stackObj,
-      },
-    };
+    if (Array.isArray(result)) {
+        // Targeting was automatically completed (e.g. 0 targets or auto-selected single opponent)
+        logger.info(state, LogCategory.TARGETING, `[AUTO-TARGET] ${sourceName}: Targeting automatically completed: [${result.join(', ')}]`);
+        stackObj.targets = result;
+        // The trigger is already on the stack, no further action needed
+        return;
+    }
+
+    // If result is true, a pendingAction was already injected by TargetingDispatcher.
     state.priorityPlayerId = stackObj.controllerId;
     logger.info(state, LogCategory.TARGETING, `[TARGETING] ${state.players[stackObj.controllerId]?.name} choosing targets for ${sourceName}.`);
   }

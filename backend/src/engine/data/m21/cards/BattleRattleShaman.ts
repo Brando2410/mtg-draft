@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
 export const BattleRattleShaman: CardDefinition = {
     name: "Battle-Rattle Shaman",
     manaCost: "{3}{R}",
-    scryfall_id: "faca827d-0b35-48d7-acd6-13ecacc32b82",
-    image_url: "https://cards.scryfall.io/normal/front/f/a/faca827d-0b35-48d7-acd6-13ecacc32b82.jpg?1594736472",
+
     oracleText: "At the beginning of combat on your turn, you may have target creature get +2/+0 until end of turn.",
     colors: ["R"],
     types: ["Creature"],
@@ -31,5 +30,9 @@ export const BattleRattleShaman: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "faca827d-0b35-48d7-acd6-13ecacc32b82",
+    image_url: "https://cards.scryfall.io/normal/front/f/a/faca827d-0b35-48d7-acd6-13ecacc32b82.jpg?1594736472",
+    rarity: "uncommon"
 };
+

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Tr
 export const ParadoxSurveyor: CardDefinition = {
     name: "Paradox Surveyor",
     manaCost: "{G}{G/U}{U}",
-    scryfall_id: "d7cb1af2-0302-46ff-8303-ae9d07541a01",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445",
+
+
     colors: ["G", "U"],
     types: ["Creature"],
     subtypes: ["Elf", "Druid"],
@@ -34,5 +33,9 @@ export const ParadoxSurveyor: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d7cb1af2-0302-46ff-8303-ae9d07541a01",
+    image_url: "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445",
+    rarity: "uncommon"
 };
+

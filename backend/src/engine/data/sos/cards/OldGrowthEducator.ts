@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const OldGrowthEducator: CardDefinition = {
     name: "Old-Growth Educator",
     manaCost: "{2}{B}{G}",
-    scryfall_id: "eb7e858a-9b85-49b2-a379-ee656b64935a",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438",
+
+
     colors: ["B", "G"],
     types: ["Creature"],
     subtypes: ["Treefolk", "Druid"],
@@ -26,6 +25,9 @@ export const OldGrowthEducator: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "eb7e858a-9b85-49b2-a379-ee656b64935a",
+    image_url: "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438",
+    rarity: "uncommon"
 };
 

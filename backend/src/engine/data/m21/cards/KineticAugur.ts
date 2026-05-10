@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const KineticAugur: CardDefinition = {
     name: "Kinetic Augur",
     manaCost: "{3}{R}",
-    scryfall_id: "dc5e8221-fc2d-4d90-80f3-729606648c54",
-    image_url: "https://cards.scryfall.io/normal/front/d/c/dc5e8221-fc2d-4d90-80f3-729606648c54.jpg?1594736717",
+
     oracleText: "Trample\nKinetic Augur's power is equal to the number of instant and sorcery cards in your graveyard.\nWhen this creature enters, discard up to two cards, then draw that many cards.",
     colors: ["R"],
     types: ["Creature"],
@@ -52,5 +51,9 @@ export const KineticAugur: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "dc5e8221-fc2d-4d90-80f3-729606648c54",
+    image_url: "https://cards.scryfall.io/normal/front/d/c/dc5e8221-fc2d-4d90-80f3-729606648c54.jpg?1594736717",
+    rarity: "uncommon"
 };
+

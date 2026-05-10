@@ -1,5 +1,5 @@
 import React from 'react';
-import { Split, Activity, Clock } from 'lucide-react';
+import { BarChart2, Clock } from 'lucide-react';
 
 interface DeckHeaderProps {
   isPaused: boolean;
@@ -44,22 +44,28 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
         
         {/* Gruppo Azioni Deck */}
         <div className="flex items-center gap-1 sm:gap-2">
-          <button 
-            onClick={onToggleSeparate}
-            className={`flex items-center justify-center p-2 sm:px-4 sm:py-2 rounded-lg transition-all border shrink-0 ${
-              separateByType ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-800 text-slate-500 border-slate-700/50 hover:text-white'
-            }`}
-            title={separateByType ? 'Stack Cards' : 'Separate Cards'}
-          >
-            <Split className="w-3 h-3 sm:w-4 sm:h-4" />
-          </button>
+          {/* VIEW TOGGLE (Tab Style) */}
+          <div className="flex bg-slate-950/60 p-1 rounded-xl border border-white/5 shadow-inner shrink-0">
+            <button 
+              onClick={() => separateByType && onToggleSeparate()}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!separateByType ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Stack
+            </button>
+            <button 
+              onClick={() => !separateByType && onToggleSeparate()}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${separateByType ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Split
+            </button>
+          </div>
           
           <button 
             onClick={onOpenStats}
-            className="flex items-center gap-1 px-1.5 sm:px-4 py-1.5 sm:py-2 bg-slate-950/40 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-lg border border-white/5 transition-all shrink-0"
+            className="flex items-center justify-center p-2 sm:px-4 sm:py-2 bg-slate-950/40 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-lg border border-white/5 transition-all shrink-0"
+            title="Statistics"
           >
-            <Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-widest">Stats</span>
+            <BarChart2 className="w-3 h-3 sm:w-4 sm:h-4" />
           </button>
         </div>
 

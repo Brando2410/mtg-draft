@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     export const LandscapePainterVibrantIdea: CardDefinition = {
     name: "Landscape Painter",
     manaCost: "{1}{U}",
-    scryfall_id: "c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Wizard"],
@@ -16,7 +15,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     entersPrepared: true,
     preparedFace: {
         name: "Vibrant Idea",
-        image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",
+
         manaCost: "{4}{U}",
         colors: ["U"],
         types: ["Sorcery"],
@@ -26,7 +25,11 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                 type: AbilityType.Spell,
                 effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf",
+    image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",
+    rarity: "common"
 };
-    
+

@@ -31,7 +31,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                         layer: 6,
                         targetMapping: TargetMapping.EachOpponentCreature,
                         restrictions: [Restriction.NonToken],
-                        exileOnMoveToGraveyard: true,
+                        exileOnMoveToGraveyard: true
                     }]
                 },
                 {
@@ -100,5 +100,9 @@ export const ValentinDeanoftheVein: CardDefinition = {
                 }]
             }]
         }
-    ]
+    ],
+    scryfall_id: "65008352-bc7e-40b2-a832-b46813e5dc4c",
+    image_url: "https://cards.scryfall.io/normal/front/6/5/65008352-bc7e-40b2-a832-b46813e5dc4c.jpg?1634060553",
+    rarity: "rare"
 };
+

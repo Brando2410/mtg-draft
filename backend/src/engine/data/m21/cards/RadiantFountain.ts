@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const RadiantFountain: CardDefinition = {
     name: "Radiant Fountain",
     manaCost: "",
-    scryfall_id: "0296c34b-120b-483e-8b49-6d432c04f9a4",
-    image_url: "https://cards.scryfall.io/normal/front/0/2/0296c34b-120b-483e-8b49-6d432c04f9a4.jpg?1594737654",
+
     oracleText: "When this land enters, you gain 2 life.\n{T}: Add {C}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const RadiantFountain: CardDefinition = {
                 targetMapping: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "0296c34b-120b-483e-8b49-6d432c04f9a4",
+    image_url: "https://cards.scryfall.io/normal/front/0/2/0296c34b-120b-483e-8b49-6d432c04f9a4.jpg?1594737654",
+    rarity: "common"
 };
+

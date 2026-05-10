@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Dyn
 export const StealtheShow: CardDefinition = {
     name: "Steal the Show",
     manaCost: "{2}{R}",
-    scryfall_id: "721a7dc8-7720-4dc9-b650-64b4729b309b",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/7/2/721a7dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423",
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: [],
@@ -53,5 +50,9 @@ export const StealtheShow: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "7ac6649f-980e-4404-9c05-458c30578ecc",
+    image_url: "https://cards.scryfall.io/normal/front/7/a/7ac6649f-980e-4404-9c05-458c30578ecc.jpg?1775937875",
+    rarity: "rare"
 };
+

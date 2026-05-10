@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const AvenGagglemaster: CardDefinition = {
     name: "Aven Gagglemaster",
     manaCost: "{3}{W}{W}",
-    scryfall_id: "c5b57247-81cc-44ec-b5a9-0702111a98a8",
-    image_url: "https://cards.scryfall.io/normal/front/c/5/c5b57247-81cc-44ec-b5a9-0702111a98a8.jpg?1594734738",
+
     oracleText: "Flying\nWhen this creature enters, you gain 2 life for each creature you control with flying.",
     colors: ["W"],
     types: ["Creature"],
@@ -29,5 +28,9 @@ export const AvenGagglemaster: CardDefinition = {
                 targetMapping: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "c5b57247-81cc-44ec-b5a9-0702111a98a8",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c5b57247-81cc-44ec-b5a9-0702111a98a8.jpg?1594734738",
+    rarity: "uncommon"
 };
+

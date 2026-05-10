@@ -34,5 +34,9 @@ export const PracticalResearch: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "74edd3e3-b2de-4ba0-a508-0418b0151d87",
+    image_url: "https://cards.scryfall.io/normal/front/7/4/74edd3e3-b2de-4ba0-a508-0418b0151d87.jpg?1627429890",
+    rarity: "uncommon"
 };
+

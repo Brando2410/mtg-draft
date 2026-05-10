@@ -15,7 +15,7 @@ export const QuandrixCommand: CardDefinition = {
                 label: "Return target creature or planeswalker to owner's hand",
                 targetDefinitions: [{
                     count: 1,
-                    type: TargetType.CreatureOrPlaneswalker,
+                    type: TargetType.CreatureOrPlaneswalker
                 }],
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             },
@@ -38,7 +38,7 @@ export const QuandrixCommand: CardDefinition = {
                 targetDefinitions: [
                     {
                         type: TargetType.Player,
-                        count: 1,
+                        count: 1
                     },
                     {
                         type: TargetType.CardInGraveyard,
@@ -63,5 +63,9 @@ export const QuandrixCommand: CardDefinition = {
                 ]
             }
         ]
-    }]
+    }],
+    scryfall_id: "b673dfb7-e384-4586-8326-ae6f23edfe78",
+    image_url: "https://cards.scryfall.io/normal/front/b/6/b673dfb7-e384-4586-8326-ae6f23edfe78.jpg?1775941874",
+    rarity: "rare"
 };
+

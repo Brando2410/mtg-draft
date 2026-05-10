@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 export const BlazingFiresingerSeethingSong: CardDefinition = {
     name: "Blazing Firesinger",
     manaCost: "{2}{R}",
-    scryfall_id: "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
+
+
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Dwarf", "Bard"],
@@ -15,7 +14,7 @@ export const BlazingFiresingerSeethingSong: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Seething Song",
-        image_url: "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
+
         manaCost: "{2}{R}",
         colors: ["R"],
         types: ["Instant"],
@@ -26,11 +25,15 @@ export const BlazingFiresingerSeethingSong: CardDefinition = {
                 effects: [
                     {
                         type: EffectType.AddMana,
-                        manaType: '{R}{R}{R}{R}{R}',
+                        manaType: '{R}{R}{R}{R}{R}'
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
+    image_url: "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
+    rarity: "uncommon"
 };
 

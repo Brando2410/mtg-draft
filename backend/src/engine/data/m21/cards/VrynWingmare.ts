@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const VrynWingmare: CardDefinition = {
     name: "Vryn Wingmare",
     manaCost: "{2}{W}",
-    scryfall_id: "17b50821-4203-424a-b6ea-736021d74653",
-    image_url: "https://cards.scryfall.io/normal/front/1/7/17b50821-4203-424a-b6ea-736021d74653.jpg?1594735310",
     oracleText: "Flying\nNoncreature spells cost {1} more to cast.",
     colors: ["W"],
     types: ["Creature"],
@@ -24,5 +22,9 @@ export const VrynWingmare: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "17b59819-4746-4c67-b6e5-4157d498a065",
+    image_url: "https://cards.scryfall.io/normal/front/1/7/17b59819-4746-4c67-b6e5-4157d498a065.jpg?1594735361",
+    rarity: "uncommon"
 };
+

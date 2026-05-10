@@ -26,5 +26,9 @@ export const SparringRegimen: CardDefinition = {
                 type: EffectType.Learn
             }
         ]
-    }]
+    }],
+    scryfall_id: "ab7c80d3-3e0c-4510-9ed0-bb9fe39d838f",
+    image_url: "https://cards.scryfall.io/normal/front/a/b/ab7c80d3-3e0c-4510-9ed0-bb9fe39d838f.jpg?1624589767",
+    rarity: "rare"
 };
+

@@ -22,6 +22,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2d4f0bc7-da7c-4749-a24c-b01f3eb5860c",
+    image_url: "https://cards.scryfall.io/normal/front/2/d/2d4f0bc7-da7c-4749-a24c-b01f3eb5860c.jpg?1775937363",
+    rarity: "common"
 };
-    
+

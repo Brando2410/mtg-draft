@@ -28,5 +28,9 @@ export const ViciousRivalry: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6fa9cd18-3181-4373-ab65-49bf9de9487f",
+    image_url: "https://cards.scryfall.io/normal/front/6/f/6fa9cd18-3181-4373-ab65-49bf9de9487f.jpg?1775938681",
+    rarity: "rare"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const ChandrasPyreling: CardDefinition = {
     name: "Chandra's Pyreling",
     manaCost: "{1}{R}",
-    scryfall_id: "e7744fcf-2336-489d-bc05-f3fce78713a9",
-    image_url: "https://cards.scryfall.io/normal/front/e/7/e7744fcf-2336-489d-bc05-f3fce78713a9.jpg?1594736559",
+
     oracleText: "Whenever an opponent is dealt noncombat damage, Chandra's Pyreling gets +1/+0 and gains double strike until end of turn. (This ability triggers for each time they're dealt noncombat damage.)",
     colors: ["R"],
     types: ["Creature"],
@@ -25,5 +24,9 @@ export const ChandrasPyreling: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e7744fcf-2336-489d-bc05-f3fce78713a9",
+    image_url: "https://cards.scryfall.io/normal/front/e/7/e7744fcf-2336-489d-bc05-f3fce78713a9.jpg?1594736559",
+    rarity: "uncommon"
 };
+

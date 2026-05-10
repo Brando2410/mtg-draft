@@ -51,6 +51,9 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
         }
     ],
     power: "6",
-    toughness: "6"
+    toughness: "6",
+    scryfall_id: "1624c680-502b-474a-b9b2-888fe3ca008c",
+    image_url: "https://cards.scryfall.io/normal/front/1/6/1624c680-502b-474a-b9b2-888fe3ca008c.jpg?1775936948",
+    rarity: "uncommon"
 };
-    
+

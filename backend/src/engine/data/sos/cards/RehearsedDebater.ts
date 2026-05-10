@@ -25,7 +25,9 @@ export const RehearsedDebater: CardDefinition = {
         }
     ],
     power: "3",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "fc6a1425-6733-42a2-94d9-605966398092",
+    image_url: "https://cards.scryfall.io/normal/front/f/c/fc6a1425-6733-42a2-94d9-605966398092.jpg?1775937116",
+    rarity: "common"
 };
-
 

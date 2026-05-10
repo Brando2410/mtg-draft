@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const MoltenCoreMaestro: CardDefinition = {
     name: "Molten-Core Maestro",
     manaCost: "{1}{R}",
-    scryfall_id: "326dfe32-3674-4a11-acd8-5ba62371235a",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832",
+
+
     colors: [
         "R"
     ],
@@ -39,6 +38,9 @@ export const MoltenCoreMaestro: CardDefinition = {
         }
     ],
     power: "2",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "326dfe32-3674-4a11-acd8-5ba62371235a",
+    image_url: "https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832",
+    rarity: "rare"
 };
 

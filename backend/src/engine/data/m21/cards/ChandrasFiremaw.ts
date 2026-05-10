@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const ChandrasFiremaw: CardDefinition = {
     name: "Chandra's Firemaw",
     manaCost: "{3}{R}{R}",
-    scryfall_id: "8a49c952-32b0-466d-922b-ec1d39360d00",
-    image_url: "https://cards.scryfall.io/normal/front/8/a/8a49c952-32b0-466d-922b-ec1d39360d00.jpg?1596250262",
+
     oracleText: "Flying\nWhen Chandra's Firemaw enters the battlefield, you may search your library and/or graveyard for a card named Chandra, Flame's Catalyst, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["R"],
     types: ["Creature"],
@@ -32,5 +31,9 @@ export const ChandrasFiremaw: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "76cf0b50-155f-4e65-9e48-88b378ad93a1",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/76cf0b50-155f-4e65-9e48-88b378ad93a1.jpg?1596250195",
+    rarity: "rare"
 };
+

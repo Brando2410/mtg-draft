@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const FelineSovereign: CardDefinition = {
     name: "Feline Sovereign",
     manaCost: "{2}{G}",
-    scryfall_id: "84a9485a-d356-4cbe-b257-b62008a21328",
-    image_url: "https://cards.scryfall.io/normal/front/8/4/84a9485a-d356-4cbe-b257-b62008a21328.jpg?1594736953",
+
     oracleText: "Other Cats you control get +1/+1 and have protection from Dogs.\nWhenever one or more Cats you control deal combat damage to a player, destroy up to one target artifact or enchantment that player controls.",
     colors: ["G"],
     types: ["Creature"],
@@ -31,9 +30,13 @@ export const FelineSovereign: CardDefinition = {
             targetDefinitions: [{
                 type: TargetType.ArtifactOrEnchantment,
                 count: 1,
-                minCount: 0,
+                minCount: 0
             }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "84a9485a-d356-4cbe-b257-b62008a21328",
+    image_url: "https://cards.scryfall.io/normal/front/8/4/84a9485a-d356-4cbe-b257-b62008a21328.jpg?1594736953",
+    rarity: "rare"
 };
+

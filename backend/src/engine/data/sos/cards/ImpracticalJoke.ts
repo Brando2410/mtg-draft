@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const ImpracticalJoke: CardDefinition = {
     name: "Impractical Joke",
     manaCost: "{R}",
-    scryfall_id: "39a816b4-39b8-421c-b828-68db901d34b7",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777",
+
+
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: [],
@@ -16,7 +15,7 @@ export const ImpracticalJoke: CardDefinition = {
             targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
-                minCount: 0,
+                minCount: 0
             }],
             effects: [
                 {
@@ -29,5 +28,9 @@ export const ImpracticalJoke: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "39a816b4-39b8-421c-b828-68db901d34b7",
+    image_url: "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777",
+    rarity: "uncommon"
 };
+

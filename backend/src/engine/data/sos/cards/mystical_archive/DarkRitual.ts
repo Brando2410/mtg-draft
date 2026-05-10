@@ -16,5 +16,9 @@ export const DarkRitual: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "95f27eeb-6f14-4db3-adb9-9be5ed76b34b",
+    image_url: "https://cards.scryfall.io/normal/front/9/5/95f27eeb-6f14-4db3-adb9-9be5ed76b34b.jpg?1753711947",
+    rarity: "common"
 };
+

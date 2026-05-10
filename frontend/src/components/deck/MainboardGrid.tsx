@@ -1,4 +1,4 @@
-import { LayoutGrid, RefreshCw, Maximize2 } from 'lucide-react';
+import { LayoutGrid, RefreshCw } from 'lucide-react';
 import type { SimplifiedCard } from '../../services/scryfall';
 
 interface MainboardGridProps {
@@ -8,9 +8,9 @@ interface MainboardGridProps {
   mainboard: SimplifiedCard[];
   flippedIds: Set<string>;
   onToggleFlip: (e: React.MouseEvent, id: string) => void;
-  onMoveToSideboard: (index: number) => void;
-  onDragStart: (index: number, source: 'main' | 'side') => void;
-  onDrop: (e: React.DragEvent, target: 'main' | 'side') => void;
+  onMoveToSideboard: (card: SimplifiedCard) => void;
+  onDragStart: (card: SimplifiedCard, source: 'main' | 'side') => void;
+  onDrop: (target: 'main' | 'side') => void;
   onZoom: (card: SimplifiedCard, flipped: boolean) => void;
 }
 
@@ -18,7 +18,6 @@ export const MainboardGrid: React.FC<MainboardGridProps> = ({
   activeCmcs,
   columns,
   separateByType,
-  mainboard,
   flippedIds,
   onToggleFlip,
   onMoveToSideboard,
@@ -27,93 +26,105 @@ export const MainboardGrid: React.FC<MainboardGridProps> = ({
   onZoom
 }) => {
   return (
-    <div 
-      className="flex-1 overflow-x-auto overflow-y-hidden p-6 sm:p-10 flex gap-6 sm:gap-8 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/40 via-slate-950 to-slate-950 scrollbar-thin"
+    <div
+      className="flex-1 overflow-x-auto overflow-y-hidden p-[clamp(12px,2vw,32px)] flex gap-[clamp(8px,1vw,16px)] bg-[#0a0a0c] relative custom-scrollbar-h"
       onDragOver={e => e.preventDefault()}
-      onDrop={(e) => onDrop(e, 'main')}
+      onDrop={() => onDrop('main')}
     >
+      {/* Dynamic Ambient Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_rgba(79,70,229,0.1),_transparent)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_100%,_rgba(34,211,238,0.05),_transparent)] pointer-events-none" />
+
       {activeCmcs.map(cmc => (
-        <div key={cmc} className="flex-1 min-w-[150px] max-w-[200px] flex flex-col gap-6">
-          <div className="h-12 flex flex-col items-center justify-center font-black text-slate-600 bg-slate-900/40 rounded-2xl uppercase text-[9px] tracking-widest border border-white/5 shadow-inner">
-            <span>Costo {cmc}{cmc === 6 ? '+' : ''}</span>
+        <div key={cmc} className="flex-1 min-w-[clamp(120px,12vw,180px)] flex flex-col gap-4 relative z-10">
+
+          {/* COLUMN HEADER - Glassmorphism style */}
+          <div className="h-[clamp(32px,5vh,44px)] flex items-center justify-between px-3 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md shadow-lg group/header overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent opacity-0 group-hover/header:opacity-100 transition-opacity duration-500" />
+            <span className="text-[clamp(8px,0.7vw,10px)] font-black text-slate-400 uppercase tracking-widest relative z-10">
+              CMC <span className="text-white ml-1">{cmc}{cmc === 6 ? '+' : ''}</span>
+            </span>
+            <div className="flex items-center gap-1.5 opacity-40 group-hover/header:opacity-100 transition-all duration-500">
+              <span className="text-[9px] font-black text-indigo-400">
+                {separateByType ? columns[cmc].creatures.length + columns[cmc].others.length : columns[cmc].all.length}
+              </span>
+            </div>
           </div>
-          
-          <div className="flex-1 flex flex-col gap-12">
-            <div className="relative flex-1">
+
+          {/* SCROLLABLE COLUMN CONTENT */}
+          <div className="flex-1 flex flex-col gap-8 overflow-y-auto custom-scrollbar pr-1">
+
+            {/* SECTION: CREATURES (or All) */}
+            <div 
+              className="relative w-full aspect-[2.5/3.5] transition-all duration-500"
+              style={{ 
+                marginBottom: `${Math.max(0, ((separateByType ? columns[cmc].creatures : columns[cmc].all).length - 1) * (separateByType ? 50 : 70))}px` 
+              }}
+            >
               {(separateByType ? columns[cmc].creatures : columns[cmc].all).map((card, i) => {
-                const idx = mainboard.findIndex(m => m === card);
                 const cardId = (card as any).id || card.scryfall_id;
                 const isFlipped = flippedIds.has(cardId);
                 const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
                 return (
-                  <div 
+                  <div
                     key={`${cardId}-${i}`}
                     draggable
-                    onDragStart={() => onDragStart(idx, 'main')}
-                    onClick={() => onMoveToSideboard(idx)}
-                    className="absolute w-full aspect-[2.5/3.5] rounded-2xl overflow-hidden shadow-2xl border border-white/5 hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer group bg-slate-900 hover:scale-125 hover:!z-[100]"
-                    style={{ top: `${i * (separateByType ? 28 : 45)}px`, zIndex: i }}
+                    onDragStart={() => onDragStart(card, 'main')}
+                    onClick={() => onMoveToSideboard(card)}
+                    onContextMenu={(e) => { e.preventDefault(); onZoom(card, isFlipped); }}
+                    className="absolute w-full aspect-[2.5/3.5] rounded-xl overflow-hidden shadow-2xl border border-white/10 hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.3)] transition-all duration-300 cursor-pointer group bg-slate-900 hover:z-[100]"
+                    style={{ top: `${i * (separateByType ? 50 : 70)}px`, zIndex: i }}
                   >
-                    <img src={displayImage} alt={card.name} className="w-full h-full object-cover transition-transform duration-500" />
-                    
-                    <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center z-20">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onZoom(card, isFlipped); }}
-                        className="w-10 h-10 rounded-xl bg-white/40 hover:bg-white/60 text-white flex items-center justify-center border border-white/20 shadow-2xl transition-all"
-                      >
-                        <Maximize2 className="w-5 h-5" />
-                      </button>
-                    </div>
+                    <img src={displayImage} alt={card.name} className="w-full h-full object-cover transition-transform duration-700" />
 
+                    {/* Flipped Indicator */}
                     {card.back_image_url && (
-                        <button 
-                          onClick={(e) => onToggleFlip(e, cardId)}
-                          className={`absolute top-1 left-1/2 -translate-x-1/2 z-30 p-1 rounded-lg border border-white/10 transition-all ${isFlipped ? 'bg-indigo-500/60 text-white shadow-lg' : 'bg-black/30 text-white/50 hover:text-white hover:bg-black/60'}`}
-                        >
-                           <RefreshCw className={`w-3 h-3 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
-                        </button>
+                      <button
+                        onClick={(e) => onToggleFlip(e, cardId)}
+                        className={`absolute bottom-2 right-2 z-30 p-1.5 rounded-lg border border-white/10 backdrop-blur-md transition-all ${isFlipped ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/40 text-white/50 hover:text-white hover:bg-black/60'}`}
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
+                      </button>
                     )}
                   </div>
                 );
               })}
             </div>
 
+            {/* SECTION: NON-CREATURES (if separateByType enabled) */}
             {separateByType && columns[cmc].others.length > 0 && (
-              <div className="relative flex-1 pt-6 border-t border-slate-900">
+              <div 
+                className="relative w-full aspect-[2.5/3.5] mt-14 pt-4 border-t border-white/5 transition-all duration-500"
+                style={{ 
+                  marginBottom: `${Math.max(0, (columns[cmc].others.length - 1) * 50)}px` 
+                }}
+              >
+
                 {columns[cmc].others.map((card, i) => {
-                  const idx = mainboard.findIndex(m => m === card);
                   const cardId = (card as any).id || card.scryfall_id;
                   const isFlipped = flippedIds.has(cardId);
                   const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
                   return (
-                    <div 
+                    <div
                       key={`${cardId}-${i}`}
                       draggable
-                      onDragStart={() => onDragStart(idx, 'main')}
-                      onClick={() => onMoveToSideboard(idx)}
-                      className="absolute w-full aspect-[2.5/3.5] rounded-2xl overflow-hidden shadow-2xl border border-white/5 hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer group bg-slate-900 hover:scale-125 hover:!z-[100]"
-                      style={{ top: `${i * 28}px`, zIndex: i }}
+                      onDragStart={() => onDragStart(card, 'main')}
+                      onClick={() => onMoveToSideboard(card)}
+                      onContextMenu={(e) => { e.preventDefault(); onZoom(card, isFlipped); }}
+                      className="absolute w-full aspect-[2.5/3.5] rounded-xl overflow-hidden shadow-2xl border border-white/10 hover:border-purple-400/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer group bg-slate-900 hover:z-[100]"
+                      style={{ top: `${i * 50}px`, zIndex: i }}
                     >
-                      <img src={displayImage} alt={card.name} className="w-full h-full object-cover transition-transform duration-500" />
-                      
-                      <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center z-20">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); onZoom(card, isFlipped); }}
-                          className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-xl text-white flex items-center justify-center border border-white/10 shadow-2xl transition-all"
-                        >
-                          <Maximize2 className="w-5 h-5" />
-                        </button>
-                      </div>
+                      <img src={displayImage} alt={card.name} className="w-full h-full object-cover transition-transform duration-700" />
 
                       {card.back_image_url && (
-                         <button 
-                           onClick={(e) => onToggleFlip(e, cardId)}
-                           className={`absolute top-1 left-1/2 -translate-x-1/2 z-30 p-1 rounded-lg border border-white/10 transition-all ${isFlipped ? 'bg-indigo-500/60 text-white shadow-lg' : 'bg-black/30 text-white/50 hover:text-white hover:bg-black/60'}`}
-                         >
-                            <RefreshCw className={`w-3 h-3 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
-                         </button>
+                        <button
+                          onClick={(e) => onToggleFlip(e, cardId)}
+                          className={`absolute bottom-2 right-2 z-30 p-1.5 rounded-lg border border-white/10 backdrop-blur-md transition-all ${isFlipped ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/40 text-white/50 hover:text-white hover:bg-black/60'}`}
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
+                        </button>
                       )}
                     </div>
                   );
@@ -123,12 +134,17 @@ export const MainboardGrid: React.FC<MainboardGridProps> = ({
           </div>
         </div>
       ))}
+
       {activeCmcs.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center opacity-20">
-          <LayoutGrid className="w-16 h-16 mb-6 text-slate-700" />
-          <p className="font-black uppercase tracking-[0.4em] text-xs text-slate-700">Tutto in Sideboard</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-20 animate-in fade-in duration-1000">
+          <div className="w-32 h-32 bg-slate-900/40 rounded-[3rem] flex items-center justify-center border border-white/5 shadow-2xl mb-8 group">
+            <LayoutGrid className="w-12 h-12 text-slate-700 group-hover:text-indigo-500 transition-colors duration-500" />
+          </div>
+          <h4 className="text-xl font-black text-slate-700 uppercase tracking-tighter italic">No Cards In Mainboard</h4>
+          <p className="text-[10px] font-bold text-slate-800 uppercase tracking-[0.3em] mt-2">All assets relocated to Sideboard</p>
         </div>
       )}
     </div>
   );
 };
+

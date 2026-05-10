@@ -22,8 +22,16 @@ export class CostProcessor {
     }
 
     const validSource = source as GameObject;
+    const excludeSourceFromMana = costs.some(c => 
+      c.type === CostType.Tap || 
+      c.type === CostType.SacrificeSelf || 
+      (c.type === CostType.Sacrifice && (c as any).targetMapping === 'SELF') ||
+      c.type === CostType.ExileSelf ||
+      (c.type === CostType.Exile && (c as any).targetMapping === 'SELF')
+    );
+
     for (const cost of costs) {
-      if (!this.canPaySingle(state, cost, validSource, playerId, stackObject)) {
+      if (!this.canPaySingle(state, cost, validSource, playerId, stackObject, excludeSourceFromMana)) {
         return false;
       }
     }
@@ -47,7 +55,7 @@ export class CostProcessor {
     }
   }
 
-  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId, stackObject?: GameObject | StackObject): boolean {
+  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId, stackObject?: GameObject | StackObject, excludeSourceFromMana = false): boolean {
     const player = state.players[playerId];
     if (!player) return false;
 
@@ -74,7 +82,7 @@ export class CostProcessor {
       case CostType.Mana:
         const effectiveMana = this.getEffectiveManaCost(state, cost, source, stackObject);
         const { mana: ManaProcessor } = getProcessors(state);
-        return ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveMana, source);
+        return ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveMana, source, excludeSourceFromMana);
 
       case CostType.Loyalty: {
         const loyaltyCost = cost as LoyaltyCost;

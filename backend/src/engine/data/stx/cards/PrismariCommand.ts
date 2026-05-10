@@ -50,6 +50,9 @@ export const PrismariCommand: CardDefinition = {
                 }
             ]
         }]
-    }]
+    }],
+    scryfall_id: "372d0c0b-439c-413f-aac4-5174c75aadb0",
+    image_url: "https://cards.scryfall.io/normal/front/3/7/372d0c0b-439c-413f-aac4-5174c75aadb0.jpg?1775941859",
+    rarity: "rare"
 };
 

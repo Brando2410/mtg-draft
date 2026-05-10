@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const PotionersTrove: CardDefinition = {
     name: "Potioner's Trove",
     manaCost: "{3}",
-    scryfall_id: "2123b349-4649-4a15-a8b5-b54414d2b1b7",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752",
+
+
     colors: [],
     types: [
         "Artifact"
@@ -38,6 +37,9 @@ export const PotionersTrove: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2123b349-4649-4a15-a8b5-b54414d2b1b7",
+    image_url: "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752",
+    rarity: "common"
 };
 

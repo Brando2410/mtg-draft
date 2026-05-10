@@ -63,5 +63,9 @@ export const SilverquillCommand: CardDefinition = {
                 }
             ]
         }]
-    }]
+    }],
+    scryfall_id: "5c55f533-9d31-4ad1-b336-927aba6e74d6",
+    image_url: "https://cards.scryfall.io/normal/front/5/c/5c55f533-9d31-4ad1-b336-927aba6e74d6.jpg?1624740020",
+    rarity: "rare"
 };
+

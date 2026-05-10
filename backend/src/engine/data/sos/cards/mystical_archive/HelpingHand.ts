@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetType } from
 
 export const HelpingHand: CardDefinition = {
     name: "Helping Hand",
-    manaCost: "{W}",
-    scryfall_id: "da5e29a8-a8fb-452b-9973-61ad613f9907",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/d/a/da5e29a8-a8fb-452b-9973-61ad613f9907.jpg?1775936387",
+    manaCost: "{W}",
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -27,5 +24,9 @@ export const HelpingHand: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "da5e29a8-a8fb-452b-9973-61ad613f9907",
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da5e29a8-a8fb-452b-9973-61ad613f9907.jpg?1775936387",
+    rarity: "uncommon"
 };
+

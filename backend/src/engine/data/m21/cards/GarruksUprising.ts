@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Tr
 export const GarruksUprising: CardDefinition = {
     name: "Garruk's Uprising",
     manaCost: "{2}{G}",
-    scryfall_id: "71a4860a-8bb6-45c0-b00a-b4a42da33ab9",
-    image_url: "https://cards.scryfall.io/normal/front/7/1/71a4860a-8bb6-45c0-b00a-b4a42da33ab9.jpg?1594737017",
+
     oracleText: "When this enchantment enters, if you control a creature with power 4 or greater, draw a card.\nCreatures you control have trample. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever a creature you control with power 4 or greater enters, draw a card.",
     colors: ["G"],
     types: ["Enchantment"],
@@ -41,5 +40,9 @@ export const GarruksUprising: CardDefinition = {
             },
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
-    ]
+    ],
+    scryfall_id: "71a4860a-8bb6-45c0-b00a-b4a42da33ab9",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/71a4860a-8bb6-45c0-b00a-b4a42da33ab9.jpg?1594737017",
+    rarity: "uncommon"
 };
+

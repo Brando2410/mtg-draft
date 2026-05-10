@@ -38,6 +38,9 @@ export const RabidAttack: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f5e67560-3135-4b27-a344-5859edf8bcd9",
+    image_url: "https://cards.scryfall.io/normal/front/f/5/f5e67560-3135-4b27-a344-5859edf8bcd9.jpg?1775937579",
+    rarity: "uncommon"
 };
 

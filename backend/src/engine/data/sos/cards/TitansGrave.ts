@@ -4,7 +4,7 @@ export const TitansGrave: CardDefinition = {
     manaCost: "",
     colors: [],
     types: ["Land"],
-    rarity: "common",
+
     subtypes: [],
     keywords: [],
     oracleText: "Titan's Grave enters the battlefield tapped.\n{T}: Add {B} or {G}.\n{2}{B}{G}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
@@ -40,6 +40,9 @@ export const TitansGrave: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21",
+    image_url: "https://cards.scryfall.io/normal/front/a/9/a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21.jpg?1775938861",
+    rarity: "common"
 };
 

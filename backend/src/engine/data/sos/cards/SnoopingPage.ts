@@ -40,6 +40,9 @@ export const SnoopingPage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "73d06987-8686-461b-b260-9a4fee6a3b32",
+    image_url: "https://cards.scryfall.io/normal/front/7/3/73d06987-8686-461b-b260-9a4fee6a3b32.jpg?1775938584",
+    rarity: "uncommon"
 };
 

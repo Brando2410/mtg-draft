@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
 
 export const TriumphoftheHordes: CardDefinition = {
     name: "Triumph of the Hordes",
-    manaCost: "{2}{G}{G}",
-    scryfall_id: "5a0bc9d4-d99d-48e1-aeca-d2e5b1c99a84",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/5/a/5a0bc9d4-d99d-48e1-aeca-d2e5b1c99a84.jpg?1775936799",
+    manaCost: "{2}{G}{G}",
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],
@@ -26,5 +23,9 @@ export const TriumphoftheHordes: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5a0bc9d4-d99d-48e1-aeca-d2e5b1c99a84",
+    image_url: "https://cards.scryfall.io/normal/front/5/a/5a0bc9d4-d99d-48e1-aeca-d2e5b1c99a84.jpg?1775936799",
+    rarity: "mythic"
 };
+

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CounterType, EffectType, Tr
 export const FractalTender: CardDefinition = {
     name: "Fractal Tender",
     manaCost: "{3}{G}{U}",
-    scryfall_id: "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318",
+    power: "3",
+    toughness: "3",
     colors: ["G", "U"],
     types: ["Creature"],
     subtypes: ["Elf", "Wizard"],
@@ -25,7 +24,7 @@ export const FractalTender: CardDefinition = {
                         colors: ['G', 'U'],
                         power: '0',
                         toughness: '0',
-                        image_url: 'https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306',
+                        image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                     },
                     amount: 1,
                     startingCounters: {
@@ -36,7 +35,8 @@ export const FractalTender: CardDefinition = {
             ]
         }
     ],
-    power: "3",
-    toughness: "3"
+    scryfall_id: "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
+    image_url: "https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306",
+    rarity: "uncommon"
 };
 

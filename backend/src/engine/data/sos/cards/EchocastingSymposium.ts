@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const EchocastingSymposium: CardDefinition = {
     name: "Echocasting Symposium",
     manaCost: "{4}{U}{U}",
-    scryfall_id: "5d7086a7-dc42-468a-a2cf-a6f89030f947",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216",
+
+
     colors: ["U"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],
@@ -20,10 +19,14 @@ export const EchocastingSymposium: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateTokenCopy,
-                    targetMapping: TargetMapping.Target1, // Player
+                    targetMapping: TargetMapping.Target1, // Player,
                     sourceMapping: TargetMapping.Target2 // Creature to copy
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5d7086a7-dc42-468a-a2cf-a6f89030f947",
+    image_url: "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216",
+    rarity: "mythic"
 };
+

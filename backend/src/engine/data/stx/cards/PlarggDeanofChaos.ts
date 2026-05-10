@@ -82,6 +82,9 @@ export const PlarggDeanofChaos: CardDefinition = {
                 }
             ]
         }
-    ]
-}
+    ],
+    scryfall_id: "5bd9b5cf-f018-48af-a081-995ce8ecc539",
+    image_url: "https://cards.scryfall.io/normal/front/5/b/5bd9b5cf-f018-48af-a081-995ce8ecc539.jpg?1660299546",
+    rarity: "rare"
+};
 

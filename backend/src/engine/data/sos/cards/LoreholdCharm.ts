@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",
-    scryfall_id: "5fe70295-e550-4577-a341-dab6c25aabfd",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389",
+
+
     colors: ["R", "W"],
     types: ["Instant"],
     oracleText: "Choose one —\n• Each opponent sacrifices a nontoken artifact.\n• Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield.\n• Creatures you control get +1/+1 and gain trample until end of turn.",
@@ -61,5 +60,9 @@ export const LoreholdCharm: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5fe70295-e550-4577-a341-dab6c25aabfd",
+    image_url: "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389",
+    rarity: "uncommon"
 };
+

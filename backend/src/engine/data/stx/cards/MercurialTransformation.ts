@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const MercurialTransformation: CardDefinition = {
     name: 'Mercurial Transformation',
     manaCost: '{1}{U}',
-    scryfall_id: "adcbe115-5482-4e5a-95bb-8ccbb01d3547",
-    image_url: "https://cards.scryfall.io/normal/front/a/d/adcbe115-5482-4e5a-95bb-8ccbb01d3547.jpg?1637082344",
+
     colors: ['U'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
@@ -50,6 +49,9 @@ export const MercurialTransformation: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "adcbe115-5482-4e5a-95bb-8ccbb01d3547",
+    image_url: "https://cards.scryfall.io/normal/front/a/d/adcbe115-5482-4e5a-95bb-8ccbb01d3547.jpg?1637082344",
+    rarity: "uncommon"
 };
 

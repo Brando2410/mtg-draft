@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
 export const StoneDocent: CardDefinition = {
     name: "Stone Docent",
     manaCost: "{1}{W}",
-    scryfall_id: "c2abfffb-bf36-44af-9a27-6e109e4d77dd",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164",
+
+
     colors: [
         "W"
     ],
@@ -37,9 +36,13 @@ export const StoneDocent: CardDefinition = {
                     amount: 1,
                     targetMapping: TargetMapping.Controller
                 }
-            ],
+            ]
         }
     ],
     power: "3",
-    toughness: "1"
+    toughness: "1",
+    scryfall_id: "c2abfffb-bf36-44af-9a27-6e109e4d77dd",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164",
+    rarity: "common"
 };
+

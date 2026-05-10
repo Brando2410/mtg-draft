@@ -15,7 +15,9 @@ export const ProfessorofSymbology: CardDefinition = {
                     eventMatch: TriggerEvent.EnterBattlefield,
               effects: [{ type: EffectType.Learn }]
           }
-      ]
-  };
-
+      ],
+    scryfall_id: "f427cf73-9f5e-4ef5-bc4f-29ffbfda9d57",
+    image_url: "https://cards.scryfall.io/normal/front/f/4/f427cf73-9f5e-4ef5-bc4f-29ffbfda9d57.jpg?1624589635",
+    rarity: "uncommon"
+};
 

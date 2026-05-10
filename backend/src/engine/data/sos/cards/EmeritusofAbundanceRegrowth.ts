@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, Ta
 export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
-    scryfall_id: "ac095763-6f4e-4d4e-9c99-414646368f8d",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986",
+
+
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Elf", "Druid"],
@@ -28,7 +27,7 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
     ],
     preparedFace: {
         name: "Regrowth",
-        image_url: "https://cards.scryfall.io/png/front/d/7/d771fc5d-b9a1-4637-8241-3f54616b64af.png?1562202155",
+
         manaCost: "{1}{G}",
         colors: ["G"],
         types: ["Sorcery"],
@@ -50,6 +49,11 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "ac095763-6f4e-4d4e-9c99-414646368f8d",
+    image_url: "https://cards.scryfall.io/png/front/d/7/d771fc5d-b9a1-4637-8241-3f54616b64af.png?1562202155",
+    rarity: "mythic"
 };
+

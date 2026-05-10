@@ -2,9 +2,6 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
 export const LivingHistory: CardDefinition = {
     name: "Living History",
     manaCost: "{1}{R}",
-    scryfall_id: "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797",
     colors: ["R"],
     types: ["Enchantment"],
     subtypes: [],
@@ -24,7 +21,7 @@ export const LivingHistory: CardDefinition = {
                         subtypes: ["Spirit"],
                         power: 2,
                         toughness: 2,
-                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773",
+                        image_url: "https://cards.scryfall.io/normal/front/8/7/877f7ddb-ed70-41a0-b845-d9bf8ac65f9b.jpg?1775828448"
                     },
                     amount: 1,
                     targetMapping: TargetMapping.Controller
@@ -50,6 +47,9 @@ export const LivingHistory: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
+    image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773",
+    rarity: "uncommon"
 };
 

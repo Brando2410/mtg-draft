@@ -81,6 +81,8 @@ export interface EffectiveStats {
     flashbackCostOverride?: string;
     isActivation?: boolean;
     isFlashback?: boolean;
+    isFreeCast?: boolean;
+    isPermissionPlay?: boolean;
     isPlayable?: boolean;
     isVirtual?: boolean;
     keywords: string[];

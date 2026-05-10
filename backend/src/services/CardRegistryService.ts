@@ -16,8 +16,8 @@ export interface RegistryCard {
   image_url?: string;
   back_image_url?: string;
   scryfall_id?: string;
-  engineStatus: 'IMPLEMENTED' | 'DATA_ONLY';
-  manualStatus: 'VERIFIED' | 'MISSING';
+  rarity?: string;
+  subtypes?: string[];
 }
 
 export class CardRegistryService {
@@ -44,9 +44,6 @@ export class CardRegistryService {
     } catch (e) { console.error('[REGISTRY] Error loading STX', e); }
 
     this.allCards = Object.values(combined).map(({ card, set }) => {
-      // Basic check: if it has abilities implemented or custom logic beyond just data
-      const isImplemented = !!(card.abilities?.length);
-
       return {
         name: card.name,
         set: set,
@@ -59,8 +56,10 @@ export class CardRegistryService {
         image_url: card.image_url,
         back_image_url: (card as any).back_image_url,
         scryfall_id: card.scryfall_id,
-        engineStatus: isImplemented ? 'IMPLEMENTED' : 'DATA_ONLY',
-        manualStatus: isImplemented ? 'VERIFIED' : 'MISSING'
+        rarity: (card as any).rarity,
+        types: card.types,
+        supertypes: (card as any).supertypes,
+        subtypes: (card as any).subtypes
       };
     });
 

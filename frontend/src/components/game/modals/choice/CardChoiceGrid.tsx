@@ -66,7 +66,7 @@ export const CardChoiceGrid = memo(({
             </div>
         )}
         
-        <div className="flex flex-wrap justify-center gap-8 p-6">
+        <div className="flex flex-wrap justify-center gap-8 p-6 w-full">
             {filteredCardChoices.map((choice: any, idx: number) => {
                 const originalIdx = choices.indexOf(choice);
                 const isSelected = selectedIndices.includes(originalIdx);

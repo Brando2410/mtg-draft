@@ -66,7 +66,7 @@ export class ManaValidator {
   /**
    * Complex check: Can the player pay this cost using floating mana AND untapped sources?
    */
-  public static canPayWithTotal(state: GameState, player: PlayerState, battlefield: GameObject[], costStr: string, payingFor?: GameObject): boolean {
+  public static canPayWithTotal(state: GameState, player: PlayerState, battlefield: GameObject[], costStr: string, payingFor?: GameObject, excludePayingFor = false): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = ManaParser.parseManaCost(costStr);
 
@@ -77,7 +77,7 @@ export class ManaValidator {
     const { layer: LayerProcessor } = getProcessors(state);
 
     battlefield.forEach((obj: GameObject) => {
-      if (obj.controllerId === player.id && !obj.isTapped) {
+      if (obj.controllerId === player.id && !obj.isTapped && (!excludePayingFor || obj.id !== payingFor?.id)) {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         const abilities = (stats.abilities || []) as (AbilityDefinition | string)[];
         const manaAbilities = abilities.filter((a): a is AbilityDefinition => typeof a !== 'string' && !!a.isManaAbility);

@@ -19,6 +19,9 @@ export const DefiantStrike: CardDefinition = {
         { type: EffectType.DrawCards, amount: 1 }
       ]
     }
-  ]
+  ],
+    scryfall_id: "5c23869b-c99a-49dd-9e29-fcc0eb63fad1",
+    image_url: "https://cards.scryfall.io/normal/front/5/c/5c23869b-c99a-49dd-9e29-fcc0eb63fad1.jpg?1594734879",
+    rarity: "common"
 };
 

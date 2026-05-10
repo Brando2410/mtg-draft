@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 export const CullingRitual: CardDefinition = {
         name: "Culling Ritual",
         manaCost: "{2}{B}{G}",
-    scryfall_id: "8f6f91d3-cc07-4a42-99a0-5fb83b29cc25",
-    image_url: "https://cards.scryfall.io/normal/front/8/f/8f6f91d3-cc07-4a42-99a0-5fb83b29cc25.jpg?1627428386",
+
         colors: ["B", "G"],
         types: ["Sorcery"],
         oracleText: "Destroy each nonland permanent with mana value 2 or less. Add {B} or {G} for each permanent destroyed this way.",
@@ -22,5 +21,9 @@ export const CullingRitual: CardDefinition = {
                     effects: [{ type: EffectType.AddMana, manaType: 'BG', amount: DynamicAmount.DestroyedCount }]
                 }
             ]
-        }]
-    };
+        }],
+    scryfall_id: "abaad8c5-763d-4276-9b19-623cd19f59b9",
+    image_url: "https://cards.scryfall.io/normal/front/a/b/abaad8c5-763d-4276-9b19-623cd19f59b9.jpg?1775941703",
+    rarity: "rare"
+};
+

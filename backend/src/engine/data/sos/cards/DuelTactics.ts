@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, RestrictionType,
 export const DuelTactics: CardDefinition = {
     name: "Duel Tactics",
     manaCost: "{R}",
-    scryfall_id: "8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718",
+
+
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: [],
@@ -32,5 +31,9 @@ export const DuelTactics: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8",
+    image_url: "https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718",
+    rarity: "uncommon"
 };
+

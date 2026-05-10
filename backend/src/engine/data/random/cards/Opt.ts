@@ -14,6 +14,9 @@ export const Opt: CardDefinition = {
           { type: EffectType.DrawCards, amount: 1 }
         ]
       }
-    ]
-  };
+    ],
+    scryfall_id: "bbc99a51-1501-4525-a3cc-f48249b64bed",
+    image_url: "https://cards.scryfall.io/normal/front/b/b/bbc99a51-1501-4525-a3cc-f48249b64bed.jpg?1743206354",
+    rarity: "common"
+};
 

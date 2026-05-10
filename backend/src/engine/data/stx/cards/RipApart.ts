@@ -47,5 +47,9 @@ export const RipApart: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ab3443be-ab7f-4ab1-bc31-0ace68773f2d",
+    image_url: "https://cards.scryfall.io/normal/front/a/b/ab3443be-ab7f-4ab1-bc31-0ace68773f2d.jpg?1775941899",
+    rarity: "uncommon"
 };
+

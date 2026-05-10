@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const LilianasScorn: CardDefinition = {
     name: "Liliana's Scorn",
     manaCost: "{2}{B}{B}",
-    scryfall_id: "0d0f4133-c284-486a-8451-24af1e93895e",
-    image_url: "https://cards.scryfall.io/normal/front/0/d/0d0f4133-c284-486a-8451-24af1e93895e.jpg?1596250212",
     oracleText: "Destroy target creature. You may search your library and/or graveyard for a card named Liliana, Death Mage, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["B"],
     types: ["Sorcery"],
@@ -30,5 +28,9 @@ export const LilianasScorn: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b231f941-4acb-46f2-81ae-16e5a28e65af",
+    image_url: "https://cards.scryfall.io/normal/front/b/2/b231f941-4acb-46f2-81ae-16e5a28e65af.jpg?1596250190",
+    rarity: "rare"
 };
+

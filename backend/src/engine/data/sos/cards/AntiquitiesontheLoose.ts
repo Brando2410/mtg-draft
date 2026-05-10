@@ -3,8 +3,8 @@ export const AntiquitiesontheLoose: CardDefinition = {
     name: "Antiquities on the Loose",
     manaCost: "{1}{W}{W}",
     scryfall_id: "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
+    image_url: "https://cards.scryfall.io/normal/front/7/8/785d75b7-2054-47d0-8135-96ba6b4e9b78.jpg?1777297922",
     rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960",
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -26,7 +26,7 @@ export const AntiquitiesontheLoose: CardDefinition = {
                         colors: ['W', 'R'],
                         power: '2',
                         toughness: '2',
-                        image_url: 'https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773'
+                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
                     },
                     amount: 2
                 },
@@ -45,5 +45,7 @@ export const AntiquitiesontheLoose: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+
 };
+

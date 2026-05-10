@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const RestorationSeminar: CardDefinition = {
     name: "Restoration Seminar",
     manaCost: "{5}{W}{W}",
-    scryfall_id: "9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6",
-    image_url: "https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123",
+
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],
@@ -32,5 +31,9 @@ export const RestorationSeminar: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6",
+    image_url: "https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123",
+    rarity: "mythic"
 };
+

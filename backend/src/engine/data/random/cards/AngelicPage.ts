@@ -29,6 +29,9 @@ export const AngelicPage: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
-
+    ],
+    scryfall_id: "ddf5db14-f2aa-4088-9894-7bd3a56dfe1e",
+    image_url: "https://cards.scryfall.io/normal/front/d/d/ddf5db14-f2aa-4088-9894-7bd3a56dfe1e.jpg?1600715409",
+    rarity: "common"
 };
+

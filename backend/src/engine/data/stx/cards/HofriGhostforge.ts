@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Tr
 export const HofriGhostforge: CardDefinition = {
     name: "Hofri Ghostforge",
     manaCost: "{3}{R}{W}",
-    scryfall_id: "bd8deecf-eded-418b-ac4c-5c3e8f54e86d",
-    image_url: "https://cards.scryfall.io/normal/front/b/d/bd8deecf-eded-418b-ac4c-5c3e8f54e86d.jpg?1627429212",
+
     colors: ["R", "W"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -60,5 +59,9 @@ export const HofriGhostforge: CardDefinition = {
                 }]
             }]
         }
-    ]
+    ],
+    scryfall_id: "bc03cdb6-5ad0-452d-a698-bd19f5ebac83",
+    image_url: "https://cards.scryfall.io/normal/front/b/c/bc03cdb6-5ad0-452d-a698-bd19f5ebac83.jpg?1775941787",
+    rarity: "mythic"
 };
+

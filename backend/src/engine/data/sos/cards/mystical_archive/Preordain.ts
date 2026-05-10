@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 export const Preordain: CardDefinition = {
     name: "Preordain",
     manaCost: "{U}",
-    scryfall_id: "8221b564-acf0-4d82-94f5-2ba1337ff5e1",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/8/2/8221b564-acf0-4d82-94f5-2ba1337ff5e1.jpg?1775936514",
+
+
     colors: ["U"],
     types: ["Sorcery"],
     subtypes: [],
@@ -26,5 +25,9 @@ export const Preordain: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8221b564-acf0-4d82-94f5-2ba1337ff5e1",
+    image_url: "https://cards.scryfall.io/normal/front/8/2/8221b564-acf0-4d82-94f5-2ba1337ff5e1.jpg?1775936514",
+    rarity: "rare"
 };
+

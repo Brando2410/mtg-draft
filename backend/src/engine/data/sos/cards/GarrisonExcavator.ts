@@ -2,19 +2,11 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
 export const GarrisonExcavator: CardDefinition = {
     name: "Garrison Excavator",
     manaCost: "{3}{R}",
-    scryfall_id: "f11d2846-f181-4751-82ac-1e1ced6f46c7",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Orc",
-        "Sorcerer"
-    ],
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Orc", "Sorcerer"],
+    power: "3",
+    toughness: "4",
     keywords: ["Menace"],
     oracleText: "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever one or more cards leave your graveyard, create a 2/2 red and white Spirit creature token.",
     abilities: [
@@ -33,13 +25,14 @@ export const GarrisonExcavator: CardDefinition = {
                         power: 2,
                         toughness: 2,
                         keywords: ['Flying'],
-                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
+                        image_url: "https://cards.scryfall.io/normal/front/8/7/877f7ddb-ed70-41a0-b845-d9bf8ac65f9b.jpg?1775828448"
                     }
                 }
             ]
         }
     ],
-    power: "3",
-    toughness: "4"
+    scryfall_id: "f11d2846-f181-4751-82ac-1e1ced6f46c7",
+    image_url: "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750",
+    rarity: "uncommon"
 };
 

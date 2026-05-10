@@ -40,6 +40,9 @@ export const SpectacularSkywhale: CardDefinition = {
         }
     ],
     power: "1",
-    toughness: "4"
+    toughness: "4",
+    scryfall_id: "c90366d5-b4ba-4772-a3c5-f138bbe7f305",
+    image_url: "https://cards.scryfall.io/normal/front/c/9/c90366d5-b4ba-4772-a3c5-f138bbe7f305.jpg?1775938597",
+    rarity: "uncommon"
 };
 

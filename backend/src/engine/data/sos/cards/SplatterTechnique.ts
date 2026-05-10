@@ -34,8 +34,9 @@ export const SplatterTechnique: CardDefinition = {
                 }
             ]
         }
-    ]
-
-
+    ],
+    scryfall_id: "969b6657-c3b9-47e1-a42e-95bbcccf452d",
+    image_url: "https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612",
+    rarity: "rare"
 };
 

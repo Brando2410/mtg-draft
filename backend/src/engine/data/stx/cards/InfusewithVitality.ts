@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const InfusewithVitality: CardDefinition = {
     name: 'Infuse with Vitality',
     manaCost: '{B}{G}',
-    scryfall_id: "840600a9-3e78-48a6-b75b-860446b82c1b",
-    image_url: "https://cards.scryfall.io/normal/front/8/4/840600a9-3e78-48a6-b75b-860446b82c1b.jpg?1627429284",
+
     colors: ['B', 'G'],
     types: ['Instant'],
     oracleText: 'Until end of turn, target creature gains deathtouch and "When this creature dies, return it to the battlefield tapped under its owner\'s control and you gain 2 life."',
@@ -46,5 +45,9 @@ export const InfusewithVitality: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "840600a9-3e78-48a6-b75b-860446b82c1b",
+    image_url: "https://cards.scryfall.io/normal/front/8/4/840600a9-3e78-48a6-b75b-860446b82c1b.jpg?1627429284",
+    rarity: "common"
 };
+

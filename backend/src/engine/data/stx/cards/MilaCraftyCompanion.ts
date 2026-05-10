@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
 export const MilaCraftyCompanion: CardDefinition = {
     name: "Mila, Crafty Companion",
     manaCost: "{1}{W}{W}",
-    scryfall_id: "8e4e0f81-f92b-4a3a-bb29-adcc3de211b4",
-    image_url: "https://cards.scryfall.io/normal/front/8/e/8e4e0f81-f92b-4a3a-bb29-adcc3de211b4.jpg?1748260747",
+
     colors: ["W"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -132,5 +131,9 @@ export const MilaCraftyCompanion: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8e4e0f81-f92b-4a3a-bb29-adcc3de211b4",
+    image_url: "https://cards.scryfall.io/normal/front/8/e/8e4e0f81-f92b-4a3a-bb29-adcc3de211b4.jpg?1748260747",
+    rarity: "mythic"
 };
+

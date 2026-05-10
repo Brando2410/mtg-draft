@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const LecturingScornmage: CardDefinition = {
     name: "Lecturing Scornmage",
     manaCost: "{B}",
-    scryfall_id: "ad07091e-8c24-43af-8ce8-031847bcaf30",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516",
+
+
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Human", "Warlock"],
@@ -27,5 +26,9 @@ export const LecturingScornmage: CardDefinition = {
         }
     ],
     power: "1",
-    toughness: "1"
+    toughness: "1",
+    scryfall_id: "ad07091e-8c24-43af-8ce8-031847bcaf30",
+    image_url: "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516",
+    rarity: "uncommon"
 };
+

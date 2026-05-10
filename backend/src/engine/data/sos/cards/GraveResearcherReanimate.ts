@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const GraveResearcherReanimate: CardDefinition = {
     name: "Grave Researcher // Reanimate",
     manaCost: "{2}{B} // {B}",
-    scryfall_id: "8b1e10e8-ea14-4761-910b-4072e2a18456",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1775937504",
     colors: [
         "B"
     ],
@@ -42,7 +39,7 @@ export const GraveResearcherReanimate: CardDefinition = {
     ],
     preparedFace: {
         name: "Reanimate",
-        image_url: "https://cards.scryfall.io/normal/front/3/6/368b6903-5fc4-43e7-bd44-46b8107c8bb4.png?1738000013",
+
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -67,6 +64,11 @@ export const GraveResearcherReanimate: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "8b1e10e8-ea14-4761-910b-4072e2a18456",
+    image_url: "https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1778165067",
+    rarity: "rare"
 };
+

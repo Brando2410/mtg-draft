@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",
     manaCost: "{X}{X}{U}",
-    scryfall_id: "0d3c01f6-6c17-488b-b1e1-e6a88e6f1f3b",
-    image_url: "https://cards.scryfall.io/png/front/e/2/e296839e-9905-4f40-8488-842245ae147c.png?1773176722",
+
     colors: ["U"],
     types: ["Instant"],
     exileOnResolution: true,
@@ -30,5 +29,9 @@ export const DivergentEquation: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "26295e25-f1bf-4665-ba00-dad35c49bbc2",
+    image_url: "https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210",
+    rarity: "uncommon"
 };
+

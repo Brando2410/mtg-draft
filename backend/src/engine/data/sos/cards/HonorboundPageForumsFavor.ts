@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     export const HonorboundPageForumsFavor: CardDefinition = {
     name: "Honorbound Page // Forum's Favor",
     manaCost: "{3}{W}",
-    scryfall_id: "79a70863-860f-4a7b-9cb2-d3546b689d44",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039",
+
+
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
@@ -16,7 +15,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     entersPrepared: true,
     preparedFace: {
         name: "Forum's Favor",
-        image_url: "https://cards.scryfall.io/png/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.png?1775937039",
+
         manaCost: "{W}",
         colors: ["W"],
         types: ["Sorcery"],
@@ -39,7 +38,11 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "79a70863-860f-4a7b-9cb2-d3546b689d44",
+    image_url: "https://cards.scryfall.io/png/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.png?1775937039",
+    rarity: "common"
 };
-    
+

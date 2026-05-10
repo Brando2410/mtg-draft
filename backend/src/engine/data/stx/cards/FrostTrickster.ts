@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const FrostTrickster: CardDefinition = {
     name: 'Frost Trickster',
     manaCost: '{2}{U}',
-    scryfall_id: "fd79c9cc-0a8c-4d88-96e2-cb177134a18d",
-    image_url: "https://cards.scryfall.io/normal/front/f/d/fd79c9cc-0a8c-4d88-96e2-cb177134a18d.jpg?1624590148",
+
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Bird', 'Wizard'],
@@ -26,5 +25,9 @@ export const FrostTrickster: CardDefinition = {
                 { type: EffectType.ApplyContinuousEffect, effects: [{ type: EffectType.Freeze }], duration: { type: DurationType.UntilNextUntapStep }, targetMapping: TargetMapping.Target1 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "fd79c9cc-0a8c-4d88-96e2-cb177134a18d",
+    image_url: "https://cards.scryfall.io/normal/front/f/d/fd79c9cc-0a8c-4d88-96e2-cb177134a18d.jpg?1624590148",
+    rarity: "common"
 };
+

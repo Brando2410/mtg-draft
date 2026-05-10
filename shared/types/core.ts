@@ -94,7 +94,11 @@ export const CounterType: Record<string, string> & typeof _CounterType = new Pro
 export const EnginePrefix = {
   VirtualPrepared: "virtual_prepared_",
   Copy: "copy_",
-  Token: "token_"
+  Token: "token_",
+  Flashback: "flashback_",
+  Permission: "permission_",
+  FreeCast: "free_",
+  VirtualHand: "v_",
 } as const;
 
 export const SelectionType = {

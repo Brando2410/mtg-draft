@@ -32,5 +32,9 @@ export const StressDream: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "1ec40a1b-51e7-4a35-966c-ab2a10f21a80",
+    image_url: "https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641",
+    rarity: "uncommon"
 };
+

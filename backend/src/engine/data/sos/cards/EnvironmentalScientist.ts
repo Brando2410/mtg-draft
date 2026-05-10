@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetType, Trigg
 export const EnvironmentalScientist: CardDefinition = {
     name: "Environmental Scientist",
     manaCost: "{1}{G}",
-    scryfall_id: "f2bf6b36-43e4-49d9-98b2-cbb4304c248b",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001",
+
+
     colors: [
         "G"
     ],
@@ -39,5 +38,9 @@ export const EnvironmentalScientist: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f2bf6b36-43e4-49d9-98b2-cbb4304c248b",
+    image_url: "https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001",
+    rarity: "uncommon"
 };
+

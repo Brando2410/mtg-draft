@@ -31,6 +31,9 @@ export const TackleArtist: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b87e2474-98c1-4c1a-91ed-340b72d31653",
+    image_url: "https://cards.scryfall.io/normal/front/b/8/b87e2474-98c1-4c1a-91ed-340b72d31653.jpg?1775937898",
+    rarity: "common"
 };
 

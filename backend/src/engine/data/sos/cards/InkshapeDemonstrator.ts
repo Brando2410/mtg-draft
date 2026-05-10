@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     export const InkshapeDemonstrator: CardDefinition = {
     name: "Inkshape Demonstrator",
     manaCost: "{3}{W}",
-    scryfall_id: "bcfac992-9984-4529-b9ff-a42d58832b34",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053",
+
+
     colors: [
         "W"
     ],
@@ -34,7 +33,9 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
         }
     ],
     power: "3",
-    toughness: "4"
+    toughness: "4",
+    scryfall_id: "bcfac992-9984-4529-b9ff-a42d58832b34",
+    image_url: "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053",
+    rarity: "uncommon"
 };
-    
 

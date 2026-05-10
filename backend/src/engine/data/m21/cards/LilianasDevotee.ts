@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const LilianasDevotee: CardDefinition = {
     name: "Liliana's Devotee",
     manaCost: "{2}{B}",
-    scryfall_id: "ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a",
-    image_url: "https://cards.scryfall.io/normal/front/a/e/ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a.jpg?1594736229",
+
     oracleText: "Zombies you control get +1/+0.\nAt the beginning of your end step, if a creature died this turn, you may pay {1}{B}. If you do, create a 2/2 black Zombie creature token.",
     colors: ["B"],
     types: ["Creature"],
@@ -46,7 +45,7 @@ export const LilianasDevotee: CardDefinition = {
                                         colors: ['B'],
                                         types: ['Creature'],
                                         subtypes: ['Zombie'],
-                                        image_url: 'https://cards.scryfall.io/large/front/4/5/453051e4-f3c5-4089-9fc0-ac064436798b.jpg?1594733596'
+
                                     },
                                     targetMapping: TargetMapping.Controller
                                 }
@@ -57,5 +56,9 @@ export const LilianasDevotee: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a",
+    image_url: "https://cards.scryfall.io/normal/front/a/e/ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a.jpg?1594736229",
+    rarity: "uncommon"
 };
+

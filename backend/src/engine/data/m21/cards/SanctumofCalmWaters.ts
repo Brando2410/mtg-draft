@@ -38,5 +38,9 @@ export const SanctumofCalmWaters: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "80b2fb65-5868-4cab-b45d-e103558ce7dc",
+    image_url: "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1594735727",
+    rarity: "uncommon"
 };
+

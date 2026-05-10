@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 
 export const PickYourPoison: CardDefinition = {
     name: "Pick Your Poison",
-    manaCost: "{G}",
-    scryfall_id: "a11f1013-d747-4cf2-bbf5-0bd68a949ddf",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/a/1/a11f1013-d747-4cf2-bbf5-0bd68a949ddf.jpg?1775936770",
+    manaCost: "{G}",
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],
@@ -52,5 +49,9 @@ export const PickYourPoison: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a11f1013-d747-4cf2-bbf5-0bd68a949ddf",
+    image_url: "https://cards.scryfall.io/normal/front/a/1/a11f1013-d747-4cf2-bbf5-0bd68a949ddf.jpg?1775936770",
+    rarity: "uncommon"
 };
+

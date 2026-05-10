@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const SymmetrySage: CardDefinition = {
     name: 'Symmetry Sage',
     manaCost: '{U}',
-    scryfall_id: "c2409aee-3a80-4533-80bc-9383624c285d",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c2409aee-3a80-4533-80bc-9383624c285d.jpg?1681159448",
+
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],
@@ -28,5 +27,9 @@ export const SymmetrySage: CardDefinition = {
                 powerSet: 2
             }]
         }
-    ]
+    ],
+    scryfall_id: "3e726fc7-36cf-405c-9b7c-d1e41cd6c68f",
+    image_url: "https://cards.scryfall.io/normal/front/3/e/3e726fc7-36cf-405c-9b7c-d1e41cd6c68f.jpg?1624590486",
+    rarity: "uncommon"
 };
+

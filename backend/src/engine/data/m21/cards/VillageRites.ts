@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const VillageRites: CardDefinition = {
     name: "Village Rites",
     manaCost: "{B}",
-    scryfall_id: "0fad9fa8-e4b5-4927-991f-06774616f392",
-    image_url: "https://cards.scryfall.io/normal/front/0/f/0fad9fa8-e4b5-4927-991f-06774616f392.jpg?1594736441",
+
     oracleText: "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
     colors: ["B"],
     types: ["Instant"],
@@ -20,5 +19,9 @@ export const VillageRites: CardDefinition = {
                 targetMapping: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "42ed35e9-51cd-468a-86a9-9412553cf50d",
+    image_url: "https://cards.scryfall.io/normal/front/4/2/42ed35e9-51cd-468a-86a9-9412553cf50d.jpg?1736468066",
+    rarity: "common"
 };
+

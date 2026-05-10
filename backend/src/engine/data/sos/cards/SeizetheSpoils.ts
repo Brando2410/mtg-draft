@@ -7,7 +7,6 @@ export const SeizetheSpoils: CardDefinition = {
     subtypes: [],
     keywords: [],
     oracleText: "As an additional cost to cast this spell, discard a card.\nDraw two cards and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
-    image_url: 'https://cards.scryfall.io/large/front/a/1/a1d9b4c2-9e19-4c8d-8153-97aeab6c55cc.jpg',
 
     abilities: [
         {
@@ -32,7 +31,7 @@ export const SeizetheSpoils: CardDefinition = {
                         types: ["Artifact", "Token"],
                         subtypes: ["Treasure"],
                         oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
-                        image_url: "https://cards.scryfall.io/png/front/1/a/1a2d027f-8996-4761-a776-47cd428f6779.png?1641306162",
+                        image_url: "https://cards.scryfall.io/normal/front/4/3/437976e1-9f2d-4560-8451-f7615957d591.jpg?1775828483",
                         abilities: [
                             {
                                 type: AbilityType.Activated,
@@ -49,11 +48,14 @@ export const SeizetheSpoils: CardDefinition = {
                                 ],
                                 isManaAbility: true
                             }
-                        ],
+                        ]
                     }
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4ddf4e34-a1f9-4636-942d-0a08e9f94320",
+    image_url: "https://cards.scryfall.io/normal/front/4/d/4ddf4e34-a1f9-4636-942d-0a08e9f94320.jpg?1775937868",
+    rarity: "common"
 };
 

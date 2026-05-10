@@ -9,9 +9,8 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     oracleText: "Sanar enters prepared.\n{T}: Create a Treasure token. Activate only if you've cast an instant or sorcery spell this turn.",
     power: "0",
     toughness: "4",
-
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
+
     abilities: [
         {
             type: AbilityType.Activated,
@@ -26,6 +25,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                         types: ["Artifact", "Token"],
                         subtypes: ["Treasure"],
                         oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
+                        image_url: "https://cards.scryfall.io/normal/front/4/3/437976e1-9f2d-4560-8451-f7615957d591.jpg?1775828483",
                         abilities: [
                             {
                                 type: AbilityType.Activated,
@@ -50,7 +50,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     ],
     preparedFace: {
         name: "Wild Idea",
-        image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
+
         manaCost: "{3}{U}{R}",
         colors: ["U", "R"],
         types: ["Sorcery"],
@@ -74,6 +74,11 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "173157aa-712d-44f2-89ba-dd2511a07f26",
+    image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
+    rarity: "uncommon"
 };
+

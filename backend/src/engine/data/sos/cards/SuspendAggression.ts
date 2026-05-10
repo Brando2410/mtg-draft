@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",
     manaCost: "{1}{W}",
-    scryfall_id: "0d3a5893-bc44-48f8-9a99-b1d55695085c",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/0/d/0d3a5893-bc44-48f8-9a99-b1d55695085c.jpg?1775937105",
     colors: ["W"],
     types: ["Instant"],
     subtypes: [],
@@ -35,9 +32,13 @@ export const SuspendAggression: CardDefinition = {
                         type: DurationType.UntilEndOfYourNextTurn
                     },
                     targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS',
-                    canPlayExiled: true,
+                    canPlayExiled: true
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "135c0696-d86d-4e48-988c-5c218de451fc",
+    image_url: "https://cards.scryfall.io/normal/front/1/3/135c0696-d86d-4e48-988c-5c218de451fc.jpg?1775938648",
+    rarity: "rare"
 };
+

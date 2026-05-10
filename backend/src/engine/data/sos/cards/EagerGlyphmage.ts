@@ -2,9 +2,6 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
 export const EagerGlyphmage: CardDefinition = {
     name: "Eager Glyphmage",
     manaCost: "{3}{W}",
-    scryfall_id: "bf736de9-9bc4-49df-ae60-672ed4f83f32",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986",
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
@@ -27,12 +24,14 @@ export const EagerGlyphmage: CardDefinition = {
                         keywords: ['Flying'],
                         power: 1,
                         toughness: 1,
-                        image_url: "https://cards.scryfall.io/normal/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.jpg?1775828515",
-
+                        image_url: "https://cards.scryfall.io/normal/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.jpg?17779822141"
                     }
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "bf736de9-9bc4-49df-ae60-672ed4f83f32",
+    image_url: "https://cards.scryfall.io/normal/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.jpg?1775828515",
+    rarity: "common"
 };
 

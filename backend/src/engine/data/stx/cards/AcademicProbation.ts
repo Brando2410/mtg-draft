@@ -14,8 +14,7 @@ import {
 export const AcademicProbation: CardDefinition = {
     name: 'Academic Probation',
     manaCost: '{1}{W}',
-    scryfall_id: "05521edf-f47f-4e7a-aec5-cdc4ae7368c2",
-    image_url: "https://cards.scryfall.io/normal/front/0/5/05521edf-f47f-4e7a-aec5-cdc4ae7368c2.jpg?1637082074",
+
     type_line: 'Sorcery',
     types: ['Sorcery'],
     colors: ["W"],
@@ -71,5 +70,9 @@ export const AcademicProbation: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "05521edf-f47f-4e7a-aec5-cdc4ae7368c2",
+    image_url: "https://cards.scryfall.io/normal/front/0/5/05521edf-f47f-4e7a-aec5-cdc4ae7368c2.jpg?1637082074",
+    rarity: "rare"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const GarruksWarsteed: CardDefinition = {
     name: "Garruk's Warsteed",
     manaCost: "{3}{G}{G}",
-    scryfall_id: "d6099863-8d3d-44bf-8d3b-dc3602119617",
-    image_url: "https://cards.scryfall.io/normal/front/d/6/d6099863-8d3d-44bf-8d3b-dc3602119617.jpg?1596250201",
+
     oracleText: "Vigilance\nWhen Garruk's Warsteed enters the battlefield, you may search your library and/or graveyard for a card named Garruk, Savage Herald, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["G"],
     types: ["Creature"],
@@ -33,5 +32,9 @@ export const GarruksWarsteed: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d6099863-8d3d-44bf-8d3b-dc3602119617",
+    image_url: "https://cards.scryfall.io/normal/front/d/6/d6099863-8d3d-44bf-8d3b-dc3602119617.jpg?1596250201",
+    rarity: "rare"
 };
+

@@ -2,9 +2,6 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",
-    scryfall_id: "a95b6baf-01e6-49c3-9a26-394b127d53c3",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293",
     colors: ["U"],
     types: ["Legendary", "Creature"],
     subtypes: ["Human", "Wizard"],
@@ -12,7 +9,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
     oracleText: "Jadzi enters prepared.\nWhen Jadzi enters, draw two cards, then discard two cards.",
     power: "2",
     toughness: "4",
-
     entersPrepared: true,
     abilities: [
         {
@@ -26,7 +22,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
     ],
     preparedFace: {
         name: "Oracle's Gift",
-        image_url: "https://cards.scryfall.io/png/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.png?1775937293",
         manaCost: "{X}{X}{U}",
         colors: ["U"],
         types: ["Sorcery"],
@@ -60,6 +55,11 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "a95b6baf-01e6-49c3-9a26-394b127d53c3",
+    image_url: "https://cards.scryfall.io/png/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.png?1775937293",
+    rarity: "rare"
 };
+

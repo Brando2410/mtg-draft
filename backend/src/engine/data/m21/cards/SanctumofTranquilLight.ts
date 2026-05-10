@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
 export const SanctumofTranquilLight: CardDefinition = {
     name: "Sanctum of Tranquil Light",
     manaCost: "{W}",
-    scryfall_id: "34a5d346-6102-40fd-b39b-c4371929bd44",
-    image_url: "https://cards.scryfall.io/normal/front/3/4/34a5d346-6102-40fd-b39b-c4371929bd44.jpg?1594735160",
     oracleText: "{5}{W}: Tap target creature. This ability costs {1} less to activate for each Shrine you control.",
     colors: ["W"],
     supertypes: ["Legendary"],
@@ -16,13 +14,17 @@ export const SanctumofTranquilLight: CardDefinition = {
             costs: [{ type: CostType.Mana, value: '{5}{W}' }],
             costReduction: {
                 type: EffectType.CostReduction,
-                reductionAmount: DynamicAmount.ShrinesYouControlCount,
+                reductionAmount: DynamicAmount.ShrinesYouControlCount
             },
             targetDefinitions: [{
                 type: TargetType.Creature,
-                count: 1,
+                count: 1
             }],
             effects: [{ type: EffectType.Tap, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "34a5478a-1a2c-4117-b543-da083ed2b562",
+    image_url: "https://cards.scryfall.io/normal/front/3/4/34a5478a-1a2c-4117-b543-da083ed2b562.jpg?1594735175",
+    rarity: "uncommon"
 };
+

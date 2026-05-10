@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
 export const Swamp: CardDefinition = {
     name: "Swamp",
     manaCost: "",
-    scryfall_id: "62bb1e28-8742-49aa-92f7-02f82ba696cd",
-    image_url: "https://cards.scryfall.io/normal/front/6/2/62bb1e28-8742-49aa-92f7-02f82ba696cd.jpg?1594737835",
+
     colors: [],
     supertypes: ["Basic"],
     types: ["Land"],
@@ -19,6 +18,9 @@ export const Swamp: CardDefinition = {
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'B' }]
         }
-    ]
+    ],
+    scryfall_id: "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c5f590a3-9993-4ac4-a93c-1beb44eda17b.jpg?1777658405",
+    rarity: "common"
 };
 

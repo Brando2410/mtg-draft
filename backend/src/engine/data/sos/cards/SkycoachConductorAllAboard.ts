@@ -11,10 +11,10 @@ export const SkycoachConductorAllAboard: CardDefinition = {
     toughness: "3",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
+
     preparedFace: {
         name: "All Aboard",
-        image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
+
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
@@ -35,7 +35,11 @@ export const SkycoachConductorAllAboard: CardDefinition = {
                     { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.LastExiledObject }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "4ecbca71-9a1d-44c5-b709-d6f565941d5e",
+    image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
+    rarity: "rare"
 };
 

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const LoreholdtheHistorian: CardDefinition = {
     name: "Lorehold, the Historian",
     manaCost: "{3}{R}{W}",
-    scryfall_id: "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396",
+
+
     colors: [
         "R",
         "W"
@@ -68,5 +67,9 @@ export const LoreholdtheHistorian: CardDefinition = {
         }
     ],
     power: "5",
-    toughness: "5"
+    toughness: "5",
+    scryfall_id: "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396",
+    rarity: "mythic"
 };
+

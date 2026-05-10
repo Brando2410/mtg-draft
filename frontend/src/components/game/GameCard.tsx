@@ -86,13 +86,17 @@ export const GameCard = memo(({
       onMouseEnter={() => onHoverStart?.(obj)}
       onMouseLeave={() => onHoverEnd?.(obj.id)}
       onClick={() => onClick?.(obj.id)}
-      className={`relative shrink-0 cursor-pointer flex flex-col [container-type:inline-size] ${dimensions.rounded}
+      className={`relative shrink-0 cursor-pointer flex flex-col overflow-hidden [container-type:inline-size] ${dimensions.rounded}
         ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
-        ${(isPlayable && !isOpponent) ? ((isPrepared || (obj as any).isVirtual) ? 'ring-[3px] ring-fuchsia-500 !border !border-fuchsia-400' : 'ring-[3px] ring-cyan-400 !border !border-cyan-400') : ''} 
+        ${(isPlayable && !isOpponent) ? (
+          (isPrepared || obj.isVirtual) ? 'ring-[3px] ring-fuchsia-500 !border !border-fuchsia-400' :
+            (effectiveStats?.isPermissionPlay) ? 'ring-[3px] ring-orange-500 !border !border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]' :
+              'ring-[3px] ring-cyan-400 !border !border-cyan-400'
+        ) : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
-        ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''}`}
+        ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''} shadow-lg`}
     >
       {/* PLAYABLE GLOW */}
       {(isPlayable && !isOpponent) && (
@@ -101,7 +105,9 @@ export const GameCard = memo(({
           animate={{ opacity: [0.3, 0.7, 0.3] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className={`absolute inset-[-3px] z-[-1] rounded-[inherit]
-            ${(isPrepared || (obj as any).isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' : 'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
+            ${(isPrepared || obj.isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' :
+              (effectiveStats?.isPermissionPlay) ? 'bg-orange-500/20 shadow-[0_0_20px_rgba(249,115,22,0.8)]' :
+                'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
           `}
         />
       )}
@@ -147,7 +153,7 @@ export const GameCard = memo(({
                 }}
                 loading="lazy"
               />
-              {variant !== 'battlefield' && (
+              {variant !== 'battlefield' && variant !== 'full' && (
                 <>
                   <div className="absolute inset-x-0 top-0 bg-slate-950/80 z-10" style={{ height: shroudHeight }} />
                   <div className="absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-black/90 via-black/30 to-transparent" />
@@ -202,10 +208,10 @@ export const GameCard = memo(({
               )}
 
               <div className="flex justify-between items-end">
-                <CardStats 
-                    isCreature={isCreature} isPlaneswalker={isPlaneswalker} variant={variant}
-                    definition={definition} stats={effectiveStats} damageMarked={damageMarked}
-                    damagePreview={damagePreview} counters={counters} cardColor={cardColor}
+                <CardStats
+                  isCreature={isCreature} isPlaneswalker={isPlaneswalker} variant={variant}
+                  definition={definition} stats={effectiveStats} damageMarked={damageMarked}
+                  damagePreview={damagePreview} counters={counters} cardColor={cardColor}
                 />
               </div>
             </div>
@@ -228,7 +234,7 @@ export const GameCard = memo(({
               <span className="text-[calc(var(--u)*1.6)] font-black text-white italic">x{stackSize}</span>
             </div>
           )}
-          {(obj as any).isRevealed && (
+          {obj.isRevealed && (
             <div className="absolute top-[3vh] left-[1vh] z-[60] bg-black/60 backdrop-blur-md rounded-full p-[0.6vh] shadow-lg border border-white/20">
               <Eye className="w-[1.2vh] h-[1.2vh] text-cyan-400" />
             </div>
@@ -267,24 +273,25 @@ export const GameCard = memo(({
   if (pObj.damageMarked !== nObj.damageMarked) return false;
   if (pObj.summoningSickness !== nObj.summoningSickness) return false;
   if (pObj.isPrepared !== nObj.isPrepared) return false;
-  if ((pObj as any).isRevealed !== (nObj as any).isRevealed) return false;
-  if ((pObj as any).isVirtual !== (nObj as any).isVirtual) return false;
+  if (pObj.isRevealed !== nObj.isRevealed) return false;
+  if (pObj.isVirtual !== nObj.isVirtual) return false;
 
   const pStats = pObj.effectiveStats;
   const nStats = nObj.effectiveStats;
   if (!!pStats !== !!nStats) return false;
   if (pStats && nStats) {
-      if (pStats.power !== nStats.power) return false;
-      if (pStats.toughness !== nStats.toughness) return false;
-      if (pStats.isPlayable !== nStats.isPlayable) return false;
-      if (pStats.keywords?.length !== nStats.keywords?.length) return false;
+    if (pStats.power !== nStats.power) return false;
+    if (pStats.toughness !== nStats.toughness) return false;
+    if (pStats.isPlayable !== nStats.isPlayable) return false;
+    if (pStats.isPermissionPlay !== nStats.isPermissionPlay) return false;
+    if (pStats.keywords?.length !== nStats.keywords?.length) return false;
   }
 
   const pC = pObj.counters || {};
   const nC = nObj.counters || {};
   const cKeys = new Set([...Object.keys(pC), ...Object.keys(nC)]);
   for (let k of cKeys) {
-      if (pC[k as keyof typeof pC] !== nC[k as keyof typeof nC]) return false;
+    if (pC[k as keyof typeof pC] !== nC[k as keyof typeof nC]) return false;
   }
 
   return true;

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const ArchmageEmeritus: CardDefinition = {
     name: 'Archmage Emeritus',
     manaCost: '{2}{U}{U}',
-    scryfall_id: "761df6cd-0928-4167-8902-58fdb50181a0",
-    image_url: "https://cards.scryfall.io/normal/front/7/6/761df6cd-0928-4167-8902-58fdb50181a0.jpg?1624589970",
+
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],
@@ -23,7 +22,9 @@ export const ArchmageEmeritus: CardDefinition = {
                 }
             ]
         }
-    ]
-  };
-
+    ],
+    scryfall_id: "dd547601-d650-4a02-a3a4-890bcef03a7c",
+    image_url: "https://cards.scryfall.io/normal/front/d/d/dd547601-d650-4a02-a3a4-890bcef03a7c.jpg?1775940916",
+    rarity: "rare"
+};
 

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const Flashback: CardDefinition = {
     name: "Flashback",
     manaCost: "{R}",
-    scryfall_id: "1b832fda-d7c4-4566-884c-2a8b6da15488",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742",
+
+
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -30,5 +29,9 @@ export const Flashback: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "1b832fda-d7c4-4566-884c-2a8b6da15488",
+    image_url: "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742",
+    rarity: "rare"
 };
+

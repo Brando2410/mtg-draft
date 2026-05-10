@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CounterType, DynamicAmount, EffectType, Ta
 export const FractalSummoning: CardDefinition = {
   name: 'Fractal Summoning',
   manaCost: '{X}{G/U}',
-  scryfall_id: "cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c",
-  image_url: "https://cards.scryfall.io/normal/front/c/c/cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c.jpg?1637082130",
+
   colors: ['G', 'U'],
   types: ['Sorcery'],
   subtypes: ['Lesson'],
@@ -23,7 +22,7 @@ export const FractalSummoning: CardDefinition = {
             subtypes: ['Fractal'],
             power: "0",
             toughness: "0",
-            image_url: 'https://cards.scryfall.io/large/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.jpg?1682693894'
+
           },
           amount: 1,
           startingCounters: { counterType: CounterType.P1P1, amount: DynamicAmount.X },
@@ -32,6 +31,9 @@ export const FractalSummoning: CardDefinition = {
         }
       ]
     }
-  ]
+  ],
+    scryfall_id: "cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c",
+    image_url: "https://cards.scryfall.io/normal/front/c/c/cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c.jpg?1637082130",
+    rarity: "common"
 };
 

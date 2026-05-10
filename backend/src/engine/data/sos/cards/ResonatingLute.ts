@@ -51,5 +51,9 @@ export const ResonatingLute: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6ef168d6-28f2-4c24-9bfa-82c35663b729",
+    image_url: "https://cards.scryfall.io/normal/front/6/e/6ef168d6-28f2-4c24-9bfa-82c35663b729.jpg?1775938538",
+    rarity: "rare"
 };
+

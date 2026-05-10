@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const Shock: CardDefinition = {
     name: "Shock",
     manaCost: "{R}",
-    scryfall_id: "5f571873-1002-45a0-91cd-b2c732c50b1d",
-    image_url: "https://cards.scryfall.io/normal/front/5/f/5f571873-1002-45a0-91cd-b2c732c50b1d.jpg?1594736779",
+
     oracleText: "Shock deals 2 damage to any target.",
     colors: ["R"],
     types: ["Instant"],
@@ -14,5 +13,9 @@ export const Shock: CardDefinition = {
             targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 2, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "760b41a1-c087-4b11-b8a0-fb01d8a4c0c6",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/760b41a1-c087-4b11-b8a0-fb01d8a4c0c6.jpg?1757377337",
+    rarity: "common"
 };
+

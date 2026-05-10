@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const DissectionPractice: CardDefinition = {
     name: "Dissection Practice",
     manaCost: "{B}",
-    scryfall_id: "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462",
+
+
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -25,17 +24,21 @@ export const DissectionPractice: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 1, toughnessModifier: 1,
-                    targetMapping: TargetMapping.Target1,
+                    targetMapping: TargetMapping.Target1
 
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: -1, toughnessModifier: -1,
-                    targetMapping: TargetMapping.Target2,
+                    targetMapping: TargetMapping.Target2
 
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
+    image_url: "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462",
+    rarity: "uncommon"
 };
+

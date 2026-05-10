@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const JadziOracleofArcavios: CardDefinition = {
     name: "Jadzi, Oracle of Arcavios",
     manaCost: "{6}{U}{U}",
-    scryfall_id: "d7148d24-373e-4485-860b-c3429c2337f2",
-    image_url: "https://cards.scryfall.io/normal/front/d/7/d7148d24-373e-4485-860b-c3429c2337f2.jpg?1624593477",
+
     colors: ["U"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -103,5 +102,9 @@ export const JadziOracleofArcavios: CardDefinition = {
                 ]
             }]
         }
-    ]
+    ],
+    scryfall_id: "d7148d24-373e-4485-860b-c3429c2337f2",
+    image_url: "https://cards.scryfall.io/normal/front/d/7/d7148d24-373e-4485-860b-c3429c2337f2.jpg?1624593477",
+    rarity: "mythic"
 };
+

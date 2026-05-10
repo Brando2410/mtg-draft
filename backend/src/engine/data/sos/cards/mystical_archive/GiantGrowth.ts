@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType } fro
 
 export const GiantGrowth: CardDefinition = {
     name: "Giant Growth",
-    manaCost: "{G}",
-    scryfall_id: "62652aa9-57e7-42a7-8f2f-62e9a6aefb16",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/6/2/62652aa9-57e7-42a7-8f2f-62e9a6aefb16.jpg?1775936747",
+    manaCost: "{G}",
     colors: ["G"],
     types: ["Instant"],
     subtypes: [],
@@ -28,5 +25,9 @@ export const GiantGrowth: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "62652aa9-57e7-42a7-8f2f-62e9a6aefb16",
+    image_url: "https://cards.scryfall.io/normal/front/6/2/62652aa9-57e7-42a7-8f2f-62e9a6aefb16.jpg?1775936747",
+    rarity: "uncommon"
 };
+

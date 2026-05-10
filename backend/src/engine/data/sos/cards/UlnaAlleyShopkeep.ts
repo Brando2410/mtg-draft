@@ -23,5 +23,9 @@ export const UlnaAlleyShopkeep: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "c25e1ae5-f17c-4eee-98f1-5681981af31c",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c25e1ae5-f17c-4eee-98f1-5681981af31c.jpg?1775937633",
+    rarity: "common"
 };
+

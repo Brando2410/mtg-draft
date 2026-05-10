@@ -2,9 +2,6 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
-    scryfall_id: "e8abc1eb-6225-4b18-8502-b5324b818aed",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026",
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -45,5 +42,9 @@ export const GroupProject: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e8abc1eb-6225-4b18-8502-b5324b818aed",
+    image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773",
+    rarity: "uncommon"
 };
+

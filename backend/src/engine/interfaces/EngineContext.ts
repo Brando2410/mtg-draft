@@ -13,9 +13,11 @@ export interface PlayCardOptions {
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
+    forceFlashback?: boolean;
     exileOnResolution?: boolean;
     parentContext?: EngineFrame;
     isAbilitySelectionBypassed?: boolean;
+    isModeSelected?: boolean;
 }
 
 export interface ActivateAbilityOptions {

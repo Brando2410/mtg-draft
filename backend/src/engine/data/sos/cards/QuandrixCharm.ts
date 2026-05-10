@@ -3,7 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const QuandrixCharm: CardDefinition = {
     name: "Quandrix Charm",
     manaCost: "{G}{U}",
-    scryfall_id: "71e549fa-4e7f-421a-b911-45186b520ae1",
+
     colors: ["G", "U"],
     types: ["Instant"],
     oracleText: "Choose one —\n• Counter target spell unless its controller pays {2}.\n• Destroy target enchantment.\n• Target creature has base power and toughness 5/5 until end of turn.",
@@ -50,5 +50,9 @@ export const QuandrixCharm: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "318486e0-f255-40f5-8150-dc272eec9d7d",
+    image_url: "https://cards.scryfall.io/normal/front/3/1/318486e0-f255-40f5-8150-dc272eec9d7d.jpg?1775938509",
+    rarity: "uncommon"
 };
+

@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
 export const Efflorescence: CardDefinition = {
     name: "Efflorescence",
     manaCost: "{2}{G}",
-    scryfall_id: "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979",
+
+
     colors: [
         "G"
     ],
@@ -34,5 +33,9 @@ export const Efflorescence: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
+    image_url: "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979",
+    rarity: "common"
 };
+

@@ -40,6 +40,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f9ba68ef-6efc-4249-8b74-e33f47173902",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg?1775938674",
+    rarity: "uncommon"
 };
-    
+

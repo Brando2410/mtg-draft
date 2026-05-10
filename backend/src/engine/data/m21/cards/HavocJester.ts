@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const HavocJester: CardDefinition = {
     name: "Havoc Jester",
     manaCost: "{4}{R}",
-    scryfall_id: "386e5cb2-39c8-453d-a642-c5d9f8495601",
-    image_url: "https://cards.scryfall.io/normal/front/3/8/386e5cb2-39c8-453d-a642-c5d9f8495601.jpg?1594736672",
+
     oracleText: "Whenever you sacrifice a permanent, this creature deals 1 damage to any target.",
     colors: ["R"],
     types: ["Creature"],
@@ -23,5 +22,9 @@ export const HavocJester: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "386e5cb2-39c8-453d-a642-c5d9f8495601",
+    image_url: "https://cards.scryfall.io/normal/front/3/8/386e5cb2-39c8-453d-a642-c5d9f8495601.jpg?1594736672",
+    rarity: "uncommon"
 };
+

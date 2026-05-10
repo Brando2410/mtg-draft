@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CounterType, EffectType, TriggerEvent } fr
 export const ManifestationSage: CardDefinition = {
     name: 'Manifestation Sage',
     manaCost: '{3}{G}{U}',
-    scryfall_id: "76fc5cd2-fbb0-4d13-9089-0292b356de48",
-    image_url: "https://cards.scryfall.io/normal/front/7/6/76fc5cd2-fbb0-4d13-9089-0292b356de48.jpg?1627429666",
+
     colors: ['G', 'U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],
@@ -30,7 +29,9 @@ export const ManifestationSage: CardDefinition = {
 
             }]
         }
-    ]
+    ],
+    scryfall_id: "76fc5cd2-fbb0-4d13-9089-0292b356de48",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/76fc5cd2-fbb0-4d13-9089-0292b356de48.jpg?1627429666",
+    rarity: "rare"
 };
-
 

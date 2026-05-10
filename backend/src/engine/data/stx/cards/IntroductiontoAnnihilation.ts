@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const IntroductiontoAnnihilation: CardDefinition = {
     name: 'Introduction to Annihilation',
     manaCost: '{5}',
-    scryfall_id: "b0bc4682-bcaf-4f51-be0b-9f2851a16e3b",
-    image_url: "https://cards.scryfall.io/normal/front/b/0/b0bc4682-bcaf-4f51-be0b-9f2851a16e3b.jpg?1637082326",
+
     colors: [],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
@@ -21,6 +20,9 @@ export const IntroductiontoAnnihilation: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Target1Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b0bc4682-bcaf-4f51-be0b-9f2851a16e3b",
+    image_url: "https://cards.scryfall.io/normal/front/b/0/b0bc4682-bcaf-4f51-be0b-9f2851a16e3b.jpg?1637082326",
+    rarity: "common"
 };
 

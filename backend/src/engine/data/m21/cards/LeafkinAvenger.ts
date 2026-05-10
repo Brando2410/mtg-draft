@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
 export const LeafkinAvenger: CardDefinition = {
     name: "Leafkin Avenger",
     manaCost: "{2}{R}{G}",
-    scryfall_id: "7bd3a903-23e0-4b5a-9c7e-390d5ced8371",
-    image_url: "https://cards.scryfall.io/normal/front/7/b/7bd3a903-23e0-4b5a-9c7e-390d5ced8371.jpg?1594737394",
+
     oracleText: "{T}: Add {G} for each creature with power 4 or greater you control.\n{7}{R}: This creature deals damage equal to its power to target player or planeswalker.",
     colors: ["R", "G"],
     types: ["Creature"],
@@ -33,5 +32,9 @@ export const LeafkinAvenger: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "7bd3a903-23e0-4b5a-9c7e-390d5ced8371",
+    image_url: "https://cards.scryfall.io/normal/front/7/b/7bd3a903-23e0-4b5a-9c7e-390d5ced8371.jpg?1594737394",
+    rarity: "uncommon"
 };
+

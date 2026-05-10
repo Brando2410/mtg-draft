@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const FalconerAdept: CardDefinition = {
     name: "Falconer Adept",
     manaCost: "{3}{W}",
-    scryfall_id: "fb4733e6-6fe2-4460-ac9f-82feb583d790",
-    image_url: "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1594734928",
+
     oracleText: "Whenever this creature attacks, create a 1/1 white Bird creature token with flying that's tapped and attacking.",
     colors: ["W"],
     types: ["Creature"],
@@ -26,12 +25,16 @@ export const FalconerAdept: CardDefinition = {
                     types: ['Creature'],
                     subtypes: ['Bird'],
                     keywords: ['Flying'],
-                    image_url: 'https://cards.scryfall.io/large/front/d/1/d1e8e639-5060-4b36-9f79-3051410889f8.jpg?1594733494'
+
                 },
                 targetMapping: TargetMapping.Controller,
                 isAttacking: true,
                 tapped: true
             }]
         }
-    ]
+    ],
+    scryfall_id: "fb4733e6-6fe2-4460-ac9f-82feb583d790",
+    image_url: "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1594734928",
+    rarity: "uncommon"
 };
+

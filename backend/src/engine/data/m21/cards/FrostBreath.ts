@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, RestrictionType,
 export const FrostBreath: CardDefinition = {
     name: "Frost Breath",
     manaCost: "{2}{U}",
-    scryfall_id: "393fc485-d3c1-4826-933d-89f66df769d4",
-    image_url: "https://cards.scryfall.io/normal/front/3/9/393fc485-d3c1-4826-933d-89f66df769d4.jpg?1594735496",
+
     oracleText: "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.",
     colors: ["U"],
     types: ["Instant"],
@@ -29,5 +28,9 @@ export const FrostBreath: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "393fc485-d3c1-4826-933d-89f66df769d4",
+    image_url: "https://cards.scryfall.io/normal/front/3/9/393fc485-d3c1-4826-933d-89f66df769d4.jpg?1594735496",
+    rarity: "common"
 };
+

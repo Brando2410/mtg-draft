@@ -45,6 +45,9 @@ export const PursuethePast: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4584d5f7-b1f1-4c8e-80c5-ad35e44a968e",
+    image_url: "https://cards.scryfall.io/normal/front/4/5/4584d5f7-b1f1-4c8e-80c5-ad35e44a968e.jpg?1775938502",
+    rarity: "common"
 };
 

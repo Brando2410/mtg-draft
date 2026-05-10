@@ -7,7 +7,8 @@ import {
   TargetMapping,
   Zone,
   EffectiveStats,
-  StackObject
+  StackObject,
+  EnginePrefix
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
@@ -651,7 +652,16 @@ export class LayerProcessor {
 
     // 2. Update Hand, Graveyard, and Library cards
     Object.values(state.players).forEach((player) => {
-      player.virtualHand = [];
+      player.virtualHand = []; // CRITICAL: Reset virtual hand before each update
+
+      // --- HAND ---
+      player.hand.forEach((card: GameObject) => {
+        const stats = this.getEffectiveStats(card, state);
+        if (stats.isPlayable) {
+          // Normal hand cards are handled by the UI, but we track them here for logic
+        }
+      });
+
       player.graveyard.forEach((card: GameObject) => {
         const stats = this.getEffectiveStats(card, state, activeEffects);
         const hasPermission = PriorityProcessor.findPermissionEffect(
@@ -677,7 +687,11 @@ export class LayerProcessor {
         );
 
         if (hasPermission || hasFlashback || hasGraveyardAbility) {
-          player.virtualHand.push(card);
+          player.virtualHand.push({
+            ...card,
+            id: `v_${card.id}`,
+            isVirtual: true
+          });
         }
       });
 
@@ -689,7 +703,11 @@ export class LayerProcessor {
           card.id,
         );
         if (hasPermission) {
-          player.virtualHand.push(card);
+          player.virtualHand.push({
+            ...card,
+            id: `v_${card.id}`,
+            isVirtual: true
+          });
         }
       });
 
@@ -708,7 +726,11 @@ export class LayerProcessor {
           topCard.id,
         );
         if (hasPermission) {
-          player.virtualHand.push(topCard);
+          player.virtualHand.push({
+            ...topCard,
+            id: `v_${topCard.id}`,
+            isVirtual: true
+          });
         }
       }
 
@@ -763,15 +785,16 @@ export class LayerProcessor {
       // NOTE: We pass activeEffects to avoid O(N^2) continuous effect scanning
       const stats = this.getEffectiveStats(obj, state, activeEffects);
 
-      const isVirtual = Object.values(state.players).some((p) =>
+      const isVirtual = obj.isVirtual || obj.id.startsWith('v_') || Object.values(state.players).some((p) =>
         p.virtualHand.some((v) => v.id === obj.id),
       );
 
+      const realId = obj.id.startsWith('v_') ? obj.id.replace('v_', '') : obj.id;
+      const realObj = obj.id.startsWith('v_') ? RuleUtils.findObject(state, realId) : obj;
+
       const inGraveyard =
         obj.zone === Zone.Graveyard ||
-        Object.values(state.players).some((p) =>
-          p.graveyard.some((g) => g.id === obj.id),
-        );
+        (realObj && 'zone' in realObj && realObj.zone === Zone.Graveyard);
 
       const hasFlashbackKeyword =
         (stats.keywords || []).some(
@@ -788,21 +811,17 @@ export class LayerProcessor {
         }
       );
 
-      const isFlashback = !!hasFlashbackKeyword && (inGraveyard || isVirtual);
-      const isActivation = !!graveyardAbility && (inGraveyard || isVirtual);
+      const controllerId = RuleUtils.getController(obj);
+      const isFlashback = obj.id.startsWith(EnginePrefix.Flashback) || (!!hasFlashbackKeyword && (inGraveyard || isVirtual) && !obj.id.startsWith(EnginePrefix.Permission) && !obj.id.startsWith(EnginePrefix.FreeCast));
+      const isActivation = !!graveyardAbility && (inGraveyard || isVirtual) && !obj.id.startsWith(EnginePrefix.Flashback) && !obj.id.startsWith(EnginePrefix.Permission);
+      const isFreeCast = obj.id.startsWith(EnginePrefix.FreeCast) || obj.isFreeCast === true;
+      const isPermissionPlay = obj.id.startsWith(EnginePrefix.Permission) || !!(
+        (obj.zone === Zone.Exile && PriorityProcessor.findPermissionEffect(state, controllerId, "AllowPlayExiled", realId)) ||
+        (obj.zone === Zone.Graveyard && PriorityProcessor.findPermissionEffect(state, controllerId, "AllowCastFromGraveyard", realId) && !isFlashback)
+      );
 
       let isPlayable = false;
       let displayCost = obj.definition.manaCost;
-      if (isFlashback) {
-        displayCost =
-          obj.definition.flashbackCost ||
-          obj.definition.manaCost;
-      } else if (isActivation && graveyardAbility) {
-        displayCost =
-          graveyardAbility.manaCost ||
-          graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
-          obj.definition.manaCost;
-      }
 
       try {
         if (SpellProcessor) {
@@ -814,13 +833,12 @@ export class LayerProcessor {
             isFlashback,
             stats,
           );
-          displayCost = totalMana;
+          displayCost = isFreeCast ? "{0}" : totalMana;
         }
       } catch (e) {
       }
 
       // Evaluate playability for any object controlled by a player (ignore strict priority for UI glow)
-      const controllerId = RuleUtils.getController(obj);
       if (controllerId) {
         isPlayable = PriorityProcessor.canObjectBePlayed(state, controllerId, obj.id, false, stats, displayCost);
       }
@@ -831,6 +849,8 @@ export class LayerProcessor {
         manaCost: displayCost,
         isFlashback,
         isActivation,
+        isFreeCast,
+        isPermissionPlay,
         isVirtual,
       };
     });

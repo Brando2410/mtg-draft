@@ -2,13 +2,12 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const PestbroodSloth: CardDefinition = {
     name: "Pestbrood Sloth",
     manaCost: "{3}{G}",
-    scryfall_id: "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073",
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Plant", "Sloth"],
     keywords: ["Reach"],
+    power: "4",
+    toughness: "4",
     oracleText: "Reach\nWhen this creature dies, create two 1/1 black and green Pest creature tokens with \"Whenever this token attacks, you gain 1 life.\"",
     abilities: [
         {
@@ -46,7 +45,8 @@ export const PestbroodSloth: CardDefinition = {
             ]
         }
     ],
-    power: "4",
-    toughness: "4"
+    scryfall_id: "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
+    image_url: "https://cards.scryfall.io/normal/front/4/0/40b22872-7b7b-4a6d-a343-4152e552b00a.jpg?1775828415",
+    rarity: "uncommon"
 };
 

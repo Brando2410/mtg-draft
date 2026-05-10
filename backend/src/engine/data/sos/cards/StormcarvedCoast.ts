@@ -26,7 +26,9 @@ export const StormcarvedCoast: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "bd3ae4fa-4c97-410a-8c0a-bd203342595d",
+    image_url: "https://cards.scryfall.io/normal/front/b/d/bd3ae4fa-4c97-410a-8c0a-bd203342595d.jpg?1775938837",
+    rarity: "rare"
 };
-
 

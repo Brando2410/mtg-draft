@@ -19,5 +19,9 @@ export const SpectacleMage: CardDefinition = {
                 restrictions: [Restriction.ManaValue5OrGreater]
             }]
         }
-    ]
+    ],
+    scryfall_id: "f74223e1-b66b-42fa-aaac-001f5dab2aac",
+    image_url: "https://cards.scryfall.io/normal/front/f/7/f74223e1-b66b-42fa-aaac-001f5dab2aac.jpg?1624740097",
+    rarity: "common"
 };
+

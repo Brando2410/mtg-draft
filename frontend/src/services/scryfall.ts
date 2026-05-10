@@ -32,6 +32,8 @@ export interface SimplifiedCard {
   mana_cost: string;
   power?: string;
   toughness?: string;
+  types: string[];
+  supertypes: string[];
   keywords: string[];
 }
 
@@ -83,6 +85,8 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
       back_image_url: backImageUrl,
       cmc: card.cmc,
       type_line: typeLine,
+      types: typeLine.split(' — ')[0].split(' '),
+      supertypes: [],
       mana_cost: manaCost,
       power: card.power || card.card_faces?.[0]?.power,
       toughness: card.toughness || card.card_faces?.[0]?.toughness,
@@ -163,6 +167,8 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
               back_image_url: backImageUrl,
               cmc: card.cmc,
               type_line: typeLine,
+              types: typeLine.split(' — ')[0].split(' '),
+              supertypes: [],
               mana_cost: manaCost,
               power: card.power || card.card_faces?.[0]?.power,
               toughness: card.toughness || card.card_faces?.[0]?.toughness,

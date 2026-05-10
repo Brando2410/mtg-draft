@@ -19,6 +19,9 @@ export const StudyBreak: CardDefinition = {
                 { type: EffectType.Learn }
             ]
         }
-    ]
+    ],
+    scryfall_id: "ef7cd813-0781-4fd7-8748-2716e1eeb4b9",
+    image_url: "https://cards.scryfall.io/normal/front/e/f/ef7cd813-0781-4fd7-8748-2716e1eeb4b9.jpg?1624589885",
+    rarity: "common"
 };
 

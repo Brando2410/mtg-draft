@@ -36,5 +36,9 @@ export const ZimonesExperiment: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a6597852-4267-4ea6-a391-f927e4833be2",
+    image_url: "https://cards.scryfall.io/normal/front/a/6/a6597852-4267-4ea6-a391-f927e4833be2.jpg?1775938156",
+    rarity: "uncommon"
 };
+

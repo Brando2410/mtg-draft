@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Eff
 export const DelugeVirtuoso: CardDefinition = {
     name: "Deluge Virtuoso",
     manaCost: "{2}{U}",
-    scryfall_id: "2e3b16ed-8727-48fd-8b1f-c0cbd329385e",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -58,5 +57,9 @@ export const DelugeVirtuoso: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2e3b16ed-8727-48fd-8b1f-c0cbd329385e",
+    image_url: "https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202",
+    rarity: "common"
 };
+

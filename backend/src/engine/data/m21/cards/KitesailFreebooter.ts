@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const KitesailFreebooter: CardDefinition = {
     name: "Kitesail Freebooter",
     manaCost: "{1}{B}",
-    scryfall_id: "77cd2814-57c7-44a8-9533-03f4c5eb5924",
-    image_url: "https://cards.scryfall.io/normal/front/7/7/77cd2814-57c7-44a8-9533-03f4c5eb5924.jpg?1594736139",
     oracleText: "Flying\nWhen Kitesail Freebooter enters the battlefield, target opponent reveals their hand. You choose a noncreature, nonland card from it. Exile that card until Kitesail Freebooter leaves the battlefield.",
     colors: ["B"],
     types: ["Creature"],
@@ -33,5 +31,9 @@ export const KitesailFreebooter: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "88496096-fd9a-451a-85d9-31ccc3580623",
+    image_url: "https://cards.scryfall.io/normal/front/8/8/88496096-fd9a-451a-85d9-31ccc3580623.jpg?1594736212",
+    rarity: "uncommon"
 };
+

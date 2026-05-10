@@ -32,5 +32,9 @@ export const ThunderdrumSoloist: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "590d1d95-ed13-4121-899f-f5a2d8a6617a",
+    image_url: "https://cards.scryfall.io/normal/front/5/9/590d1d95-ed13-4121-899f-f5a2d8a6617a.jpg?1775937905",
+    rarity: "uncommon"
 };
+

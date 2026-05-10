@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const ManaSculpt: CardDefinition = {
     name: "Mana Sculpt",
     manaCost: "{1}{U}{U}",
-    scryfall_id: "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307",
+
+
     colors: [
         "U"
     ],
@@ -29,7 +28,7 @@ export const ManaSculpt: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.CreateDelayedTrigger,
-                            eventMatch: TriggerEvent.PreCombatMainPhaseStart, // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN
+                            eventMatch: TriggerEvent.PreCombatMainPhaseStart, // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN,
                             condition: ConditionType.IsYourTurn,
                             captureTargetMV: true,
                             effects: [
@@ -45,6 +44,9 @@ export const ManaSculpt: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
+    image_url: "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307",
+    rarity: "rare"
 };
 

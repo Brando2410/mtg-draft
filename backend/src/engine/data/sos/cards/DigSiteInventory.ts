@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, CounterType, DurationType, EffectType, Res
 export const DigSiteInventory: CardDefinition = {
     name: "Dig Site Inventory",
     manaCost: "{W}",
-    scryfall_id: "e52464ee-df8b-41ec-af93-4b0eb004383e",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980",
+
+
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -36,5 +35,9 @@ export const DigSiteInventory: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "e52464ee-df8b-41ec-af93-4b0eb004383e",
+    image_url: "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980",
+    rarity: "common"
 };
+

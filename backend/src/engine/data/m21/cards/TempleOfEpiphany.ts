@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const TempleOfEpiphany: CardDefinition = {
     name: "Temple of Epiphany",
     manaCost: "",
-    scryfall_id: "00f9ba77-e389-417d-ad4a-719c3021d744",
-    image_url: "https://cards.scryfall.io/normal/front/0/0/00f9ba77-e389-417d-ad4a-719c3021d744.jpg?1594737817",
+
     oracleText: "Temple of Epiphany enters the battlefield tapped.\nWhen Temple of Epiphany enters the battlefield, scry 1.\n{T}: Add {U} or {R}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const TempleOfEpiphany: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "1652bb3c-c365-4046-b07e-3d861fa324c6",
+    image_url: "https://cards.scryfall.io/normal/front/1/6/1652bb3c-c365-4046-b07e-3d861fa324c6.jpg?1594737690",
+    rarity: "rare"
 };
+

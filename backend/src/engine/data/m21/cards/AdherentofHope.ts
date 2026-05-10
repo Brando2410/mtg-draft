@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const AdherentofHope: CardDefinition = {
     name: "Adherent of Hope",
     manaCost: "{1}{W}",
-    scryfall_id: "ce2bc7ad-458d-445e-a0a9-7897b596fdd0",
-    image_url: "https://cards.scryfall.io/normal/front/c/e/ce2bc7ad-458d-445e-a0a9-7897b596fdd0.jpg?1596250018",
+
     oracleText: "At the beginning of combat on your turn, if you control a Basri planeswalker, put a +1/+1 counter on this creature.",
     colors: ["W"],
     types: ["Creature"],
@@ -23,5 +22,9 @@ export const AdherentofHope: CardDefinition = {
                 targetMapping: TargetMapping.Self
             }]
         }
-    ]
+    ],
+    scryfall_id: "ce2bc7ad-458d-445e-a0a9-7897b596fdd0",
+    image_url: "https://cards.scryfall.io/normal/front/c/e/ce2bc7ad-458d-445e-a0a9-7897b596fdd0.jpg?1596250018",
+    rarity: "common"
 };
+

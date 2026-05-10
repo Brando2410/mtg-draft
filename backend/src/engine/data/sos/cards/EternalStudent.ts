@@ -3,19 +3,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, Zone } from '@shared
 export const EternalStudent: CardDefinition = {
     name: "Eternal Student",
     manaCost: "{3}{B}",
-    scryfall_id: "f97fac69-3e77-4150-9702-cc726daa6d21",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Zombie",
-        "Warlock"
-    ],
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Zombie", "Warlock"],
     keywords: ["Flying"],
     power: "4",
     toughness: "2",
@@ -40,10 +30,14 @@ export const EternalStudent: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         keywords: ["Flying"],
-                        image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898"
+                        image_url: "https://cards.scryfall.io/normal/front/4/3/43e9f729-abaf-4000-8df5-fa46d59eff9e.jpg?1775828361"
                     }
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f97fac69-3e77-4150-9702-cc726daa6d21",
+    image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898",
+    rarity: "uncommon"
 };
+

@@ -54,5 +54,9 @@ export const SocialSnub: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "a04b6900-0436-4920-a0d4-c0186d605ae3",
+    image_url: "https://cards.scryfall.io/normal/front/a/0/a04b6900-0436-4920-a0d4-c0186d605ae3.jpg?1775938590",
+    rarity: "uncommon"
 };
+

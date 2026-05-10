@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 
 export const Abrade: CardDefinition = {
     name: "Abrade",
-    manaCost: "{1}{R}",
-    scryfall_id: "c5bb5307-e874-42c4-b85d-06b9f6c474c8",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/c/5/c5bb5307-e874-42c4-b85d-06b9f6c474c8.jpg?1775936634",
+    manaCost: "{1}{R}",
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -46,5 +43,9 @@ export const Abrade: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "c5bb5307-e874-42c4-b85d-06b9f6c474c8",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c5bb5307-e874-42c4-b85d-06b9f6c474c8.jpg?1775936634",
+    rarity: "uncommon"
 };
+

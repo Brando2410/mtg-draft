@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
 export const KirolHistoryBuffPackaPunch: CardDefinition = {
     name: "Kirol, History Buff // Pack a Punch",
     manaCost: "{R}{W}",
-    scryfall_id: "676ba521-66e4-42cf-a315-70d03cb7334e",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375",
     colors: ["R", "W"],
     types: ["Legendary", "Creature"],
     subtypes: ["Vampire", "Cleric"],
@@ -13,7 +10,6 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
     oracleText: "Whenever one or more cards leave your graveyard, Kirol becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -29,7 +25,6 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
     ],
     preparedFace: {
         name: "Pack a Punch",
-        image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
         manaCost: "{1}{R}{W}",
         colors: ["R", "W"],
         types: ["Sorcery"],
@@ -39,7 +34,7 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                 type: AbilityType.Spell,
                 targetDefinitions: [{
                     type: TargetType.Creature,
-                    count: 1,
+                    count: 1
                 }],
                 effects: [
                     { type: EffectType.Mill, amount: 1, targetMapping: TargetMapping.Controller },
@@ -52,6 +47,11 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "676ba521-66e4-42cf-a315-70d03cb7334e",
+    image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
+    rarity: "uncommon"
 };
+

@@ -35,6 +35,9 @@ export const ThornfistStriker: CardDefinition = {
         }
     ],
     power: "3",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "f6cb838e-a06a-46ae-a30f-e5192178c1cc",
+    image_url: "https://cards.scryfall.io/normal/front/f/6/f6cb838e-a06a-46ae-a30f-e5192178c1cc.jpg?1775938123",
+    rarity: "uncommon"
 };
 

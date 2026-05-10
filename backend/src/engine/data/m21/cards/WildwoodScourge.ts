@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const WildwoodScourge: CardDefinition = {
     name: "Wildwood Scourge",
     manaCost: "{X}{G}",
-    scryfall_id: "46ff0b33-d153-4b0e-ac48-7e5ed70ead09",
-    image_url: "https://cards.scryfall.io/normal/front/4/6/46ff0b33-d153-4b0e-ac48-7e5ed70ead09.jpg?1594737301",
+
     oracleText: "Wildwood Scourge enters the battlefield with X +1/+1 counters on it.\nWhenever one or more +1/+1 counters are put on another non-Hydra creature you control, put a +1/+1 counter on Wildwood Scourge.",
     colors: ["G"],
     types: ["Creature"],
@@ -26,5 +25,9 @@ export const WildwoodScourge: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "36359fb6-fb8c-4382-8555-e348422f116c",
+    image_url: "https://cards.scryfall.io/normal/front/3/6/36359fb6-fb8c-4382-8555-e348422f116c.jpg?1730489480",
+    rarity: "uncommon"
 };
+

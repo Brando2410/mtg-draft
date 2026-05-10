@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const GaleSwooper: CardDefinition = {
     name: "Gale Swooper",
     manaCost: "{3}{W}",
-    scryfall_id: "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
-    image_url: "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1594734966",
+
     oracleText: "Flying\nWhen this creature enters, target creature gains flying until end of turn.",
     colors: ["W"],
     types: ["Creature"],
@@ -30,5 +29,9 @@ export const GaleSwooper: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
+    image_url: "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1594734966",
+    rarity: "common"
 };
+

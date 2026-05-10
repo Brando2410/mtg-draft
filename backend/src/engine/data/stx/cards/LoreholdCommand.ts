@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const LoreholdCommand: CardDefinition = {
     name: 'Lorehold Command',
     manaCost: '{3}{R}{W}',
-    scryfall_id: "e4f0885f-1049-4a19-853d-f4e6d4bec29e",
-    image_url: "https://cards.scryfall.io/normal/front/e/4/e4f0885f-1049-4a19-853d-f4e6d4bec29e.jpg?1627429447",
+
     colors: ['R', 'W'],
     types: ['Instant'],
     oracleText: 'Choose two —\n• Create a 3/2 red and white Spirit creature token.\n• Creatures you control get +1/+0 and gain indestructible and haste until end of turn.\n• Lorehold Command deals 3 damage to any target and you gain 3 life.\n• Target player sacrifices a permanent and draws two cards.',
@@ -45,5 +44,9 @@ export const LoreholdCommand: CardDefinition = {
                 }
             ]
         }]
-    }]
+    }],
+    scryfall_id: "e4f0885f-1049-4a19-853d-f4e6d4bec29e",
+    image_url: "https://cards.scryfall.io/normal/front/e/4/e4f0885f-1049-4a19-853d-f4e6d4bec29e.jpg?1627429447",
+    rarity: "rare"
 };
+

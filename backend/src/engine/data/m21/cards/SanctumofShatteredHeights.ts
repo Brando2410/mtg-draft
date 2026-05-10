@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
 export const SanctumofShatteredHeights: CardDefinition = {
     name: "Sanctum of Shattered Heights",
     manaCost: "{2}{R}",
-    scryfall_id: "28499462-8b4b-4b2a-9d7f-9445ced2ee76",
-    image_url: "https://cards.scryfall.io/normal/front/2/8/28499462-8b4b-4b2a-9d7f-9445ced2ee76.jpg?1594736814",
     oracleText: "At the beginning of your precombat main phase, you may pay {1} and discard a land or Shrine card. If you do, Sanctum of Shattered Heights deals X damage to target creature or planeswalker, where X is the number of Shrines you control.",
     colors: ["R"],
     supertypes: ["Legendary"],
@@ -17,7 +15,7 @@ export const SanctumofShatteredHeights: CardDefinition = {
             condition: ConditionType.PlayerIsController,
             targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
-                count: 1,
+                count: 1
             }],
             effects: [
                 {
@@ -47,5 +45,9 @@ export const SanctumofShatteredHeights: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "482ae7f4-3950-4766-8392-eea753e29426",
+    image_url: "https://cards.scryfall.io/normal/front/4/8/482ae7f4-3950-4766-8392-eea753e29426.jpg?1594736748",
+    rarity: "uncommon"
 };
+

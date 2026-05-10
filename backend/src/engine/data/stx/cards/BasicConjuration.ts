@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, Zone } from '@sha
 export const BasicConjuration: CardDefinition = {
     name: 'Basic Conjuration',
     manaCost: '{1}{G}',
-    scryfall_id: "8be52d88-f430-4437-a0d3-590c2947c838",
-    image_url: "https://cards.scryfall.io/normal/front/8/b/8be52d88-f430-4437-a0d3-590c2947c838.jpg?1637082092",
+
     colors: ['G'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
@@ -27,5 +26,9 @@ export const BasicConjuration: CardDefinition = {
                 { type: EffectType.GainLife, amount: 2 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8be52d88-f430-4437-a0d3-590c2947c838",
+    image_url: "https://cards.scryfall.io/normal/front/8/b/8be52d88-f430-4437-a0d3-590c2947c838.jpg?1637082092",
+    rarity: "rare"
 };
+

@@ -11,10 +11,10 @@ export const StudiousFirstYearRampantGrowth: CardDefinition = {
     toughness: "1",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.png?1775938109",
+
     preparedFace: {
         name: "Rampant Growth",
-        image_url: "https://cards.scryfall.io/png/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.png?1775938109",
+
         manaCost: "{1}{G}",
         colors: ["G"],
         types: ["Sorcery"],
@@ -35,6 +35,11 @@ export const StudiousFirstYearRampantGrowth: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "24f888dd-785c-4089-a89c-03f9080130ed",
+    image_url: "https://cards.scryfall.io/png/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.png?1775938109",
+    rarity: "common"
 };
+

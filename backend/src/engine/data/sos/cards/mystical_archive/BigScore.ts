@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
 export const BigScore: CardDefinition = {
     name: "Big Score",
     manaCost: "{3}{R}",
-    scryfall_id: "c7b698a1-dff1-413f-ba4f-0298c686999a",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/c/7/c7b698a1-dff1-413f-ba4f-0298c686999a.jpg?1775936641",
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -33,6 +30,7 @@ export const BigScore: CardDefinition = {
                         name: "Treasure",
                         types: ["Artifact"],
                         subtypes: ["Treasure"],
+                        image_url: "https://cards.scryfall.io/normal/front/4/3/437976e1-9f2d-4560-8451-f7615957d591.jpg?1775828483",
                         abilities: [
                             {
                                 type: AbilityType.Activated,
@@ -46,5 +44,9 @@ export const BigScore: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "c7b698a1-dff1-413f-ba4f-0298c686999a",
+    image_url: "https://cards.scryfall.io/normal/front/c/7/c7b698a1-dff1-413f-ba4f-0298c686999a.jpg?1775936641",
+    rarity: "rare"
 };
+

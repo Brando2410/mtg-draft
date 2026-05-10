@@ -27,5 +27,9 @@ export const BlueSunsZenith: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "500a2aa4-712f-41be-920e-f2f448ff83d0",
+    image_url: "https://cards.scryfall.io/normal/front/5/0/500a2aa4-712f-41be-920e-f2f448ff83d0.jpg?1562435461",
+    rarity: "rare"
 };
+

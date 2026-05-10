@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, 
 export const Brainstorm: CardDefinition = {
     name: "Brainstorm",
     manaCost: "{U}",
-    scryfall_id: "617208ff-dd9b-44fd-a740-d3188081e5cc", // Using the SOA ID if possible, or just a placeholder
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/b/3/b3da96d0-7389-4074-9f3b-640a23363071.jpg?1775936465",
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],
@@ -34,5 +31,9 @@ export const Brainstorm: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "8beb987c-1b67-4a4e-ae71-58547afad2a0",
+    image_url: "https://cards.scryfall.io/normal/front/8/b/8beb987c-1b67-4a4e-ae71-58547afad2a0.jpg?1726284649",
+    rarity: "common"
 };
+

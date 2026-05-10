@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const EmeritusofConflictLightningBolt: CardDefinition = {
     name: "Emeritus of Conflict // Lightning Bolt",
     manaCost: "{1}{R}",
-    scryfall_id: "f58dba4f-1abb-47a3-a684-29c32bab95c0",
-    rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726",
+
+
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -27,7 +26,7 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
     ],
     preparedFace: {
         name: "Lightning Bolt",
-        image_url: "https://cards.scryfall.io/png/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.png?1706239968",
+
         manaCost: "{R}",
         colors: ["R"],
         types: ["Instant"],
@@ -47,6 +46,11 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "f58dba4f-1abb-47a3-a684-29c32bab95c0",
+    image_url: "https://cards.scryfall.io/png/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.png?1706239968",
+    rarity: "mythic"
 };
+

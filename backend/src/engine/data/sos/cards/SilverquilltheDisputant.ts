@@ -29,5 +29,9 @@ export const SilverquilltheDisputant: CardDefinition = {
         }
     ],
     power: "4",
-    toughness: "4"
+    toughness: "4",
+    scryfall_id: "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
+    image_url: "https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577",
+    rarity: "mythic"
 };
+

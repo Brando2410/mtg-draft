@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType } from "@shared/engine_types";
 export const Forest: CardDefinition = {
     name: "Forest",
     manaCost: "",
-    scryfall_id: "3279314f-d639-4489-b2ab-3621bb3ca64b",
-    image_url: "https://cards.scryfall.io/normal/front/3/2/3279314f-d639-4489-b2ab-3621bb3ca64b.jpg?1594737877",
+
     oracleText: "({T}: Add {G}.)",
     colors: [],
     supertypes: ["Basic"],
@@ -17,5 +16,9 @@ export const Forest: CardDefinition = {
             costs: [{ type: 'Tap' }],
             effects: [{ type: EffectType.AddMana, manaType: 'G' }]
         }
-    ]
+    ],
+    scryfall_id: "5f533364-0f91-4e49-aaeb-83c4c1f6d316",
+    image_url: "https://cards.scryfall.io/normal/front/5/f/5f533364-0f91-4e49-aaeb-83c4c1f6d316.jpg?1777658419",
+    rarity: "common"
 };
+

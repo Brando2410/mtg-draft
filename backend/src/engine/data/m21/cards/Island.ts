@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engin
 export const Island: CardDefinition = {
     name: "Island",
     manaCost: "",
-    scryfall_id: "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-    image_url: "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+
     oracleText: "({T}: Add {U}.)",
     colors: [],
     supertypes: ["Basic"],
@@ -17,5 +16,9 @@ export const Island: CardDefinition = {
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'U' }]
         }
-    ]
+    ],
+    scryfall_id: "739aaaac-c424-4ea7-a084-62a6fc0438b0",
+    image_url: "https://cards.scryfall.io/normal/front/7/3/739aaaac-c424-4ea7-a084-62a6fc0438b0.jpg?1777658399",
+    rarity: "common"
 };
+

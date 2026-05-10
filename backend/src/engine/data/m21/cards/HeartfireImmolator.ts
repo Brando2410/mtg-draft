@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const HeartfireImmolator: CardDefinition = {
     name: "Heartfire Immolator",
     manaCost: "{1}{R}",
-    scryfall_id: "869fb9f1-0d59-4874-aa52-ac665c3cc0e8",
-    image_url: "https://cards.scryfall.io/normal/front/8/6/869fb9f1-0d59-4874-aa52-ac665c3cc0e8.jpg?1594736682",
+
     oracleText: "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n{R}, Sacrifice this creature: It deals damage equal to its power to target creature or planeswalker.",
     colors: ["R"],
     types: ["Creature"],
@@ -26,5 +25,9 @@ export const HeartfireImmolator: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "869fb9f1-0d59-4874-aa52-ac665c3cc0e8",
+    image_url: "https://cards.scryfall.io/normal/front/8/6/869fb9f1-0d59-4874-aa52-ac665c3cc0e8.jpg?1594736682",
+    rarity: "uncommon"
 };
+

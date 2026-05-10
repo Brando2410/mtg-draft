@@ -21,6 +21,9 @@ export const TextbookTabulator: CardDefinition = {
         }
     ],
     power: "0",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "56f54fee-b48d-4582-8982-ca4c7b8ef553",
+    image_url: "https://cards.scryfall.io/normal/front/5/6/56f54fee-b48d-4582-8982-ca4c7b8ef553.jpg?1776000387",
+    rarity: "common"
 };
 

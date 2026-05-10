@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
 export const BurnBright: CardDefinition = {
     name: "Burn Bright",
     manaCost: "{2}{R}",
-    scryfall_id: "f19b4a80-41e1-4c5f-869a-682f08543f12",
-    image_url: "https://cards.scryfall.io/normal/front/f/1/f19b4a80-41e1-4c5f-869a-682f08543f12.jpg?1594736518",
+
     oracleText: "Creatures you control get +2/+0 until end of turn.",
     colors: ["R"],
     types: ["Instant"],
@@ -20,5 +19,9 @@ export const BurnBright: CardDefinition = {
                 targetMapping: TargetMapping.AllCreaturesYouControl
             }]
         }
-    ]
+    ],
+    scryfall_id: "f19b4a80-41e1-4c5f-869a-682f08543f12",
+    image_url: "https://cards.scryfall.io/normal/front/f/1/f19b4a80-41e1-4c5f-869a-682f08543f12.jpg?1594736518",
+    rarity: "common"
 };
+

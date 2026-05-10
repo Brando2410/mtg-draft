@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, CounterType, DynamicAmount, Effe
 export const KasminaEnigmaSage: CardDefinition = {
     name: "Kasmina, Enigma Sage",
     manaCost: "{1}{G}{U}",
-    scryfall_id: "178bf300-38cf-4ab2-9e66-6fcaa112b649",
-    image_url: "https://cards.scryfall.io/normal/front/1/7/178bf300-38cf-4ab2-9e66-6fcaa112b649.jpg?1627429348",
+
     colors: ["G", "U"],
     supertypes: ["Legendary"],
     types: ["Planeswalker"],
@@ -81,5 +80,9 @@ export const KasminaEnigmaSage: CardDefinition = {
                 restrictions: [Restriction.InstantOrSorcery, Restriction.SharesColorWithSource]
             }]
         }
-    ]
+    ],
+    scryfall_id: "178bf300-38cf-4ab2-9e66-6fcaa112b649",
+    image_url: "https://cards.scryfall.io/normal/front/1/7/178bf300-38cf-4ab2-9e66-6fcaa112b649.jpg?1627429348",
+    rarity: "mythic"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const BadDeal: CardDefinition = {
     name: "Bad Deal",
     manaCost: "{4}{B}{B}",
-    scryfall_id: "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
-    image_url: "https://cards.scryfall.io/normal/front/7/a/7a3f8bc2-ef66-474f-92a3-9c4df1670cec.jpg?1594735984",
+
     oracleText: "You draw two cards and each opponent discards two cards. Each player loses 2 life.",
     colors: ["B"],
     types: ["Sorcery"],
@@ -29,5 +28,9 @@ export const BadDeal: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
+    image_url: "https://cards.scryfall.io/normal/front/7/a/7a3f8bc2-ef66-474f-92a3-9c4df1670cec.jpg?1594735984",
+    rarity: "uncommon"
 };
+

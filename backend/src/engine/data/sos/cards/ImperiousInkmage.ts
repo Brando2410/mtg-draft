@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
 export const ImperiousInkmage: CardDefinition = {
     name: "Imperious Inkmage",
     manaCost: "{1}{W}{B}",
-    scryfall_id: "d5df1c3f-2536-4476-b8cd-34b026c38366",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353",
+
+
     colors: ["B", "W"],
     types: ["Creature"],
     subtypes: ["Orc", "Warlock"],
@@ -24,5 +23,9 @@ export const ImperiousInkmage: CardDefinition = {
         }
     ],
     power: "3",
-    toughness: "3"
+    toughness: "3",
+    scryfall_id: "d5df1c3f-2536-4476-b8cd-34b026c38366",
+    image_url: "https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353",
+    rarity: "common"
 };
+

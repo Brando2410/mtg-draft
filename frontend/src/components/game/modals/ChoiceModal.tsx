@@ -41,7 +41,7 @@ export const ChoiceModal = memo(({
       orderedTriggers, setOrderedTriggers,
       scryState, setScryState,
       viewedPlayerId, setViewedPlayerId,
-      sourceObject,
+      sourceObjects,
       handleChoiceClick,
       handleChoiceRightClick,
       moveCard,
@@ -140,11 +140,11 @@ export const ChoiceModal = memo(({
             <motion.div 
               initial={{ scale: 0.9, y: 10 }} 
               animate={{ scale: 1, y: 0 }}
-              className="bg-[#0b0f1a]/95 border border-white/10 p-5 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-[90vw] w-[1100px] flex flex-row items-stretch gap-0 text-center relative overflow-hidden backdrop-blur-2xl"
+              className="bg-[#0b0f1a]/95 border border-white/10 p-5 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-[95vw] w-[1400px] flex flex-row items-stretch gap-0 text-center relative overflow-hidden backdrop-blur-2xl"
             >
-              <SourceObjectPreview sourceObject={sourceObject} />
+              <SourceObjectPreview sourceObjects={sourceObjects} />
 
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8 relative min-h-0 w-[55vw] bg-black/5 border-l border-white/10">
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8 relative min-h-0 bg-black/5 border-l border-white/10">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
                   
                   <button 

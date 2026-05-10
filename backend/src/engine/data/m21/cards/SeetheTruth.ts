@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
 export const SeetheTruth: CardDefinition = {
     name: "See the Truth",
     manaCost: "{1}{U}",
-    scryfall_id: "da367981-9d6f-419f-9f58-f969b6183336",
-    image_url: "https://cards.scryfall.io/normal/front/d/a/da367981-9d6f-419f-9f58-f969b6183336.jpg?1594735631",
+
     oracleText: "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. If this spell was cast from anywhere other than your hand, instead put all three of those cards into your hand.",
     colors: ["U"],
     types: ["Sorcery"],
@@ -32,5 +31,9 @@ export const SeetheTruth: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "91af15cc-fdd5-4d72-a53a-314fa5353527",
+    image_url: "https://cards.scryfall.io/normal/front/9/1/91af15cc-fdd5-4d72-a53a-314fa5353527.jpg?1594735741",
+    rarity: "rare"
 };
+

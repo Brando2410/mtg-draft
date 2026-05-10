@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const GoblinArsonist: CardDefinition = {
     name: "Goblin Arsonist",
     manaCost: "{R}",
-    scryfall_id: "fa4bf664-3b92-4598-b905-2bc090958c8b",
-    image_url: "https://cards.scryfall.io/normal/front/f/a/fa4bf664-3b92-4598-b905-2bc090958c8b.jpg?1594736650",
+
     oracleText: "When this creature dies, you may have it deal 1 damage to any target.",
     colors: ["R"],
     types: ["Creature"],
@@ -18,7 +17,7 @@ export const GoblinArsonist: CardDefinition = {
             targetDefinitions: [{
                 type: TargetType.AnyTarget,
                 count: 1,
-                minCount: 0,
+                minCount: 0
             }],
             effects: [{
                 type: EffectType.DealDamage,
@@ -26,5 +25,9 @@ export const GoblinArsonist: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "fa4bf664-3b92-4598-b905-2bc090958c8b",
+    image_url: "https://cards.scryfall.io/normal/front/f/a/fa4bf664-3b92-4598-b905-2bc090958c8b.jpg?1594736650",
+    rarity: "common"
 };
+

@@ -1,20 +1,12 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const AdventurousEaterHaveaBite: CardDefinition = {
+export const AdventurousEaterHaveaBite: CardDefinition = {
     name: "Adventurous Eater // Have a Bite",
     manaCost: "{2}{B} // {B}",
-    scryfall_id: "d40cc7da-c731-418e-8547-7033d1939450",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Warlock"
-    ],
+
+
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Human", "Warlock"],
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
@@ -29,7 +21,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     ],
     preparedFace: {
         name: "Have a Bite",
-        image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -43,7 +35,11 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "d40cc7da-c731-418e-8547-7033d1939450",
+    image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+    rarity: "common"
 };
-    
+

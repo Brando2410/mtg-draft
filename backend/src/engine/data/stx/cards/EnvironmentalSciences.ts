@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, Zone } from '@sha
 export const EnvironmentalSciences: CardDefinition = {
     name: 'Environmental Sciences',
     manaCost: '{2}',
-    scryfall_id: "46b394fc-a99c-44e7-9226-da0699167541",
-    image_url: "https://cards.scryfall.io/normal/front/4/6/46b394fc-a99c-44e7-9226-da0699167541.jpg?1637082125",
+
     colors: [],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
@@ -25,5 +24,9 @@ export const EnvironmentalSciences: CardDefinition = {
                 { type: EffectType.GainLife, amount: 2 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "46b394fc-a99c-44e7-9226-da0699167541",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/46b394fc-a99c-44e7-9226-da0699167541.jpg?1637082125",
+    rarity: "common"
 };
+

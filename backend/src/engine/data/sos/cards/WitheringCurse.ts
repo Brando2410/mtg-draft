@@ -38,5 +38,9 @@ export const WitheringCurse: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "50aaf618-dddb-4cbe-8231-d634b4498563",
+    image_url: "https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655",
+    rarity: "mythic"
 };
+

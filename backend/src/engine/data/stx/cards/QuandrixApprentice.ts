@@ -27,5 +27,9 @@ export const QuandrixApprentice: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f9166814-8748-480a-b7a0-816f9f582420",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f9166814-8748-480a-b7a0-816f9f582420.jpg?1775941866",
+    rarity: "uncommon"
 };
+

@@ -124,5 +124,9 @@ export const RowanScholarofSparks: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "18c16872-3675-4a4d-962a-2e17ad6f3886",
+    image_url: "https://cards.scryfall.io/normal/front/1/8/18c16872-3675-4a4d-962a-2e17ad6f3886.jpg?1626663831",
+    rarity: "mythic"
 };
+

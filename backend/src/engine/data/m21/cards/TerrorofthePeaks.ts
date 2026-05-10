@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const TerrorofthePeaks: CardDefinition = {
     name: "Terror of the Peaks",
     manaCost: "{3}{R}{R}",
-    scryfall_id: "057e03ef-62f9-4b6a-939e-2dc868eb370f",
-    image_url: "https://cards.scryfall.io/normal/front/0/5/057e03ef-62f9-4b6a-939e-2dc868eb370f.jpg?1594736829",
+
     oracleText: "Spells your opponents cast that target Terror of the Peaks cost an additional 3 life to cast.\nWhenever another creature enters the battlefield under your control, Terror of the Peaks deals damage equal to that creature's power to any target.",
     colors: ["R"],
     types: ["Creature"],
@@ -30,5 +29,9 @@ export const TerrorofthePeaks: CardDefinition = {
             targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 'EVENT_OBJECT_POWER', targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "904ff94a-4db4-44a6-8593-89c32905b3fc",
+    image_url: "https://cards.scryfall.io/normal/front/9/0/904ff94a-4db4-44a6-8593-89c32905b3fc.jpg?1712355862",
+    rarity: "mythic"
 };
+

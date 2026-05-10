@@ -20,6 +20,9 @@ export const StrategicPlanning: CardDefinition = {
           }
         ]
       }
-    ]
-  };
+    ],
+    scryfall_id: "29306305-cb71-4fef-bf86-f5deb4e7e561",
+    image_url: "https://cards.scryfall.io/normal/front/2/9/29306305-cb71-4fef-bf86-f5deb4e7e561.jpg?1631047604",
+    rarity: "common"
+};
 

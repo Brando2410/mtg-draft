@@ -4,9 +4,8 @@ import { RuleUtils } from '../../../utils/RuleUtils';
 export const MatterbendingMage: CardDefinition = {
     name: "Matterbending Mage",
     manaCost: "{2}{U}",
-    scryfall_id: "460c6afd-cddf-4fea-925f-b27517ff250a",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -48,5 +47,9 @@ export const MatterbendingMage: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "460c6afd-cddf-4fea-925f-b27517ff250a",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
+    rarity: "uncommon"
 };
+

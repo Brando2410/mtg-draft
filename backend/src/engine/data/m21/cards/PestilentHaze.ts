@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
 export const PestilentHaze: CardDefinition = {
     name: "Pestilent Haze",
     manaCost: "{1}{B}{B}",
-    scryfall_id: "08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c",
-    image_url: "https://cards.scryfall.io/normal/front/0/8/08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c.jpg?1594736339",
+
     oracleText: "Choose one —\n• All creatures get -2/-2 until end of turn.\n• Remove two loyalty counters from each planeswalker.",
     colors: ["B"],
     types: ["Sorcery"],
@@ -39,5 +38,9 @@ export const PestilentHaze: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c",
+    image_url: "https://cards.scryfall.io/normal/front/0/8/08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c.jpg?1594736339",
+    rarity: "uncommon"
 };
+

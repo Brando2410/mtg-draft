@@ -32,6 +32,9 @@ export const TeachingsoftheArchaics: CardDefinition = {
                     }
                 ]
             }
-        ]
-    };
+        ],
+    scryfall_id: "967148b1-2bb6-4bc0-95e6-c45fcf99afd2",
+    image_url: "https://cards.scryfall.io/normal/front/9/6/967148b1-2bb6-4bc0-95e6-c45fcf99afd2.jpg?1637082385",
+    rarity: "rare"
+};
 

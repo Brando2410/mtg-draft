@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const TeferisTutelage: CardDefinition = {
     name: "Teferi's Tutelage",
     manaCost: "{2}{U}",
-    scryfall_id: "c26450d4-125f-423d-b074-3c959460c242",
-    image_url: "https://cards.scryfall.io/normal/front/c/2/c26450d4-125f-423d-b074-3c959460c242.jpg?1594735829",
+
     oracleText: "When Teferi's Tutelage enters the battlefield, draw a card, then discard a card.\nWhenever you draw a card, target opponent mills two cards.",
     colors: ["U"],
     types: ["Enchantment"],
@@ -36,5 +35,9 @@ export const TeferisTutelage: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "c26450d4-125f-423d-b074-3c959460c242",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c26450d4-125f-423d-b074-3c959460c242.jpg?1594735840",
+    rarity: "uncommon"
 };
+

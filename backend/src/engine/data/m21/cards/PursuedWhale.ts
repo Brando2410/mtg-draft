@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const PursuedWhale: CardDefinition = {
     name: "Pursued Whale",
     manaCost: "{5}{U}{U}",
-    scryfall_id: "b1501118-5837-49b5-9446-0bc3032035ca",
-    image_url: "https://cards.scryfall.io/normal/front/b/1/b1501118-5837-49b5-9446-0bc3032035ca.jpg?1594735617",
+
     oracleText: "When Pursued Whale enters the battlefield, target opponent creates a 1/1 red Pirate creature token with \"This creature can't block\" and \"Creatures you control attack each combat if able.\"\nSpells your opponents cast that target Pursued Whale cost {3} more to cast.",
     colors: ["U"],
     types: ["Creature"],
@@ -27,7 +26,7 @@ export const PursuedWhale: CardDefinition = {
                     subtypes: ["Pirate"],
                     power: "1",
                     toughness: "1",
-                    image_url: "https://cards.scryfall.io/large/front/e/5/e53a3ae8-0051-4f18-bbbe-ad79446d656f.jpg?1594733640",
+
                     abilities: [{
                         type: AbilityType.Static,
                         effects: [
@@ -44,7 +43,7 @@ export const PursuedWhale: CardDefinition = {
                                 layer: 6
                             }
                         ]
-                    }],
+                    }]
                 }
             }]
         },
@@ -57,5 +56,9 @@ export const PursuedWhale: CardDefinition = {
                 targetMapping: TargetMapping.EachOpponent
             }]
         }
-    ]
+    ],
+    scryfall_id: "f1ba925b-9216-4e37-814d-b061950b3998",
+    image_url: "https://cards.scryfall.io/normal/front/f/1/f1ba925b-9216-4e37-814d-b061950b3998.jpg?1674141436",
+    rarity: "rare"
 };
+

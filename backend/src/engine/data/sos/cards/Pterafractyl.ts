@@ -1,10 +1,9 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const Pterafractyl: CardDefinition = {
+export const Pterafractyl: CardDefinition = {
     name: "Pterafractyl",
     manaCost: "{X}{G}{U}",
-    scryfall_id: "ecd33152-e290-4505-addd-a8d08cefdddd",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495",
+
+
     colors: [
         "G",
         "U"
@@ -21,7 +20,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.GainLife,
@@ -33,6 +32,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     ],
     power: "1",
     toughness: "0",
-    entersWithXCounters: true //specificare +1/+1 counters?
+    entersWithXCounters: true, //specificare +1/+1 counters?,
+    scryfall_id: "ecd33152-e290-4505-addd-a8d08cefdddd",
+    image_url: "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495",
+    rarity: "common"
 };
-    
+

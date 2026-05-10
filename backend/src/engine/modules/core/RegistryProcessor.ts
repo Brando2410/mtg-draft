@@ -200,7 +200,9 @@ export class RegistryProcessor {
                     isNotLegendary: eff.isNotLegendary,
                     canPlayExiled: eff.canPlayExiled,
                     spendAnyMana: eff.spendAnyMana,
-                    isFreeCast: eff.isFreeCast
+                    isFreeCast: eff.isFreeCast,
+                    limitPerTurn: eff.limitPerTurn,
+                    condition: eff.condition || ability.condition
                 });
             }
         });

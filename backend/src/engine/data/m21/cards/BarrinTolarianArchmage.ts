@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const BarrinTolarianArchmage: CardDefinition = {
     name: "Barrin, Tolarian Archmage",
     manaCost: "{1}{U}{U}",
-    scryfall_id: "cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8",
-    image_url: "https://cards.scryfall.io/normal/front/c/b/cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8.jpg?1594735404",
+
     oracleText: "When Barrin enters, return up to one other target creature or planeswalker to its owner's hand.\nAt the beginning of your end step, if a permanent was put into your hand from the battlefield this turn, draw a card.",
     colors: ["U"],
     supertypes: ["Legendary"],
@@ -30,5 +29,9 @@ export const BarrinTolarianArchmage: CardDefinition = {
             condition: `${ConditionType.IsYourTurn} && ${ConditionType.PermanentReturnedToHandThisTurn}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
-    ]
+    ],
+    scryfall_id: "cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8",
+    image_url: "https://cards.scryfall.io/normal/front/c/b/cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8.jpg?1594735404",
+    rarity: "rare"
 };
+

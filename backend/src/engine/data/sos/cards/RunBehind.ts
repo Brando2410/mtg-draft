@@ -55,5 +55,9 @@ export const RunBehind: CardDefinition = {
     }
             ]
         }
-    ]
+    ],
+    scryfall_id: "40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0",
+    image_url: "https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369",
+    rarity: "common"
 };
+

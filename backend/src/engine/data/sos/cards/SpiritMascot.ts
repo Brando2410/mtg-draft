@@ -23,7 +23,9 @@ export const SpiritMascot: CardDefinition = {
         }
     ],
     power: "2",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "123f1fde-d8de-4640-baa1-bb3781713168",
+    image_url: "https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605",
+    rarity: "common"
 };
-
 

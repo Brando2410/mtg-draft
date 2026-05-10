@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
 export const PalladiumMyr: CardDefinition = {
     name: "Palladium Myr",
     manaCost: "{3}",
-    scryfall_id: "27305aad-f1bd-4895-8611-143bc0250bee",
-    image_url: "https://cards.scryfall.io/normal/front/2/7/27305aad-f1bd-4895-8611-143bc0250bee.jpg?1594737522",
+
     oracleText: "{T}: Add {C}{C}.",
     colors: [],
     types: ["Artifact", "Creature"],
@@ -23,5 +22,9 @@ export const PalladiumMyr: CardDefinition = {
                 targetMapping: TargetMapping.Controller
             }]
         }
-    ]
+    ],
+    scryfall_id: "f7c6aba3-38c3-45d1-83e1-40829eb07862",
+    image_url: "https://cards.scryfall.io/normal/front/f/7/f7c6aba3-38c3-45d1-83e1-40829eb07862.jpg?1690005669",
+    rarity: "uncommon"
 };
+

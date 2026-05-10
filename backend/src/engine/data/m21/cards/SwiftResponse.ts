@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const SwiftResponse: CardDefinition = {
     name: "Swift Response",
     manaCost: "{1}{W}",
-    scryfall_id: "a90c1ad0-8cbd-471a-a70c-ee6717af0bd8",
-    image_url: "https://cards.scryfall.io/normal/front/a/9/a90c1ad0-8cbd-471a-a70c-ee6717af0bd8.jpg?1594735239",
     oracleText: "Destroy target tapped creature.",
     colors: ["W"],
     types: ["Instant"],
@@ -18,5 +16,9 @@ export const SwiftResponse: CardDefinition = {
             }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
-    ]
+    ],
+    scryfall_id: "3d70dcbe-0b90-40b4-8a54-e5218b7135b1",
+    image_url: "https://cards.scryfall.io/normal/front/3/d/3d70dcbe-0b90-40b4-8a54-e5218b7135b1.jpg?1689996091",
+    rarity: "common"
 };
+

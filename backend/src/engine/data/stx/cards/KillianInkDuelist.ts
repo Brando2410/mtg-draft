@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 export const KillianInkDuelist: CardDefinition = {
     name: 'Killian, Ink Duelist',
     manaCost: '{W}{B}',
-    scryfall_id: "23ef4f09-2aa1-4a03-b2e2-66d1522f1e46",
-    image_url: "https://cards.scryfall.io/normal/front/2/3/23ef4f09-2aa1-4a03-b2e2-66d1522f1e46.jpg?1627429378",
+
     colors: ['W', 'B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
@@ -24,6 +23,9 @@ export const KillianInkDuelist: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "9f51c115-dc9b-40a4-849d-3fc0c26e5a39",
+    image_url: "https://cards.scryfall.io/normal/front/9/f/9f51c115-dc9b-40a4-849d-3fc0c26e5a39.jpg?1775941809",
+    rarity: "uncommon"
 };
 

@@ -20,5 +20,9 @@ export const Counterspell: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    image_url: "https://cards.scryfall.io/normal/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1751282477",
+    rarity: "uncommon"
 };
+

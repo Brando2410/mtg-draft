@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     export const CampusComposerAqueousAria: CardDefinition = {
     name: "Campus Composer",
     manaCost: "{3}{U}",
-    scryfall_id: "fac8ac39-ecb4-4142-bf37-131c65660a9b",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189",
+
+
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard"],
@@ -16,7 +15,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     entersPrepared: true,
     preparedFace: {
         name: "Aqueous Aria",
-        image_url: "https://cards.scryfall.io/png/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.png?1775937189",
+
         manaCost: "{4}{U}",
         colors: ["U"],
         types: ["Sorcery"],
@@ -37,12 +36,16 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                             types: ["Creature"],
                             subtypes: ["Elemental"],
                             keywords: ["Flying"],
-                            image_url: "https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891"
+                            image_url: "https://cards.scryfall.io/normal/front/5/7/57b98846-85e3-47c7-a903-29953d0b0e8a.jpg?1775828504"
                         }
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "fac8ac39-ecb4-4142-bf37-131c65660a9b",
+    image_url: "https://cards.scryfall.io/png/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.png?1775937189",
+    rarity: "uncommon"
 };
-    
+

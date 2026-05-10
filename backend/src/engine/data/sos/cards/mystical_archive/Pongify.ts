@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const Pongify: CardDefinition = {
     name: "Pongify",
     manaCost: "{U}",
-    scryfall_id: "099a5ccb-0d04-406a-9357-147321272659",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/0/9/099a5ccb-0d04-406a-9357-147321272659.jpg?1775936499",
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],
@@ -33,10 +30,15 @@ export const Pongify: CardDefinition = {
                         types: ["Creature"],
                         subtypes: ["Ape"],
                         power: 3,
-                        toughness: 3
+                        toughness: 3,
+                        image_url: "https://cards.scryfall.io/normal/front/1/7/17d45763-7182-446a-8b83-9dd2511a07f2.jpg?1562639691"
                     }
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4131fa63-5afc-4b63-a4b4-f47b4bced87f",
+    image_url: "https://cards.scryfall.io/normal/front/4/1/4131fa63-5afc-4b63-a4b4-f47b4bced87f.jpg?1743206367",
+    rarity: "uncommon"
 };
+

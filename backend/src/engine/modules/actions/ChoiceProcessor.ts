@@ -121,8 +121,15 @@ export class ChoiceProcessor {
         const meta = getActionMeta(action);
 
         if (isTargeting) {
-            logger.debug(state, LogCategory.ACTION, `[CHOICE-DELEGATE] Delegating targeting choice to TargetingProcessor: ${firstSelection}`);
-            return this.resolveTargeting(state, playerId, firstSelection as string, engine);
+            let success = false;
+            for (const sel of selections) {
+                logger.debug(state, LogCategory.ACTION, `[CHOICE-DELEGATE] Delegating targeting choice to TargetingProcessor: ${sel}`);
+                success = this.resolveTargeting(state, playerId, String(sel), engine);
+                if (!success) break;
+                // If the targeting sequence finalized and cleared pendingAction, stop processing further items in this batch
+                if (!state.pendingAction) break;
+            }
+            return success;
         }
 
         if (isOrderTriggers) {
@@ -627,9 +634,11 @@ export class ChoiceProcessor {
         state.pendingAction = undefined;
 
         if (costType === 'Sacrifice') {
-            state.interaction.lastSelections['Sacrifice'] = [choice?.value as string].filter(v => v);
+            const val = choice?.value as string;
+            if (val) state.interaction.lastSelections['Sacrifice'] = [val];
         } else if (costType === 'Discard') {
-            state.interaction.lastSelections['Discard'] = [choice?.value as string].filter(v => v);
+            const val = choice?.value as string;
+            if (val) state.interaction.lastSelections['Discard'] = [val];
         } else if (costType === 'TapSelection' || costType === 'Exile') {
             if (isMultiSelect) {
                 const batchIds = selections.map(s => {
@@ -644,11 +653,18 @@ export class ChoiceProcessor {
                     return str;
                 }).filter(v => v && v !== 'confirm' && v !== 'done' && v !== 'none');
 
-                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${meta.maxChoices})`);
-                state.interaction.lastSelections[costType] = batchIds;
+                // Only update lastSelections if we have new IDs or if this isn't a control-only (confirm/done) payload.
+                // This prevents 'confirm' signals from clearing selections just populated by Targeting finalization.
+                const isControlOnly = selections.every(s => s === 'confirm' || s === 'done' || s === 'none');
+                if (batchIds.length > 0 || !isControlOnly) {
+                    logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${meta.maxChoices})`);
+                    state.interaction.lastSelections[costType] = batchIds;
+                }
             } else {
                 const val = choice?.value as string;
-                state.interaction.lastSelections[costType] = val ? [val] : [];
+                if (val && val !== 'confirm' && val !== 'done' && val !== 'none') {
+                    state.interaction.lastSelections[costType] = [val];
+                }
             }
         } else if (payload?.params?.faceIndex !== undefined || (choice && String(choice.value).startsWith('FACE_SELECTION_'))) {
             const faceIdx = (payload?.params?.faceIndex !== undefined) ? payload.params.faceIndex : parseInt(String(choice?.value).substring(15));
@@ -701,6 +717,25 @@ export class ChoiceProcessor {
                     logger.error(state, LogCategory.ACTION, `[CHOICE-ERROR] Failed to parse mana choices: ${e}`);
                 }
             }
+        } else if (choice && String(choice.value).startsWith('CAST_MODE_')) {
+            const mode = String(choice.value);
+            const isFree = mode === 'CAST_MODE_FREE';
+            const isFlashback = mode === 'CAST_MODE_FLASHBACK';
+
+            logger.info(state, LogCategory.ACTION, `[CAST-MODE] User selected: ${mode}`);
+            state.pendingAction = undefined;
+
+            return getProcessors(state).spell.playCard(state, engine, {
+                playerId,
+                cardId: sourceId,
+                targets: savedTargets,
+                bypassPriority: true,
+                isFreeCast: isFree,
+                forceFlashback: isFlashback,
+                isModeSelected: true,
+                parentContext: meta.parentContext,
+                exileOnResolution: meta.exileOnResolution
+            });
         } else {
             if (typeof firstSelection === 'number') state.interaction.lastChoiceIndex = firstSelection;
             else state.interaction.lastChoiceValue = firstSelection as string;

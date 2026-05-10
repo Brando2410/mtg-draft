@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_ty
 export const SleightofHand: CardDefinition = {
     name: "Sleight of Hand",
     manaCost: "{U}",
-    scryfall_id: "c837c418-2fe9-4ce8-b76d-c37241579a93",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/c/8/c837c418-2fe9-4ce8-b76d-c37241579a93.jpg?1775936522",
+
+
     colors: ["U"],
     types: ["Sorcery"],
     subtypes: [],
@@ -26,5 +25,9 @@ export const SleightofHand: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "c837c418-2fe9-4ce8-b76d-c37241579a93",
+    image_url: "https://cards.scryfall.io/normal/front/c/8/c837c418-2fe9-4ce8-b76d-c37241579a93.jpg?1775936522",
+    rarity: "uncommon"
 };
+

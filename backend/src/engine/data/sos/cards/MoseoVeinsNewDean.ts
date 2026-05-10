@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const MoseoVeinsNewDean: CardDefinition = {
     name: "Moseo, Vein's New Dean",
     manaCost: "{2}{B}",
-    scryfall_id: "6877180c-22a1-4c4d-9178-316f4c34661b",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545",
     colors: ["B"],
     types: ["Legendary", "Creature"],
     subtypes: ["Bird", "Skeleton", "Warlock"],
@@ -29,7 +26,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         oracleText: "Whenever this token attacks, you gain 1 life.",
-                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901",
+                        image_url: "https://cards.scryfall.io/normal/front/b/a/ba854032-6ad2-4654-990a-64006e7f92fd.jpg?1777982237",
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
@@ -74,5 +71,9 @@ export const MoseoVeinsNewDean: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6877180c-22a1-4c4d-9178-316f4c34661b",
+    image_url: "https://cards.scryfall.io/normal/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901",
+    rarity: "rare"
 };
+

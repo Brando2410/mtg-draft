@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const QuirionDryad: CardDefinition = {
     name: "Quirion Dryad",
     manaCost: "{1}{G}",
-    scryfall_id: "a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38",
-    image_url: "https://cards.scryfall.io/normal/front/a/2/a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38.jpg?1594737152",
+
     oracleText: "Whenever you cast a spell that's white, blue, black, or red, put a +1/+1 counter on this creature.",
     colors: ["G"],
     types: ["Creature"],
@@ -23,5 +22,9 @@ export const QuirionDryad: CardDefinition = {
                 targetMapping: TargetMapping.Self
             }]
         }
-    ]
+    ],
+    scryfall_id: "a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38",
+    image_url: "https://cards.scryfall.io/normal/front/a/2/a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38.jpg?1594737152",
+    rarity: "uncommon"
 };
+

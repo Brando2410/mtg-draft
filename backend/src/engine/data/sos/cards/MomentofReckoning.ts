@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const MomentofReckoning: CardDefinition = {
     name: "Moment of Reckoning",
     manaCost: "{3}{W}{W}{B}{B}",
-    scryfall_id: "577d9dc8-7720-4dc9-b650-64b4729b309b",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423",
+
+
     colors: ["B", "W"],
     types: ["Sorcery"],
     subtypes: [],
@@ -34,5 +33,9 @@ export const MomentofReckoning: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "577d9dc8-7720-4dc9-b650-64b4729b309b",
+    image_url: "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423",
+    rarity: "rare"
 };
+

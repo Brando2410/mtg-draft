@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
 export const JolraelMwonvuliRecluse: CardDefinition = {
     name: "Jolrael, Mwonvuli Recluse",
     manaCost: "{1}{G}",
-    scryfall_id: "7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3",
-    image_url: "https://cards.scryfall.io/normal/front/7/d/7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3.jpg?1594737074",
+
     oracleText: "Whenever you draw your second card each turn, create a 2/2 green Cat creature token.\n{4}{G}{G}: Until end of turn, creatures you control have base power and toughness X/X, where X is the number of cards in your hand.",
     colors: ["G"],
     supertypes: ["Legendary"],
@@ -21,7 +20,7 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
                 tokenBlueprint: {
                     name: 'Cat', power: '2', toughness: '2', colors: ['G'],
                     types: ['Creature'], subtypes: ['Cat'],
-                    image_url: 'https://cards.scryfall.io/large/front/2/a/2a66e6eb-116e-4122-8370-17684074251f.jpg?1594733682'
+
                 },
                 targetMapping: TargetMapping.Controller
             }]
@@ -37,5 +36,9 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
                 targetMapping: TargetMapping.AllCreaturesYouControl
             }]
         }
-    ]
+    ],
+    scryfall_id: "7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3",
+    image_url: "https://cards.scryfall.io/normal/front/7/d/7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3.jpg?1594737074",
+    rarity: "rare"
 };
+

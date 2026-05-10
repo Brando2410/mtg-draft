@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engin
 export const Mountain: CardDefinition = {
     name: "Mountain",
     manaCost: "",
-    scryfall_id: "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-    image_url: "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+
     oracleText: "({T}: Add {R}.)",
     colors: [],
     supertypes: ["Basic"],
@@ -18,5 +17,9 @@ export const Mountain: CardDefinition = {
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'R' }]
         }
-    ]
+    ],
+    scryfall_id: "51acfb01-4b0b-48fc-9704-a9b4a1e43a23",
+    image_url: "https://cards.scryfall.io/normal/front/5/1/51acfb01-4b0b-48fc-9704-a9b4a1e43a23.jpg?1777658413",
+    rarity: "common"
 };
+

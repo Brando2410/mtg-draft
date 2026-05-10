@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 
 export const LocustSpray: CardDefinition = {
     name: "Locust Spray",
-    manaCost: "{B}",
-    scryfall_id: "b221e1e9-7b14-4444-ac1c-3d5174c711e9",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/b/2/b221e1e9-7b14-4444-ac1c-3d5174c711e9.jpg?1775936590",
+    manaCost: "{B}",
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],
@@ -38,5 +35,9 @@ export const LocustSpray: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 1 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "b221e1e9-7b14-4444-ac1c-3d5174c711e9",
+    image_url: "https://cards.scryfall.io/normal/front/b/2/b221e1e9-7b14-4444-ac1c-3d5174c711e9.jpg?1775936590",
+    rarity: "uncommon"
 };
+

@@ -21,7 +21,9 @@ export const PrismariPledgemage: CardDefinition = {
                 targetMapping: TargetMapping.Self
             }]
         }
-    ]
+    ],
+    scryfall_id: "404b4c7b-5d40-4ad1-bd40-3da1d08f5c78",
+    image_url: "https://cards.scryfall.io/normal/front/4/0/404b4c7b-5d40-4ad1-bd40-3da1d08f5c78.jpg?1627429991",
+    rarity: "common"
 };
-
 

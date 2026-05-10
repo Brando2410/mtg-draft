@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const BonePitBrute: CardDefinition = {
     name: "Bone Pit Brute",
     manaCost: "{4}{R}{R}",
-    scryfall_id: "6075e0a3-a0ab-4a11-8ad2-7dabb071d309",
-    image_url: "https://cards.scryfall.io/normal/front/6/0/6075e0a3-a0ab-4a11-8ad2-7dabb071d309.jpg?1594736498",
+
     oracleText: "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, target creature gets +4/+0 until end of turn.",
     colors: ["R"],
     types: ["Creature"],
@@ -26,5 +25,9 @@ export const BonePitBrute: CardDefinition = {
                 targetMapping: TargetMapping.Target1
             }]
         }
-    ]
+    ],
+    scryfall_id: "6075e0a3-a0ab-4a11-8ad2-7dabb071d309",
+    image_url: "https://cards.scryfall.io/normal/front/6/0/6075e0a3-a0ab-4a11-8ad2-7dabb071d309.jpg?1594736498",
+    rarity: "common"
 };
+

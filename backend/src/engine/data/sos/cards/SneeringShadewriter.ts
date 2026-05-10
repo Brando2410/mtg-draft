@@ -27,5 +27,9 @@ export const SneeringShadewriter: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "4b4c120e-abe9-4f11-a7e4-bc3f723da4b2",
+    image_url: "https://cards.scryfall.io/normal/front/4/b/4b4c120e-abe9-4f11-a7e4-bc3f723da4b2.jpg?1775937615",
+    rarity: "common"
 };
+

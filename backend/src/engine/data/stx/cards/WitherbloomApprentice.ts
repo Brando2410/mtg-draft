@@ -18,7 +18,9 @@ export const WitherbloomApprentice: CardDefinition = {
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         }
-    ]
+    ],
+    scryfall_id: "7f80a11b-188b-464c-b00d-c9d1cfb8ddee",
+    image_url: "https://cards.scryfall.io/normal/front/7/f/7f80a11b-188b-464c-b00d-c9d1cfb8ddee.jpg?1624740448",
+    rarity: "uncommon"
 };
-
 

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const EssenceInfusion: CardDefinition = {
     name: 'Essence Infusion',
     manaCost: '{1}{B}',
-    scryfall_id: "71a48d0c-1e5b-43f2-8974-e2e5bb06310d",
-    image_url: "https://cards.scryfall.io/normal/front/7/1/71a48d0c-1e5b-43f2-8974-e2e5bb06310d.jpg?1624590892",
+
     colors: ['B'],
     types: ['Sorcery'],
     oracleText: 'Put two +1/+1 counters on target creature. It gains lifelink until end of turn.',
@@ -17,5 +16,9 @@ export const EssenceInfusion: CardDefinition = {
                 { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'] }
             ]
         }
-    ]
-  };
+    ],
+    scryfall_id: "71a48d0c-1e5b-43f2-8974-e2e5bb06310d",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/71a48d0c-1e5b-43f2-8974-e2e5bb06310d.jpg?1624590892",
+    rarity: "common"
+};
+

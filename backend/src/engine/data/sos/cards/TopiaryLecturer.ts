@@ -33,6 +33,9 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from
         }
     ],
     power: "1",
-    toughness: "2"
+    toughness: "2",
+    scryfall_id: "4f16a1c2-0a80-45e4-b025-3aa0c0b03812",
+    image_url: "https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370",
+    rarity: "uncommon"
 };
-    
+

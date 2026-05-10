@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const GrapplewithDeath: CardDefinition = {
     name: "Grapple with Death",
     manaCost: "{1}{G}{B}",
-    scryfall_id: "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
+
+
     colors: ["G", "B"],
     types: ["Sorcery"],
     subtypes: [],
@@ -30,5 +29,9 @@ export const GrapplewithDeath: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+    image_url: "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
+    rarity: "common"
 };
+

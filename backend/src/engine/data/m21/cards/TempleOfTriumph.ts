@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const TempleOfTriumph: CardDefinition = {
     name: "Temple of Triumph",
     manaCost: "",
-    scryfall_id: "2d776853-1579-4d64-a690-3ae8e26f634b",
-    image_url: "https://cards.scryfall.io/normal/front/2/d/2d776853-1579-4d64-a690-3ae8e26f634b.jpg?1594737867",
+
     oracleText: "Temple of Triumph enters the battlefield tapped.\nWhen Temple of Triumph enters the battlefield, scry 1.\n{T}: Add {R} or {W}.",
     colors: [],
     types: ["Land"],
@@ -29,5 +28,9 @@ export const TempleOfTriumph: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "d0e763f7-25b8-444f-8722-614297d0663f",
+    image_url: "https://cards.scryfall.io/normal/front/d/0/d0e763f7-25b8-444f-8722-614297d0663f.jpg?1775942504",
+    rarity: "rare"
 };
+

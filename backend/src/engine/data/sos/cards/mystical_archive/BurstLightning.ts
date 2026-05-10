@@ -2,10 +2,7 @@ import { CardDefinition } from '@shared/engine_types';
 
 export const BurstLightning: CardDefinition = {
     name: "Burst Lightning",
-    manaCost: "{R}",
-    scryfall_id: "f98b402a-ecdb-432f-a050-65945c8c415d",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/f/9/f98b402a-ecdb-432f-a050-65945c8c415d.jpg?1775936664",
+    manaCost: "{R}",
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -28,5 +25,9 @@ export const BurstLightning: CardDefinition = {
                 }
             ]
         }*/
-    ]
+    ],
+    scryfall_id: "f98b402a-ecdb-432f-a050-65945c8c415d",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f98b402a-ecdb-432f-a050-65945c8c415d.jpg?1775936664",
+    rarity: "uncommon"
 };
+

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
     manaCost: "{W}",
-    scryfall_id: "2970683e-e69c-42cb-a067-34abd56fb42b",
-    rarity: "common",
-    image_url: "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992",
+
+
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -16,7 +15,7 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Rejoinder",
-        image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
+
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],
@@ -43,6 +42,11 @@ export const EliteInterceptorRejoinder: CardDefinition = {
                     { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "2970683e-e69c-42cb-a067-34abd56fb42b",
+    image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
+    rarity: "common"
 };
+

@@ -3,9 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
     manaCost: "{1}{W}",
-    scryfall_id: "1ebaafe0-3a9a-424c-8698-d26e7be45343",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069",
+
+
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Human", "Cleric", "Wizard"],
@@ -29,7 +28,7 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
     ],
     preparedFace: {
         name: "Secret Rendezvous",
-        image_url: "https://cards.scryfall.io/png/front/9/b/9be712b3-14ed-4a73-b3d3-5b76b2c5db64.png?1775940773",
+
         manaCost: "{1}{W}{W}",
         colors: ["W"],
         types: ["Sorcery"],
@@ -54,6 +53,11 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "1ebaafe0-3a9a-424c-8698-d26e7be45343",
+    image_url: "https://cards.scryfall.io/png/front/9/b/9be712b3-14ed-4a73-b3d3-5b76b2c5db64.png?1775940773",
+    rarity: "rare"
 };
+

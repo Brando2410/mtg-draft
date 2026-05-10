@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const BasriDevotedPaladin: CardDefinition = {
     name: "Basri, Devoted Paladin",
     manaCost: "{4}{W}{W}",
-    scryfall_id: "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
-    image_url: "https://cards.scryfall.io/normal/front/2/6/2688b45d-9d74-4d9f-9a63-29c82b48d64f.jpg?1596168674",
+
     oracleText: "+1: Put a +1/+1 counter on up to one target creature. It gains vigilance until end of turn.\n−1: Whenever a creature attacks this turn, put a +1/+1 counter on it.\n−6: Creatures you control get +2/+2 and gain flying until end of turn.",
     colors: ["W"],
     supertypes: ["Legendary"],
@@ -67,5 +66,9 @@ export const BasriDevotedPaladin: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
+    image_url: "https://cards.scryfall.io/normal/front/2/6/2688b45d-9d74-4d9f-9a63-29c82b48d64f.jpg?1596168674",
+    rarity: "mythic"
 };
+

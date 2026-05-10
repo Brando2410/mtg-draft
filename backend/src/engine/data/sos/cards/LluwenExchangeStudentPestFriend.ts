@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
     manaCost: "{2}{B}{G}",
-    scryfall_id: "a0bcb638-c3c8-4973-9537-5c471f43f34f",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382",
     colors: ["B", "G"],
     types: ["Legendary", "Creature"],
     subtypes: ["Elf", "Druid"],
@@ -31,7 +28,6 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
     ],
     preparedFace: {
         name: "Pest Friend",
-        image_url: "https://cards.scryfall.io/png/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.png?1775938382",
         manaCost: "{B/G}",
         colors: ["B", "G"],
         types: ["Sorcery"],
@@ -50,7 +46,7 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
                             power: "1",
                             toughness: "1",
                             oracleText: "Whenever this creature attacks, you gain 1 life.",
-                            image_url: "https://cards.scryfall.io/png/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.png?1682693901",
+                            image_url: "https://cards.scryfall.io/normal/front/4/0/40b22872-7b7b-4a6d-a343-4152e552b00a.jpg?1775828415",
                             abilities: [
                                 {
                                     type: AbilityType.Triggered,
@@ -64,6 +60,11 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
                     }
                 ]
             }
-        ]
-    }
+        ],
+
+    },
+    scryfall_id: "a0bcb638-c3c8-4973-9537-5c471f43f34f",
+    image_url: "https://cards.scryfall.io/png/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.png?1775938382",
+    rarity: "uncommon"
 };
+

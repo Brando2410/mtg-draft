@@ -61,7 +61,9 @@ export const TorrentSculptor: CardDefinition = {
                 ]
             }]
         }
-    ]
+    ],
+    scryfall_id: "87463b68-3642-41c7-a11c-67d524759b60",
+    image_url: "https://cards.scryfall.io/normal/front/8/7/87463b68-3642-41c7-a11c-67d524759b60.jpg?1634060547",
+    rarity: "rare"
 };
-
 

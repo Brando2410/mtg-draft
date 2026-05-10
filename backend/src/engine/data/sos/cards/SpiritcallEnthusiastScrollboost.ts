@@ -49,7 +49,10 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                     }
                 ]
             }
-        ]
-    }
+        ],
+    },
+    scryfall_id: "c0b85569-2cb3-4b64-b0fe-418195c4dab0",
+    image_url: "https://cards.scryfall.io/normal/front/c/0/c0b85569-2cb3-4b64-b0fe-418195c4dab0.jpg?1775937144",
+    rarity: "uncommon"
 };
-    
+

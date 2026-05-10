@@ -2,10 +2,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 
 export const KnockoutManeuver: CardDefinition = {
     name: "Knockout Maneuver",
-    manaCost: "{2}{G}",
-    scryfall_id: "42d90959-b88c-4321-b2af-78ac7aab9909",
-    rarity: "uncommon",
-    image_url: "https://cards.scryfall.io/normal/front/4/2/42d90959-b88c-4321-b2af-78ac7aab9909.jpg?1775936763",
+    manaCost: "{2}{G}",
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],
@@ -42,5 +39,9 @@ export const KnockoutManeuver: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "42d90959-b88c-4321-b2af-78ac7aab9909",
+    image_url: "https://cards.scryfall.io/normal/front/4/2/42d90959-b88c-4321-b2af-78ac7aab9909.jpg?1775936763",
+    rarity: "uncommon"
 };
+

@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
 export const TanazirQuandrix: CardDefinition = {
     name: "Tanazir Quandrix",
     manaCost: "{3}{G}{U}",
-    scryfall_id: "957117fe-ddc9-4c5d-bff8-f74602a24dd8",
-    image_url: "https://cards.scryfall.io/normal/front/9/5/957117fe-ddc9-4c5d-bff8-f74602a24dd8.jpg?1681169173",
+
     colors: ["G", "U"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -33,5 +32,9 @@ export const TanazirQuandrix: CardDefinition = {
                 toughnessSet: DynamicAmount.SourceToughness
             }]
         }
-    ]
+    ],
+    scryfall_id: "194d29be-a145-41f2-a55a-a071816b5551",
+    image_url: "https://cards.scryfall.io/normal/front/1/9/194d29be-a145-41f2-a55a-a071816b5551.jpg?1775941927",
+    rarity: "mythic"
 };
+

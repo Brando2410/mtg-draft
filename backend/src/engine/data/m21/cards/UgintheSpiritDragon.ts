@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const UgintheSpiritDragon: CardDefinition = {
     name: "Ugin, the Spirit Dragon",
     manaCost: "{8}",
-    scryfall_id: "9c017fa9-7021-417a-9c2e-3df409644fcf",
-    image_url: "https://cards.scryfall.io/normal/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1594734662",
+
     oracleText: "+2: Ugin, the Spirit Dragon deals 3 damage to any target.\n−X: Exile each permanent with mana value X or less that's one or more colors.\n−10: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
     colors: [],
     supertypes: ["Legendary"],
@@ -20,7 +19,7 @@ export const UgintheSpiritDragon: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: -999 }], // -X
+            costs: [{ type: CostType.Loyalty, value: -999 }], // -X,
             effects: [
                 {
                     type: EffectType.Exile,
@@ -55,5 +54,9 @@ export const UgintheSpiritDragon: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "9c017fa9-7021-417a-9c2e-3df409644fcf",
+    image_url: "https://cards.scryfall.io/normal/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1639052473",
+    rarity: "mythic"
 };
+

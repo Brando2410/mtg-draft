@@ -27,5 +27,9 @@ export const ShatteredAcolyte: CardDefinition = {
                 type: TargetType.ArtifactOrEnchantment
             }]
         }
-    ]
+    ],
+    scryfall_id: "dc0517ca-b271-49a1-a286-c20f4e5b9309",
+    image_url: "https://cards.scryfall.io/normal/front/d/c/dc0517ca-b271-49a1-a286-c20f4e5b9309.jpg?1775937130",
+    rarity: "common"
 };
+

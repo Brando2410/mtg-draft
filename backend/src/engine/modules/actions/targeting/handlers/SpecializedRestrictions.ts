@@ -8,10 +8,18 @@ import { gameObjectRestriction, isGameObject, isPlayerState, isStackObject } fro
 const FROMHAND: IRestrictionHandler = {
     matches(state, targetObj) {
         if (isGameObject(targetObj)) {
+            // Virtual IDs (v_...) are used in the tray for non-hand cards.
+            // Zaffai's permission is strictly for cards cast from the hand.
+            if (targetObj.id.startsWith('v_') || (targetObj as any).isVirtual) return false;
+            
             if (targetObj.zone === Zone.Hand) return true;
+
+            // For objects already on the stack, check where they came from via LKI
             const processors = getProcessors(state);
             const lki = processors.lki.getLki(state, targetObj.id, Zone.Hand);
-            return !!lki;
+            if (lki) return true;
+            
+            return false;
         }
 
         if (isStackObject(targetObj) && targetObj.sourceObject) {
@@ -21,7 +29,6 @@ const FROMHAND: IRestrictionHandler = {
         return false;
     }
 };
-
 
 export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     "SHARES_COLOR_WITH_SOURCE": gameObjectRestriction((state, obj, r, context) => {
@@ -35,7 +42,9 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
         return false;
     }),
     FROM_HAND: FROMHAND,
+    FROMHAND: FROMHAND,
     CAST_FROM_HAND: FROMHAND,
+    CASTFROMHAND: FROMHAND,
     "MONOCOLORED": gameObjectRestriction((state, obj, r, context) => {
         const { targeting: TP } = getProcessors(state);
         return !!TP.sourceHasQualities(obj, ['monocolored'], state);

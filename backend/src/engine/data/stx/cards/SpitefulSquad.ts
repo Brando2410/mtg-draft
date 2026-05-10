@@ -26,5 +26,9 @@ export const SpitefulSquad: CardDefinition = {
         targetMapping: TargetMapping.Target1
       }]
     }
-  ]
+  ],
+    scryfall_id: "be88355e-c986-4b69-93b4-0abf04916e86",
+    image_url: "https://cards.scryfall.io/normal/front/b/e/be88355e-c986-4b69-93b4-0abf04916e86.jpg?1624740148",
+    rarity: "common"
 };
+

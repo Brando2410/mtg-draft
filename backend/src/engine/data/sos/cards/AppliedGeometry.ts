@@ -3,9 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const AppliedGeometry: CardDefinition = {
     name: "Applied Geometry",
     manaCost: "{2}{G}{U}",
-    scryfall_id: "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180",
     colors: ["G", "U"],
     types: ["Sorcery"],
     subtypes: [],
@@ -36,5 +33,9 @@ export const AppliedGeometry: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
+    image_url: "https://cards.scryfall.io/normal/front/e/1/e147bf7a-ffbe-4ea8-9c3d-0ca02a4cdea5.jpg?1777298350",
+    rarity: "rare"
 };
+

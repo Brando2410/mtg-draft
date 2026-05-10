@@ -2,9 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
 export const AzizaMageTowerCaptain: CardDefinition = {
     name: "Aziza, Mage Tower Captain",
     manaCost: "{R}{W}",
-    scryfall_id: "6261e89a-dbf1-481a-823e-6bb00be57195",
-    rarity: "rare",
-    image_url: "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194",
+
+
     colors: ["R", "W"],
     types: ["Legendary", "Creature"],
     subtypes: ["Djinn", "Sorcerer"],
@@ -47,5 +46,9 @@ export const AzizaMageTowerCaptain: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "6261e89a-dbf1-481a-823e-6bb00be57195",
+    image_url: "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194",
+    rarity: "rare"
 };
+

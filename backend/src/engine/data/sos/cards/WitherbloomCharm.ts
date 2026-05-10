@@ -3,7 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
     manaCost: "{B}{G}",
-    scryfall_id: "71f760e9-b541-477a-b911-45186b520ae1", // placeholder
+ // placeholder,
     colors: ["B", "G"],
     types: ["Instant"],
     oracleText: "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
@@ -62,5 +62,9 @@ export const WitherbloomCharm: CardDefinition = {
 
             ]
         }
-    ]
+    ],
+    scryfall_id: "254437f7-7a8a-4b11-9cea-e8e7ea23c59e",
+    image_url: "https://cards.scryfall.io/normal/front/2/5/254437f7-7a8a-4b11-9cea-e8e7ea23c59e.jpg?1775938703",
+    rarity: "uncommon"
 };
+

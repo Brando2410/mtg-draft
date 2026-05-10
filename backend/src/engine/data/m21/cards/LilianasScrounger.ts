@@ -3,8 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const LilianasScrounger: CardDefinition = {
     name: "Liliana's Scrounger",
     manaCost: "{2}{B}",
-    scryfall_id: "5a64625f-937a-449e-b1fc-cd0f25b033f6",
-    image_url: "https://cards.scryfall.io/normal/front/5/a/5a64625f-937a-449e-b1fc-cd0f25b033f6.jpg?1596250192",
+
     oracleText: "At the beginning of each end step, if a creature died this turn, you may put a loyalty counter on a Liliana planeswalker you control.",
     colors: ["B"],
     types: ["Creature"],
@@ -31,5 +30,9 @@ export const LilianasScrounger: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "5a64625f-937a-449e-b1fc-cd0f25b033f6",
+    image_url: "https://cards.scryfall.io/normal/front/5/a/5a64625f-937a-449e-b1fc-cd0f25b033f6.jpg?1596250192",
+    rarity: "uncommon"
 };
+

@@ -19,6 +19,9 @@ import { CardDefinition } from '@shared/engine_types';
     oracleText: "Reach, haste",
     abilities: [],
     power: "4",
-    toughness: "5"
+    toughness: "5",
+    scryfall_id: "06dd56bd-de92-4202-af31-7e881c34d799",
+    image_url: "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851",
+    rarity: "common"
 };
-    
+

@@ -34,5 +34,9 @@ export const ClaimTheFirstborn: CardDefinition = {
                 }
             ]
         }
-    ]
+    ],
+    scryfall_id: "feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec",
+    image_url: "https://cards.scryfall.io/normal/front/f/e/feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec.jpg?1572490317",
+    rarity: "uncommon"
 };
+
