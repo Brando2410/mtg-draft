@@ -87,7 +87,7 @@ export const GameCard = memo(({
       onMouseLeave={() => onHoverEnd?.(obj.id)}
       onClick={() => onClick?.(obj.id)}
       className={`relative shrink-0 cursor-pointer flex flex-col overflow-hidden [container-type:inline-size] ${dimensions.rounded}
-        ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
+        ${(variant !== 'zoom' && variant !== 'full') ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
         ${(isPlayable && !isOpponent) ? (
