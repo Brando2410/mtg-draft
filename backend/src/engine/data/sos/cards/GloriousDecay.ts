@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const GloriousDecay: CardDefinition = {
     name: "Glorious Decay",
     manaCost: "{1}{G}",
-
-
     colors: ["G"],
     types: ["Instant"],
     subtypes: [],
@@ -12,6 +10,8 @@ export const GloriousDecay: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: "Destroy target artifact",
@@ -66,4 +66,3 @@ export const GloriousDecay: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
     rarity: "common"
 };
-

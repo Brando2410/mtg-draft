@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const ChoreographedSparks: CardDefinition = {
     name: "Choreographed Sparks",
     manaCost: "{R}{R}",
-
-
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -13,7 +11,6 @@ export const ChoreographedSparks: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            isModal: true,
             minChoices: 1,
             maxChoices: 2,
             modes: [
@@ -59,4 +56,3 @@ export const ChoreographedSparks: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707",
     rarity: "rare"
 };
-

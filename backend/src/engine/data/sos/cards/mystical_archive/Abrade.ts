@@ -2,7 +2,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 
 export const Abrade: CardDefinition = {
     name: "Abrade",
-    manaCost: "{1}{R}",
+    manaCost: "{1}{R}",
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],
@@ -12,7 +12,8 @@ export const Abrade: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            isModal: true,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: "Abrade deals 3 damage to target creature",
@@ -48,4 +49,3 @@ export const Abrade: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/c/5/c5bb5307-e874-42c4-b85d-06b9f6c474c8.jpg?1775936634",
     rarity: "uncommon"
 };
-

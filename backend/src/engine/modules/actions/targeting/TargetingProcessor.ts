@@ -97,8 +97,7 @@ export class TargetingProcessor {
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm' || targetId === 'done';
         const isUndoing = targetId === 'undo' || targetId === 'back';
 
-        const selectedTargets = actionData.selectedTargets || [];
-        actionData.selectedTargets = selectedTargets;
+        actionData.selectedTargets = actionData.selectedTargets || [];
         actionData.maxCount = maxCount;
         actionData.minCount = minCount;
         actionData.count = count;
@@ -107,7 +106,7 @@ export class TargetingProcessor {
         const updatePrompt = () => {
             actionData.prompt = TargetingProcessor.generateTargetPrompt(
                 targetDefinitions,
-                selectedTargets.length,
+                actionData.selectedTargets!.length,
                 xValue,
                 meta.isSpellCasting
             );
@@ -115,15 +114,13 @@ export class TargetingProcessor {
         updatePrompt();
 
         if (isUndoing) {
-            if (selectedTargets.length > 0) {
-                const removed = selectedTargets.pop();
+            if (actionData.selectedTargets.length > 0) {
+                const removed = actionData.selectedTargets.pop();
 
                 // Refresh prompt and pool for the NEW index after removing
-                const nextIndex = selectedTargets.length;
+                const nextIndex = actionData.selectedTargets.length;
                 const currentDef = this.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
-                if (currentDef?.label) {
-                    actionData.label = currentDef.label;
-                }
+                actionData.label = currentDef?.label || `Select target for ${meta.stackObj?.name || meta.stackObj?.definition.name || 'this effect'}`;
                 const pool = [
                     ...Object.keys(state.players),
                     ...state.battlefield.map(o => o.id),
@@ -257,9 +254,7 @@ export class TargetingProcessor {
 
                     const newNextIndex = actionData.selectedTargets.length;
                     const newNextDef = TargetingProcessor.getDefinitionForIndex(targetDefinitions, newNextIndex);
-                    if (newNextDef?.label) {
-                        actionData.label = newNextDef.label;
-                    }
+                    actionData.label = newNextDef?.label || `Select target for ${meta.stackObj?.name || meta.stackObj?.definition.name || 'this effect'}`;
 
                     // Refresh targets for the new index
                     const pool = [
@@ -351,9 +346,7 @@ export class TargetingProcessor {
         if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
             const currentDef = this.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
-            if (currentDef?.label) {
-                actionData.label = currentDef.label;
-            }
+            actionData.label = currentDef?.label || `Select target for ${meta.stackObj?.name || meta.stackObj?.definition.name || 'this effect'}`;
             const pool = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map((o) => o.id),
@@ -415,7 +408,7 @@ export class TargetingProcessor {
                 actionData.maxChoices = consecutiveCount;
 
                 // Ensure we keep existing targets for ChoiceProcessor to append to
-                actionData.declaredTargets = selectedTargets.filter((t): t is string => t !== null);
+                actionData.declaredTargets = actionData.selectedTargets.filter((t): t is string => t !== null);
                 return true;
             }
         }
@@ -436,7 +429,8 @@ export class TargetingProcessor {
         const stackObj = (meta.spellCopyRef || meta.stackObj) as StackObject;
 
         const { logger, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
-        console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${meta.isFreeCast}, hasParent=${!!meta.parentContext}, hasStackObj=${!!meta.stackObj}`);
+        const stackIds = state.stack.map(s => s.id).join(', ');
+        logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${meta.isFreeCast}, hasParent=${!!meta.parentContext}, hasStackObj=${!!meta.stackObj}, parentStackId=${meta.parentStackId}, parentSourceId=${meta.parentSourceId}. Stack IDs: [${stackIds}]`);
 
         if (actionData?.isCostChoice && actionData.costType) {
             state.interaction.lastSelections[actionData.costType as string] = resolvedTargets;
@@ -542,10 +536,10 @@ export class TargetingProcessor {
             const savedTargets = [...(meta.targets || []), ...finalTargets];
             const savedEffects = meta.effects || [];
 
-            // If this is a copy, we update the spell copy on the stack
-            if (stackObj && meta.isCopyTargeting) {
+            // If this is a copy or a target change, we update the spell copy on the stack
+            if (stackObj && (meta.isCopyTargeting || meta.isChangeTargeting)) {
                 StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
-                logger.info(state, LogCategory.TARGETING, `[COPY-TARGETING] Updated targets for copy ${stackObj.id}: ${finalTargets.join(', ')}`);
+                logger.info(state, LogCategory.TARGETING, `[${meta.isCopyTargeting ? 'COPY' : 'CHANGE'}-TARGETING] Updated targets for ${stackObj.id}: ${finalTargets.join(', ')}`);
             }
 
             // Legacy stackId handling
@@ -557,16 +551,40 @@ export class TargetingProcessor {
             }
 
             // Resume the current resolution
-            const resumeSourceId = meta.isCopyTargeting ? (meta.parentContext?.sourceId || sourceId!) : (actionData.sourceId || sourceId!);
-            const resumeStackObj = meta.isCopyTargeting ? (meta.parentContext?.stackObject || stackObj) : stackObj;
+            let resumeSourceId = (actionData.sourceId || sourceId!);
+            let resumeStackObj = stackObj;
 
+            if (meta.parentContext || meta.parentStackId || meta.parentSourceId || meta.isCopyTargeting || meta.isChangeTargeting) {
+                const parentId = meta.parentStackId || meta.parentContext?.stackObject?.id;
+                const parentSource = meta.parentSourceId || meta.parentContext?.sourceId;
+                
+                // CRITICAL: Search stack for the parent spell/ability
+                const parentObj = state.stack.find(s => (parentId && s.id === parentId) || (parentSource && s.id === parentSource));
+                
+                logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${!!parentObj}`);
+                
+                if (parentObj || meta.parentContext) {
+                    // Explicitly clear pendingAction so resume can work
+                    state.pendingAction = undefined;
+                    
+                    return ResolutionManager.resume(state, engine, 
+                        parentObj, 
+                        parentSource || parentId, 
+                        meta.parentContext
+                    );
+                } else {
+                    logger.warn(state, LogCategory.TARGETING, `[RESUME-FAIL] Could not find parent object on stack to resume resolution.`);
+                }
+            }
+
+            // Fallback for non-parented resumption (legacy)
             EffectProcessor.resolveEffects({
                 state,
                 context: EffectProcessor.createEngineFrame(state, {
                     sourceId: resumeSourceId,
                     effects: savedEffects,
                     targets: savedTargets,
-                    effectIndex: meta.effectIndex,
+                    effectIndex: (meta.effectIndex !== undefined ? meta.effectIndex + 1 : undefined),
                     isResumption: true,
                     stackObject: resumeStackObj,
                     parentContext: meta.parentContext,

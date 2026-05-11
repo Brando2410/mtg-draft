@@ -31,7 +31,7 @@ export const EagerGlyphmage: CardDefinition = {
         }
     ],
     scryfall_id: "bf736de9-9bc4-49df-ae60-672ed4f83f32",
-    image_url: "https://cards.scryfall.io/normal/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.jpg?1775828515",
+    image_url: "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986",
     rarity: "common"
 };
 

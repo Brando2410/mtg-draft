@@ -207,6 +207,7 @@ export interface EngineFrame {
     isResumption?: boolean;
     effects: EffectDefinition[];
     targets: string[];
+    originalTargets?: string[];
 
     // === Transient Data ===
     castFromZone?: Zone;
@@ -509,7 +510,7 @@ export interface ModalEffect extends BaseEffect {
     allowDuplicates?: boolean;
     choices?: {
         condition?: string | any;
-        costs?: any[];
+        costs?: AbilityCost[];
         effects?: EffectDefinition[];
         label: string;
         targetDefinitions?: TargetDefinition[];

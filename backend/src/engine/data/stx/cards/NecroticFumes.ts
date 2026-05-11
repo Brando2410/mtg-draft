@@ -3,32 +3,15 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const NecroticFumes: CardDefinition = {
     name: 'Necrotic Fumes',
     manaCost: '{1}{B}',
-
     colors: ['B'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
     oracleText: 'As an additional cost to cast this spell, exile a creature you control.\nExile target creature or planeswalker.',
     abilities: [
         {
-            type: AbilityType.Static,
-            activeZone: Zone.Hand,
-            effects: [
-                {
-                    type: EffectType.AdditionalCost,
-                    targetMapping: TargetMapping.Controller,
-                    additionalCosts: [{
-                        type: CostType.Exile,
-                        restrictions: [Restriction.Creature, Restriction.YouControl]
-                    }]
-                }
-            ]
-        },
-        {
             type: AbilityType.Spell,
-            targetDefinitions: [{
-                count: 1,
-                type: TargetType.CreatureOrPlaneswalker
-            }],
+            costs: [{ type: CostType.Exile, amount: 1, restrictions: [Restriction.Creature, Restriction.YouControl] }],
+            targetDefinitions: [{ count: 1, type: TargetType.CreatureOrPlaneswalker }],
             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
         }
     ],

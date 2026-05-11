@@ -69,27 +69,41 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
   ];
 
   // Logic for Pool loading/filtering
+  const poolCards = useMemo(() => {
+    if (!pool) return [];
+    const groups: Record<string, { card: SimplifiedCard, total: number }> = {};
+    pool.forEach(c => {
+      const key = c.name;
+      if (!groups[key]) {
+        groups[key] = { 
+          card: {
+            scryfall_id: c.scryfall_id || c.id,
+            name: c.name,
+            rarity: c.rarity || 'common',
+            color: c.colors || [],
+            image_url: c.image_url || c.image_uris?.normal || '',
+            back_image_url: c.back_image_url,
+            cmc: c.cmc || 0,
+            type_line: c.type_line || '',
+            mana_cost: c.manaCost || c.mana_cost || '',
+            types: c.types || [],
+            supertypes: c.supertypes || [],
+            keywords: c.keywords || []
+          }, 
+          total: 0 
+        };
+      }
+      groups[key].total++;
+    });
+    return Object.values(groups);
+  }, [pool]);
+
   useEffect(() => {
     const loadCards = async () => {
       setIsApiLoading(true);
 
       if (pool) {
-        const poolCards: SimplifiedCard[] = pool.map(c => ({
-          scryfall_id: c.scryfall_id || c.id,
-          name: c.name,
-          rarity: c.rarity || 'common',
-          color: c.colors || [],
-          image_url: c.image_url || c.image_uris?.normal || '',
-          back_image_url: c.back_image_url,
-          cmc: c.cmc || 0,
-          type_line: c.type_line || '',
-          mana_cost: c.manaCost || c.mana_cost || '',
-          types: c.types || [],
-          supertypes: c.supertypes || [],
-          keywords: c.keywords || []
-        }));
-
-        const filtered = poolCards.filter(c => {
+        const filtered = poolCards.filter(({ card: c }) => {
           const matchesName = !addQuery || c.name.toLowerCase().includes(addQuery.toLowerCase());
           const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => c.color.includes(col));
           const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
@@ -97,7 +111,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
           return matchesName && matchesColor && matchesCmc && matchesLand;
         });
 
-        setApiSuggestions(filtered.slice(0, 75));
+        setApiSuggestions(filtered.map(f => f.card).slice(0, 75));
       } else {
         const results = await fetchRegistryCards(addQuery.length >= 2 ? addQuery : undefined);
         const filtered = results.filter(c => {
@@ -117,14 +131,33 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
 
     const timeoutId = setTimeout(loadCards, 300);
     return () => clearTimeout(timeoutId);
-  }, [addQuery, poolFilterColors, poolFilterCmc, poolFilterLand, pool]);
+  }, [addQuery, poolFilterColors, poolFilterCmc, poolFilterLand, pool, poolCards]);
+
+  const getRemainingCount = (cardName: string) => {
+    if (!pool) return Infinity; // No pool means infinite (e.g. admin mode)
+    const isBasic = basicLands.some(l => l.name === cardName);
+    if (isBasic) return Infinity;
+
+    const totalInPool = poolCards.find(p => p.card.name === cardName)?.total || 0;
+    const inDeck = deckCards.filter(c => c.name === cardName).length;
+    const inSideboard = sideboardCards.filter(c => c.name === cardName).length;
+    return totalInPool - (inDeck + inSideboard);
+  };
 
   const handleAddCard = async (cardName: string) => {
+    if (getRemainingCount(cardName) <= 0) return;
+
     setIsApiLoading(true);
-    const results = await fetchRegistryCards(cardName);
-    const match = results.find(c => c.name.toLowerCase() === cardName.toLowerCase());
-    if (match) {
-      setDeckCards(prev => [...prev, mapRegistryToSimplified(match)]);
+    // Optimization: If card is in pool, use that instead of fetching
+    const poolMatch = poolCards.find(p => p.card.name === cardName);
+    if (poolMatch) {
+      setDeckCards(prev => [...prev, poolMatch.card]);
+    } else {
+      const results = await fetchRegistryCards(cardName);
+      const match = results.find(c => c.name.toLowerCase() === cardName.toLowerCase());
+      if (match) {
+        setDeckCards(prev => [...prev, mapRegistryToSimplified(match)]);
+      }
     }
     setIsApiLoading(false);
   };
@@ -296,18 +329,42 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
         <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e12] to-[#0a0a0c] pointer-events-none" />
         <div className="relative h-full overflow-y-auto overflow-x-hidden custom-scrollbar p-3">
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-14 gap-2 content-start">
-            {apiSuggestions.map((card, i) => (
-              <button
-                key={card.scryfall_id + '-' + i}
-                onClick={() => {
-                  setDeckCards(prev => [...prev, card]);
-                }}
-                onContextMenu={(e) => { e.preventDefault(); setZoomCard({ card, flipped: false }); }}
-                className="relative aspect-[2.5/3.5] rounded-lg overflow-hidden shadow-xl border border-white/10 hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] active:scale-95 transition-all group"
-              >
-                <PoolCardImage card={card} />
-              </button>
-            ))}
+            {apiSuggestions.map((card, i) => {
+              const remaining = getRemainingCount(card.name);
+              const total = poolCards.find(p => p.card.name === card.name)?.total || 0;
+              const isAvailable = remaining > 0;
+
+              return (
+                <button
+                  key={card.scryfall_id + '-' + i}
+                  onClick={() => {
+                    if (isAvailable) {
+                      setDeckCards(prev => [...prev, card]);
+                    }
+                  }}
+                  onContextMenu={(e) => { e.preventDefault(); setZoomCard({ card, flipped: false }); }}
+                  className={`relative aspect-[2.5/3.5] rounded-lg overflow-hidden shadow-xl border transition-all group
+                    ${isAvailable ? 'border-white/10 hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] cursor-pointer active:scale-95' : 'border-white/5 opacity-40 grayscale cursor-not-allowed'}
+                  `}
+                  disabled={!isAvailable}
+                >
+                  <PoolCardImage card={card} />
+                  
+                  {/* COUNT BADGE */}
+                  {pool && total > 1 && (
+                    <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/80 backdrop-blur-md rounded border border-white/20 text-[10px] font-black text-white">
+                      {remaining} / {total}
+                    </div>
+                  )}
+
+                  {!isAvailable && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="px-2 py-1 bg-black/80 rounded text-[8px] font-black uppercase text-white/50 tracking-widest border border-white/5">Maxed</div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
             {apiSuggestions.length === 0 && !isApiLoading && (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 gap-3 py-12">
                 <Search className="w-10 h-10 opacity-15" />

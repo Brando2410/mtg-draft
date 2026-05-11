@@ -13,17 +13,12 @@ export const Goremand: CardDefinition = {
     keywords: ["Flying", "Trample"],
     abilities: [
         {
-            type: AbilityType.Static,
-            effects: [
-                {
-                    type: EffectType.AdditionalCost,
-                    targetMapping: TargetMapping.Self,
-                    additionalCosts: [{
-                        type: CostType.Sacrifice,
-                        restrictions: [Restriction.Creature]
-                    }]
-                }
-            ]
+            type: AbilityType.Spell,
+            costs: [{
+                type: CostType.Sacrifice,
+                restrictions: [Restriction.Creature],
+                amount: 1
+            }]
         },
         {
             type: AbilityType.Triggered,

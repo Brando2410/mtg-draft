@@ -3,13 +3,14 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
     manaCost: "{B}{G}",
- // placeholder,
     colors: ["B", "G"],
     types: ["Instant"],
     oracleText: "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: "You may sacrifice a permanent. If you do, draw two cards.",

@@ -18,6 +18,7 @@ export interface TargetingDispatchOptions {
     abilityIndex?: number;
     preSelectedChoice?: number;
     isCopyTargeting?: boolean;
+    isChangeTargeting?: boolean;
 }
 
 export class TargetingDispatcher {
@@ -31,7 +32,7 @@ export class TargetingDispatcher {
      * - `string[]` of targets if targeting is automatically completed or skipped
      */
     public static dispatchTargetingStep(options: TargetingDispatchOptions): boolean | string[] {
-        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting } = options;
+        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting, isChangeTargeting } = options;
         const { logger } = getProcessors(state);
 
         const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
@@ -47,9 +48,11 @@ export class TargetingDispatcher {
         const legalPool = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
             sourceId: sourceObj.id,
             controllerId: sourceObj.controllerId || playerId,
+            stackObject: RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined,
             targetDefinitions: targetDefinitions,
-            targetIndex: nextIndex
-            , effects: [], targets: []
+            targetIndex: nextIndex,
+            effects: [],
+            targets: []
         }, tid));
 
         logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalPool.length} legal targets for slot ${nextIndex} of ${sourceObj.definition.name}: [${legalPool.join(', ')}]`);
@@ -72,9 +75,11 @@ export class TargetingDispatcher {
             const secondaryPool = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: sourceObj.id,
                 controllerId: sourceObj.controllerId || playerId,
+                stackObject: RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined,
                 targetDefinitions: targetDefinitions,
-                targetIndex: autoSelected.length
-                , effects: [], targets: []
+                targetIndex: autoSelected.length,
+                effects: [],
+                targets: []
             }, tid));
 
             const nextCounts = TargetingProcessor.getCountsForDefinition(nextDefAfterAuto, xValue);
@@ -95,13 +100,17 @@ export class TargetingDispatcher {
                         exileOnResolution,
                         xValue,
                         parentContext,
+                        parentSourceId: parentContext?.sourceId,
+                        parentStackId: parentContext?.stackObject?.id,
                         abilityIndex,
                         preSelectedChoice,
                         isCopyTargeting,
-                        stackObj: sourceObj.zone === Zone.Stack ? (sourceObj as StackObject) : undefined,
-                        spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                        isChangeTargeting,
+                        effectIndex: parentContext?.effectIndex,
+                        stackObj: RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined,
+                        spellCopyRef: (isCopyTargeting || parentContext) && RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined
                     },
-                    stackId: sourceObj.zone === Zone.Stack ? sourceObj.id : undefined,
+                    stackId: RuleUtils.isStackObject(sourceObj) ? sourceObj.id : undefined,
                     maxCount: nextCounts.maxCount,
                     minCount: nextCounts.minCount,
                     count: nextCounts.count,
@@ -183,7 +192,7 @@ export class TargetingDispatcher {
                 return {
                     label: (RuleUtils.isEntity(obj) ? (obj.definition.name || 'Unknown') : (RuleUtils.isPlayer(obj) ? obj.name : id)),
                     value: id,
-                    cardData: obj as any,
+                    cardData: RuleUtils.isEntity(obj) ? obj : undefined,
                     selectable: true
                 };
             });
@@ -205,10 +214,13 @@ export class TargetingDispatcher {
                         exileOnResolution,
                         xValue,
                         parentContext,
+                        parentSourceId: parentContext?.sourceId,
+                        parentStackId: parentContext?.stackObject?.id,
                         abilityIndex,
                         preSelectedChoice,
                         isCopyTargeting,
-                        spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                        effectIndex: parentContext?.effectIndex,
+                        spellCopyRef: (isCopyTargeting || parentContext) && RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined
                     }
                 }
             };
@@ -233,13 +245,17 @@ export class TargetingDispatcher {
                     exileOnResolution,
                     xValue,
                     parentContext,
+                    parentSourceId: parentContext?.sourceId,
+                    parentStackId: parentContext?.stackObject?.id,
                     abilityIndex,
                     preSelectedChoice,
                     isCopyTargeting,
-                    stackObj: (sourceObj as any).zone === Zone.Stack ? (sourceObj as StackObject) : undefined,
-                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
+                    isChangeTargeting,
+                    effectIndex: parentContext?.effectIndex, // Pass effectIndex for resolution resumption
+                    stackObj: RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined,
+                    spellCopyRef: (isCopyTargeting || parentContext) && RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined
                 },
-                stackId: (sourceObj as any).zone === Zone.Stack ? sourceObj.id : undefined,
+                stackId: RuleUtils.isStackObject(sourceObj) ? sourceObj.id : undefined,
                 maxCount: stepCounts.maxCount,
                 minCount: stepCounts.minCount,
                 count: stepCounts.count,

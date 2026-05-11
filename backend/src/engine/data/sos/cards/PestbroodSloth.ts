@@ -46,7 +46,7 @@ export const PestbroodSloth: CardDefinition = {
         }
     ],
     scryfall_id: "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
-    image_url: "https://cards.scryfall.io/normal/front/4/0/40b22872-7b7b-4a6d-a343-4152e552b00a.jpg?1775828415",
+    image_url: "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073",
     rarity: "uncommon"
 };
 

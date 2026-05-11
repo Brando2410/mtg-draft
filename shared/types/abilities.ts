@@ -324,6 +324,12 @@ export interface AbilityMode {
     effects: EffectDefinition[];
     /** Targets required for this specific mode */
     targetDefinitions?: TargetDefinition[];
+    /** Costs required specifically for this mode (e.g. Overload, Kicker) */
+    costs?: AbilityCost[];
+    /** Costs that must be paid in addition to the primary cost (Rule 601.2f) */
+    additionalCosts?: AbilityCost[];
+    /** If true, the costs defined here replace the card's base mana cost (e.g. Overload) */
+    isAlternativeCost?: boolean;
     /** UI label for the mode choice */
     label?: string;
     /** Condition for this mode to be selectable */

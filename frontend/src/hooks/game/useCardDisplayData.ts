@@ -9,6 +9,11 @@ export const useCardDisplayData = (obj: GameObject, variant: string) => {
     let name = definition.name;
     let manaCost = effectiveStats?.manaCost || definition.manaCost;
 
+    const isLand = definition.types?.includes('Land');
+    if (isLand) {
+      manaCost = '';
+    }
+
     // Handle Prepared face
     if (isPrepared && definition.preparedFace) {
       imageUrl = definition.preparedFace.image_url || imageUrl;

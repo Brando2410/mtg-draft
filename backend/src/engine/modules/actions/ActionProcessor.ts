@@ -341,7 +341,10 @@ export class ActionProcessor {
 
     // Rule 113.7a: Abilities on the stack exist independently of their source.
     state.stack = state.stack.filter((s) => {
-      if (s.id === realId || s.id === virtualId) {
+      const isMatch = s.id === realId || s.id === virtualId;
+      const isSpellSourceMatch = s.type === AbilityType.Spell && (s.sourceId === realId || s.sourceId === virtualId);
+      
+      if (isMatch || isSpellSourceMatch) {
         this.updateEntityCache(state, s, true);
         return false;
       }

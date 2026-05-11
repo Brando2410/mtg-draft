@@ -9,6 +9,7 @@ import {
     EffectDefinition
 } from '@shared/engine_types';
 import { oracle } from '../OracleLogicMap';
+import { TargetMapper } from '../modules/actions/targeting/TargetMapper';
 
 /**
  * RegistryUtils: Centralized logic for interpreting card definitions and merging Oracle data.
@@ -86,7 +87,7 @@ export class RegistryUtils {
                 ('abilities' in obj.definition ? (obj.definition.abilities || []).find((a: AbilityDefinition | string): a is AbilityDefinition => typeof a !== 'string' && !!a.modes) : undefined));
 
             if (modalAbility?.modes) {
-                const indices = Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex];
+                const indices = [...(Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex])].sort((a, b) => Number(a) - Number(b));
                 const combinedTargets: TargetDefinition[] = [];
                 const combinedEffects: EffectDefinition[] = [];
 
@@ -96,7 +97,10 @@ export class RegistryUtils {
                     if (!mode) return;
 
                     if (mode.targetDefinitions) {
-                        const modeTargets = Array.isArray(mode.targetDefinitions) ? mode.targetDefinitions : [mode.targetDefinitions];
+                        const modeTargets = (Array.isArray(mode.targetDefinitions) ? mode.targetDefinitions : [mode.targetDefinitions])
+                            .map(td => ({
+                                ...td
+                            }));
                         combinedTargets.push(...modeTargets);
                     }
 
@@ -113,9 +117,8 @@ export class RegistryUtils {
                     // Note: xValue is handled during finalization, here we just need the structure
                     if (mode.targetDefinitions) {
                         const modeTargets = Array.isArray(mode.targetDefinitions) ? mode.targetDefinitions : [mode.targetDefinitions];
-                        // We use 0 as a default for structural offset calculation
-                        // Actual resolution will re-calculate counts if X is involved
-                        currentTargetOffset += modeTargets.length; 
+                        const counts = TargetMapper.calculateTotalCounts(modeTargets, obj.xValue || 0);
+                        currentTargetOffset += counts.maxCount;
                     }
                 });
 

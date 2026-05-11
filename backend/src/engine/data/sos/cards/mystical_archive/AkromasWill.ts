@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
 
 export const AkromasWill: CardDefinition = {
     name: "Akroma's Will",
@@ -7,45 +7,43 @@ export const AkromasWill: CardDefinition = {
     colors: ["W"],
     types: ["Instant"],
     abilities: [
-        /*    {
-                type: AbilityType.Spell,
-                chooseBothCondition: ConditionType.CONTROLS_COMMANDER,
-                modes: [
-                    {
-                        label: "Flying, vigilance, and double strike",
-                        effects: [
-                            {
-                                type: EffectType.ApplyContinuousEffect,
-                                targetMapping: TargetMapping.ControlledCreatures,
-                                abilitiesToAdd: ["Flying", "Vigilance", "Double strike"],
-                                duration: { type: DurationType.UntilEndOfTurn }
-                            }
-                        ]
-                    },
-                    {
-                        label: "Lifelink, indestructible, and protection",
-                        effects: [
-                            {
-                                type: EffectType.ApplyContinuousEffect,
-                                targetMapping: TargetMapping.ControlledCreatures,
-                                abilitiesToAdd: [
-                                    "Lifelink", 
-                                    "Indestructible",
-                                    "Protection from white",
-                                    "Protection from blue",
-                                    "Protection from black",
-                                    "Protection from red",
-                                    "Protection from green"
-                                ],
-                                duration: { type: DurationType.UntilEndOfTurn }
-                            }
-                        ]
-                    }
-                ]
-            }*/
+        {
+            type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
+            chooseBothCondition: ConditionType.CONTROLS_COMMANDER,
+            modes: [
+                {
+                    label: "Flying, vigilance, and double strike",
+                    effects: [
+                        {
+                            type: EffectType.ApplyContinuousEffect,
+                            targetMapping: TargetMapping.AllCreaturesYouControl,
+                            keywordsToAdd: ["Flying", "Vigilance", "Double Strike"],
+                            duration: { type: DurationType.UntilEndOfTurn }
+                        }
+                    ]
+                },
+                {
+                    label: "Lifelink, indestructible, and protection",
+                    effects: [
+                        {
+                            type: EffectType.ApplyContinuousEffect,
+                            targetMapping: TargetMapping.AllCreaturesYouControl,
+                            keywordsToAdd: [
+                                "Lifelink",
+                                "Indestructible"
+                            ],
+                            // Special handling for protection would ideally be keywords too
+                            // but for now we stick to standard ones
+                            duration: { type: DurationType.UntilEndOfTurn }
+                        }
+                    ]
+                }
+            ]
+        }
     ],
     scryfall_id: "608cdbdb-6f7e-438a-bab0-0e7782435f0f",
     image_url: "https://cards.scryfall.io/normal/front/6/0/608cdbdb-6f7e-438a-bab0-0e7782435f0f.jpg?1698988079",
     rarity: "rare"
 };
-

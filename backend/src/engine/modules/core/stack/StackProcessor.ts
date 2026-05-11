@@ -78,6 +78,9 @@ export class StackProcessor {
         } else {
           logger.info(state, LogCategory.STACK, `[STACK-EMPTY] The stack is now empty.`);
         }
+        
+        // CR 117.3b: The active player receives priority after a spell or ability resolves.
+        engine.resetPriorityToActivePlayer();
       }
     } else {
       // CR 117.4: Only advance the step if ALL players have passed in succession.
@@ -117,6 +120,7 @@ export class StackProcessor {
     const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
     if (!isAlreadyOnStack) {
       state.stack.push(stackObj);
+      state.isSticky = true;
       getProcessors(state).action.updateEntityCache(state, stackObj);
       return true;
     }

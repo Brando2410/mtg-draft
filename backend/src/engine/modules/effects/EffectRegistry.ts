@@ -18,7 +18,7 @@ import {
   UntapHandler
 } from "./handlers/permanent/PermanentEffects";
 import { AdNauseamHandler, ApproachOfTheSecondSunHandler, CastSpellHandler, ChaosWarpHandler, ConditionalEffectHandler, ExileTopCardsExcessDamageHandler } from "./handlers/specialized/SpecializedEffects";
-import { CopyAbilityHandler, CopySpellHandler, CounterAbilityHandler, CounterSpellHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
+import { ChangeTargetHandler, CopyAbilityHandler, CopySpellHandler, CounterAbilityHandler, CounterSpellHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
 import { ChoiceHandler, LearnHandler } from "./handlers/system/ChoiceEffects";
 import { ContinuousEffectHandler } from "./handlers/system/ContinuousEffects";
 import { ControlEffectsHandler } from "./handlers/system/ControlEffects";
@@ -99,6 +99,7 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.CounterSpellOrAbility]: CounterSpellOrAbilityHandler,
     [EffectType.CopySpellOnStack]: CopySpellHandler,
     [EffectType.CopyAbility]: CopyAbilityHandler,
+    [EffectType.ChangeTarget]: ChangeTargetHandler,
 
     // Control & Systems
     [EffectType.EndTurn]: ControlEffectsHandler,

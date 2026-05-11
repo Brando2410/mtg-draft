@@ -195,6 +195,7 @@ function App() {
 
         {activeView === 'drafting' && room && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+            {/* 1. Deckbuilding / Sealed Drafting Phase */}
             {room.status === 'deckbuilding' || (room.rules.isSealed && room.status === 'drafting') ? (
                <DeckBuilder 
                  onBack={() => setActiveView('menu')}
@@ -203,38 +204,42 @@ function App() {
                    socket?.emit('ready_with_deck', { roomId: room.id, playerId, deck });
                  }}
                />
-            ) : room.status === 'tournament' && spectatedMatchIndex === null ? (
-               <TournamentBracket 
-                  room={room}
-                  playerId={playerId}
-                  onBack={() => setActiveView('menu')}
-                  onJoinMatch={() => {
-                     setSpectatedMatchIndex(null); 
-                     // We don't really need a socket event to "join", 
-                     // we just need to render GameView with that match index.
-                  }}
-                  onSpectate={(idx) => {
-                     setSpectatedMatchIndex(idx);
-                  }}
-               />
-            ) : (room.isNormalMatch || (room.status === 'tournament' && (spectatedMatchIndex !== null || room.matches?.some(m => m.players.includes(playerId))))) ? (
+            ) : room.status === 'tournament' ? (
+               /* 2. Tournament Mode: Always show bracket unless a match is specifically selected */
+               spectatedMatchIndex !== null || (room.matches?.some(m => m.players.includes(playerId)) && spectatedMatchIndex !== null) ? (
+                 <GameView 
+                   room={room} 
+                   playerId={playerId} 
+                   customGameState={spectatedMatchIndex !== null ? room.matches?.[spectatedMatchIndex]?.engineState : room.matches?.find(m => m.players.includes(playerId))?.engineState}
+                 />
+               ) : (
+                 <TournamentBracket 
+                    room={room}
+                    playerId={playerId}
+                    onBack={() => setActiveView('menu')}
+                    onJoinMatch={(idx) => {
+                       const match = room.matches?.[idx];
+                       if (match?.status === 'pending') {
+                          socket?.emit('join_tournament_match', { roomId: room.id, playerId, matchIndex: idx });
+                       } else if (match?.status === 'active') {
+                          setSpectatedMatchIndex(idx);
+                       }
+                    }}
+                    onSpectate={(idx) => {
+                       socket?.emit('spectate_tournament_match', { roomId: room.id, playerId, matchIndex: idx });
+                       setSpectatedMatchIndex(idx);
+                    }}
+                 />
+               )
+            ) : (room.isNormalMatch || (room.status === 'active' && room.matches?.some(m => m.players.includes(playerId)))) ? (
+               /* 3. Normal Match / Direct Action */
                <GameView 
                  room={room} 
                  playerId={playerId} 
-                 customGameState={spectatedMatchIndex !== null ? room.matches?.[spectatedMatchIndex]?.engineState : room.matches?.find(m => m.players.includes(playerId))?.engineState}
-                 onBack={() => {
-                    if (spectatedMatchIndex !== null) {
-                       setSpectatedMatchIndex(null);
-                    } else if (room.status === 'tournament' && room.matches?.some(m => m.players.includes(playerId))) {
-                       // If I was in my own match, go back to bracket
-                       // Or if I want to leave the tournament?
-                       setActiveView('menu');
-                    } else {
-                       setActiveView('menu');
-                    }
-                 }} 
+                 customGameState={room.matches?.find(m => m.players.includes(playerId))?.engineState || room.gameState}
                />
             ) : (
+               /* 4. Drafting Pack Phase */
                <DraftPackView
                   room={room}
                   playerId={playerId}

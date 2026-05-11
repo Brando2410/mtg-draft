@@ -18,19 +18,21 @@ export const MoseoVeinsNewDean: CardDefinition = {
                 {
                     type: EffectType.CreateToken,
                     amount: 1,
+                    targetMapping: TargetMapping.Controller,
                     tokenBlueprint: {
                         name: 'Pest',
                         colors: ['B', 'G'],
                         types: ['Creature'],
                         subtypes: ['Pest'],
-                        power: 1,
-                        toughness: 1,
+                        power: "1",
+                        toughness: "1",
                         oracleText: "Whenever this token attacks, you gain 1 life.",
                         image_url: "https://cards.scryfall.io/normal/front/b/a/ba854032-6ad2-4654-990a-64006e7f92fd.jpg?1777982237",
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.Attack,
+                                condition: ConditionType.SelfAttacks,
                                 effects: [{
                                     type: EffectType.GainLife,
                                     amount: 1,

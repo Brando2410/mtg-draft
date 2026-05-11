@@ -2,7 +2,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 
 export const PickYourPoison: CardDefinition = {
     name: "Pick Your Poison",
-    manaCost: "{G}",
+    manaCost: "{G}",
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],
@@ -12,7 +12,8 @@ export const PickYourPoison: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            isModal: true,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: "Each opponent sacrifices an artifact",
@@ -54,4 +55,3 @@ export const PickYourPoison: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/a/1/a11f1013-d747-4cf2-bbf5-0bd68a949ddf.jpg?1775936770",
     rarity: "uncommon"
 };
-

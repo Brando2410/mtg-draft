@@ -107,7 +107,7 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
                           <div className="transition-transform duration-200 hover:scale-[1.02] pointer-events-none group-hover:drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
                             <GameCard 
                                 obj={obj} 
-                                variant="battlefield" 
+                                variant="small" 
                                 damagePreview={damageDealt}
                                 isTargetable={isLethal} // Visual hint
                             />

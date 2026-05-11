@@ -1,9 +1,8 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
     manaCost: "{1}{W}{B}{B}",
-
     colors: ["W", "B"],
     supertypes: ["Legendary"],
     types: ["Creature"],
@@ -44,8 +43,31 @@ export const ExtusOriqOverlord: CardDefinition = {
             manaCost: "{6}{B}{R}",
             colors: ["B", "R"],
             types: ["Sorcery"],
+            image_url: "https://cards.scryfall.io/normal/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
             oracleText: "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way. Each opponent sacrifices a creature. Create a 3/6 black and red Avatar creature token with haste and 'Whenever this creature attacks, it deals 3 damage to each opponent.'",
             abilities: [
+                {
+                    type: AbilityType.Static,
+                    effects: [
+                        {
+                            type: EffectType.AdditionalCost,
+                            targetMapping: TargetMapping.Self,
+                            additionalCosts: [{
+                                type: CostType.Sacrifice,
+                                amount: 'ANY',
+                                restrictions: [Restriction.Creature, Restriction.YouControl]
+                            }]
+                        },
+                        {
+                            type: EffectType.CostReduction,
+                            targetMapping: TargetMapping.Self,
+                            reductionAmount: {
+                                type: 'SCRIPT',
+                                resolver: (state: any) => (state.interaction.lastSelections[CostType.Sacrifice]?.length || 0) * 2
+                            } as any
+                        }
+                    ]
+                },
                 {
                     type: AbilityType.Spell,
                     effects: [

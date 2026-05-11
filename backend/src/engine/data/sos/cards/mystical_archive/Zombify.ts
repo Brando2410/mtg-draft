@@ -2,7 +2,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetType } from
 
 export const Zombify: CardDefinition = {
     name: "Zombify",
-    manaCost: "{3}{B}",
+    manaCost: "{3}{B}",
     colors: ["B"],
     types: ["Sorcery"],
     subtypes: [],
@@ -25,7 +25,7 @@ export const Zombify: CardDefinition = {
         }
     ],
     scryfall_id: "89c89498-842c-4972-8822-26156e791f42",
-    image_url: "https://cards.scryfall.io/normal/front/8/9/89c89498-842c-4972-8822-26156e791f42.jpg?1775936633",
+    image_url: "https://cards.scryfall.io/normal/front/d/c/dc798e6f-13c4-457c-b052-b7b65bc83cfe.jpg?1730489291",
     rarity: "uncommon"
 };
 

@@ -211,6 +211,10 @@ export class ChoiceGenerator {
             effects: []
         }, [currentPlayerId]));
 
+        if (resolvedAmount === 0) {
+            return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, onFailureEffects);
+        }
+
         const isAny = resolvedAmount === 'ANY';
         const isAll = resolvedAmount === 'ALL';
         const discardAmount = isAll || isAny ? player.hand.length : (typeof resolvedAmount === 'number' ? Math.min(player.hand.length, resolvedAmount) : 1);

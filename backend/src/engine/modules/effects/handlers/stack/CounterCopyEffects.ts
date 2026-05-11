@@ -67,20 +67,13 @@ export const CopySpellHandler: IEffectHandler = {
             copy.isCopy = true;
             copy.controllerId = controllerId;
 
-            // DEBUG LOGGING: Full state capture
-            logger.info(state, LogCategory.ACTION, `[COPY-DEBUG] Original Spell: ${stackObj.name} (ID: ${stackObj.id})`);
-            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Original Properties: ${JSON.stringify({
-                effects: stackObj.effects?.length,
-                targetDefinitions: !!stackObj.targetDefinitions,
-                targets: stackObj.targets,
-                xValue: stackObj.xValue,
-                data: Object.keys(stackObj.data || {})
-            })}`);
-
-            // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
             if (copy.sourceObject) {
-                copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-                copy.sourceId = copy.sourceObject.id;
+                // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
+                // Only do this for spells; abilities should keep their source permanent's identity for restrictions.
+                if (copy.type === 'Spell') {
+                    copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                    copy.sourceId = copy.sourceObject.id;
+                }
 
                 // Allow overriding legend status (Double Major)
                 if (copyEffect.isLegendary === false) {
@@ -91,23 +84,29 @@ export const CopySpellHandler: IEffectHandler = {
                         type_line: copy.sourceObject.definition.type_line?.replace(/Legendary /i, '')
                     };
                 }
+
+                if (copyEffect.abilitiesToAdd) {
+                    copy.sourceObject.definition = {
+                        ...copy.sourceObject.definition,
+                        abilities: [...(copy.sourceObject.definition.abilities || []), ...copyEffect.abilitiesToAdd]
+                    };
+                }
+
+                if (copyEffect.keywordsToAdd) {
+                    copy.sourceObject.definition = {
+                        ...copy.sourceObject.definition,
+                        keywords: [...(copy.sourceObject.definition.keywords || []), ...copyEffect.keywordsToAdd]
+                    };
+                }
             }
 
-            if (copyEffect.abilitiesToAdd && copy.sourceObject) {
-                copy.sourceObject.definition = {
-                    ...copy.sourceObject.definition,
-                    abilities: [...(copy.sourceObject.definition.abilities || []), ...copyEffect.abilitiesToAdd]
-                };
-            }
-            if (copyEffect.keywordsToAdd && copy.sourceObject) {
-                copy.sourceObject.definition = {
-                    ...copy.sourceObject.definition,
-                    keywords: [...(copy.sourceObject.definition.keywords || []), ...copyEffect.keywordsToAdd]
-                };
-            }
+            // Explicitly reset effectIndex for the copy to ensure it resolves from the beginning
+            copy.effectIndex = 0;
+            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Initialized copy effectIndex: ${copy.effectIndex}`);
 
             copy.name = `Copy of ${stackObj.name || stackObj.sourceObject?.definition.name || 'Spell'}`;
             state.stack.push(copy);
+            getProcessors(state).action.updateEntityCache(state, copy);
             logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.sourceObject?.definition.name || 'spell'}. (New ID: ${copy.id})`);
             logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Copy Root Effects: ${copy.effects?.length || 0}`);
 
@@ -167,9 +166,15 @@ export const CopySpellHandler: IEffectHandler = {
                         if (Array.isArray(targetingResult)) {
                             copy.targets = targetingResult;
                         } else if (state.pendingAction && state.pendingAction.data) {
-                            // Ensure the engine knows this targeting is for a copy to avoid ID mismatch blocks
-                            if (!state.pendingAction.data.metadata) state.pendingAction.data.metadata = {};
-                            state.pendingAction.data.metadata.isCopyTargeting = true;
+                            const data = state.pendingAction.data as import("@shared/engine_types").TargetingActionData;
+                            if (!data.metadata) data.metadata = {};
+                            data.metadata.isCopyTargeting = true;
+                            data.metadata.parentSourceId = context.sourceId; // Store parent ID explicitly
+                            data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
+                            data.metadata.effectIndex = context.effectIndex;
+                            data._backupTargets = backupTargets;
+                            
+                            logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata for spell copy. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);
                         }
                     }
                 }
@@ -192,47 +197,50 @@ export const CopyAbilityHandler: IEffectHandler = {
             const copy = JSON.parse(JSON.stringify(stackObj)) as StackObject;
             copy.id = copyId;
             copy.controllerId = controllerId;
+            copy.sourceId = stackObj.sourceId; // Explicitly set sourceId
+            copy.sourceObject = RuleUtils.findObject(state, stackObj.sourceId) as GameObject;
             copy.isCopy = true;
 
             state.stack.push(copy);
-            logger.info(state, LogCategory.ACTION, `[COPY] Copied ability for ${state.players[controllerId].name}.`);
+            getProcessors(state).action.updateEntityCache(state, copy); // CRITICAL: Update cache so RuleUtils.findObject works
+            logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ability. SourceId: ${copy.sourceId}, isCopy: ${copy.isCopy}`);
 
             if (copyEffect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                 const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
-                if (targetDefinitions) {
-                    const pool = [
-                        ...Object.keys(state.players),
-                        ...state.battlefield.map((o: GameObject) => o.id)
-                    ];
-                    const legalTargetIds = pool.filter((tid: string) => TP.isLegalTarget(state, {
-                        sourceId: copy.id,
-                        controllerId: copy.controllerId,
-                        stackObject: copy,
-                        targetDefinitions,
-                        effects: [],
-                        targets: []
-                    }, tid));
+                if (targetDefinitions && targetDefinitions.length > 0) {
+                    const backupTargets = [...(copy.targets || [])];
 
-                    if (legalTargetIds.length > 0) {
-                        state.pendingAction = {
-                            type: ActionType.Targeting,
-                            playerId: controllerId,
-                            sourceId: copy.id,
-                            data: {
-                                label: "ChooseNewTargets",
-                                metadata: {
-                                    isCopyTargeting: true,
-                                    stackObj: copy,
-                                    parentContext: context
-                                },
-                                stackId: copy.id,
-                                targetDefinitions: targetDefinitions,
-                                targets: legalTargetIds,
-                                selectedTargets: [],
-                                optional: true,
-                                originalTargets: [...copy.targets],
-                            }
-                        };
+                    // CLEAR TARGETS for the re-selection phase
+                    copy.targets = [];
+                    copy.targetsControllers = [];
+
+                    // Reset effectIndex for the copy to ensure it resolves from the beginning
+                    copy.effectIndex = 0;
+
+                    const targetingResult = TargetingDispatcher.dispatchTargetingStep({
+                        state,
+                        playerId: controllerId,
+                        sourceObj: copy,
+                        targetDefinitions,
+                        existingTargets: [],
+                        xValue: copy.xValue || 0,
+                        isSpellCasting: true,
+                        isCopyTargeting: true,
+                        parentContext: context
+                    });
+
+                    if (Array.isArray(targetingResult)) {
+                        copy.targets = targetingResult;
+                    } else if (state.pendingAction && state.pendingAction.data) {
+                        const data = state.pendingAction.data as import("@shared/engine_types").TargetingActionData;
+                        if (!data.metadata) data.metadata = {};
+                        data.metadata.isCopyTargeting = true;
+                        data.metadata.parentSourceId = context.sourceId; // Store parent ID explicitly
+                        data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
+                        data.metadata.effectIndex = context.effectIndex;
+                        data._backupTargets = backupTargets;
+                        
+                        logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);
                     }
                 }
             }
@@ -256,6 +264,58 @@ export const CounterSpellOrAbilityHandler: IEffectHandler = {
                 }
             } else {
                 logger.info(state, LogCategory.ACTION, `[WARNING] Counter: Could not find object ${tid} on stack.`);
+            }
+        });
+    }
+};
+
+export const ChangeTargetHandler: IEffectHandler = {
+    handle(state, effect, context) {
+        const { targets, controllerId } = context;
+        const { logger } = getProcessors(state);
+
+        targets.forEach((tid: string) => {
+            const stackObj = state.stack.find((s: StackObject) => s.id === tid);
+            if (!stackObj) {
+                logger.warn(state, LogCategory.ACTION, `[CHANGE-TARGET] FAILED: Could not find stack object for target ${tid}.`);
+                return;
+            }
+
+            const targetDefinitions = stackObj.data?.targetDefinitions || stackObj.targetDefinitions;
+            if (targetDefinitions && targetDefinitions.length > 0) {
+                const backupTargets = [...(stackObj.targets || [])];
+
+                // CLEAR TARGETS for the re-selection phase
+                stackObj.targets = [];
+                stackObj.targetsControllers = [];
+
+                const targetingResult = TargetingDispatcher.dispatchTargetingStep({
+                    state,
+                    playerId: controllerId,
+                    sourceObj: stackObj,
+                    targetDefinitions,
+                    existingTargets: [],
+                    xValue: stackObj.xValue || 0,
+                    isSpellCasting: false,
+                    isChangeTargeting: true,
+                    parentContext: context
+                });
+
+                if (Array.isArray(targetingResult)) {
+                    stackObj.targets = targetingResult;
+                } else if (state.pendingAction && state.pendingAction.data) {
+                    const data = state.pendingAction.data as import("@shared/engine_types").TargetingActionData;
+                    if (!data.metadata) data.metadata = {};
+                    data.metadata.isChangeTargeting = true;
+                    data.metadata.parentSourceId = context.sourceId;
+                    data.metadata.parentStackId = context.stackObject?.id;
+                    data.metadata.effectIndex = context.effectIndex;
+                    data._backupTargets = backupTargets;
+                    
+                    logger.debug(state, LogCategory.TARGETING, `[CHANGE-TARGET-INIT] Setting resumption metadata. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}`);
+                }
+            } else {
+                logger.info(state, LogCategory.ACTION, `[CHANGE-TARGET] ${stackObj.name || stackObj.id} has no targets to change.`);
             }
         });
     }

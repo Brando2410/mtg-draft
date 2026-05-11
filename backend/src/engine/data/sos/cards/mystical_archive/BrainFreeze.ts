@@ -3,12 +3,10 @@ import { CardDefinition } from '@shared/engine_types';
 export const BrainFreeze: CardDefinition = {
     name: "Brain Freeze",
     manaCost: "{1}{U}",
-
-
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],
-    keywords: ["Storm","Mill"],
+    keywords: ["Storm", "Mill"],
     oracleText: "Target player mills three cards.\nStorm (When you cast this spell, copy it for each spell cast before it this turn. You may choose new targets for the copies.)",
     set: "soa",
     abilities: [],

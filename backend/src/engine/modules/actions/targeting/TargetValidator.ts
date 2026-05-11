@@ -53,7 +53,7 @@ export class TargetValidator {
             effects.find(e => (e as { targetDefinitions?: TargetDefinition[] }).targetDefinitions)?.targetDefinitions || [];
 
         // If at least one target is legal for the definition associated with its index, the spell does NOT fizzle.
-        const hasAnyLegalTarget = targets.some((tid, index) => {
+        const hasAnyLegalTarget = targets.some((tid: string, index: number) => {
             return this.isLegalTarget(state, {
                 sourceId,
                 controllerId,
@@ -81,7 +81,7 @@ export class TargetValidator {
             targetDefinitions?.type === TargetType.Opponent ||
             targetDefinitions?.type === TargetType.AnyTarget ||
             targetDefinitions?.type === TargetType.PlayerOrPlaneswalker ||
-            restrictions.some((r) => [Restriction.Player as string, Restriction.AnyTarget as string, Restriction.Opponent as string, Restriction.You as string].includes(typeof r === 'string' ? r : (r as any).value));
+            restrictions.some((r: string | TargetRestriction) => [Restriction.Player as string, Restriction.AnyTarget as string, Restriction.Opponent as string, Restriction.You as string].includes(typeof r === 'string' ? r : (r as any).value));
 
         if (!isPlayerAllowed) return false;
 
@@ -95,27 +95,52 @@ export class TargetValidator {
     }
 
     private static getExpectedZone(targetObj: GameObject, targetDefinitions: TargetDefinition | null): Zone | 'Any' {
-        let expectedZone = targetDefinitions?.zone;
+        let expectedZone = targetDefinitions?.zone || (targetDefinitions?.sourceZones && targetDefinitions.sourceZones.length > 0 ? targetDefinitions.sourceZones[0] : undefined);
         if (expectedZone) return expectedZone;
 
         const typeLineCheck = (targetDefinitions?.type || '').toLowerCase();
         const targetZone = targetObj.zone;
 
-        if (targetZone === Zone.Stack) return Zone.Stack;
-        if (([Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, Restriction.Spell] as string[]).includes(typeLineCheck)) return Zone.Stack;
+        const stackRestrictions = [
+            Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, 
+            Restriction.Spell, Restriction.Ability, Restriction.ActivatedAbility, 
+            Restriction.TriggeredAbility, TargetType.Spell.toLowerCase(), 'spell'
+        ];
+
+        // If the target is on the stack, we ONLY expect Zone.Stack if it matches stack-based restrictions
+        if (targetZone === Zone.Stack) {
+            if (stackRestrictions.includes(typeLineCheck)) return Zone.Stack;
+            const restrictions = (targetDefinitions?.restrictions || []);
+            if (restrictions.some((r: string | TargetRestriction) => {
+                const rv = (typeof r === 'string' ? r : (r as any).value || '').toLowerCase();
+                return stackRestrictions.some((sr: string) => rv.includes(sr));
+            })) return Zone.Stack;
+
+            // If it's on the stack but doesn't match stack restrictions, we likely expect Battlefield (for permanents)
+            // or the original zone defined in the target definition.
+        }
+        
         if ([TargetType.CardInHand.toLowerCase()].includes(typeLineCheck)) return Zone.Hand;
         if ([TargetType.CardInGraveyard.toLowerCase()].includes(typeLineCheck)) return Zone.Graveyard;
         if ([TargetType.CardInExile.toLowerCase()].includes(typeLineCheck)) return Zone.Exile;
 
         const restrictions = (targetDefinitions?.restrictions || []);
-        if (restrictions.some((r) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
-        if (restrictions.some((r) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
-        if (restrictions.some((r) => typeof r === 'string' && [Restriction.FromHand, TargetType.CardInHand.toLowerCase()].includes(r.toLowerCase()))) return Zone.Hand;
+        if (restrictions.some((r: string | TargetRestriction) => {
+            const rv = (typeof r === 'string' ? r : (r as any).value || '').toLowerCase();
+            return stackRestrictions.some((sr: string) => rv.includes(sr));
+        })) return Zone.Stack;
+
+        if (restrictions.some((r: string | TargetRestriction) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
+        if (restrictions.some((r: string | TargetRestriction) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
+        if (restrictions.some((r: string | TargetRestriction) => typeof r === 'string' && [Restriction.FromHand, TargetType.CardInHand.toLowerCase()].includes(r.toLowerCase()))) return Zone.Hand;
 
         if (typeLineCheck === TargetType.Player.toLowerCase() ||
             typeLineCheck === TargetType.Opponent.toLowerCase() ||
             typeLineCheck === TargetType.AnyTarget.toLowerCase() ||
+            typeLineCheck === TargetType.Any.toLowerCase() ||
             typeLineCheck === TargetType.PlayerOrPlaneswalker.toLowerCase()) return 'Any';
+
+        if (stackRestrictions.includes(typeLineCheck)) return Zone.Stack;
 
         return targetDefinitions ? Zone.Battlefield : 'Any';
     }
@@ -158,7 +183,7 @@ export class TargetValidator {
         const primaryType = (targetDefinitions?.type || '').toUpperCase();
         if (primaryType && primaryType !== 'ANY') {
             const lr = primaryType.toLowerCase();
-            if (!restrictions.some(r => typeof r === 'string' && r.toLowerCase() === lr)) {
+            if (!restrictions.some((r: string | TargetRestriction) => typeof r === 'string' && r.toLowerCase() === lr)) {
                 restrictions.push(lr);
             }
         }
@@ -173,12 +198,30 @@ export class TargetValidator {
         const targetObj = typeof target === 'string' ? RuleUtils.findObject(state, target) : target;
 
         // 2. Player Fast Path (Handles both PlayerState object or PlayerId string)
+        // 2. Player Fast Path
         const isPlayer = state.players[targetId as PlayerId] !== undefined;
         if (isPlayer) {
-            return !!(restrictions.includes(Restriction.Player) ||
-                restrictions.includes(Restriction.AnyTarget) ||
-                restrictions.includes(Restriction.Opponent) ||
-                restrictions.includes(Restriction.You));
+            const playerAllowed = restrictions.some((r: string | TargetRestriction) => {
+                if (typeof r !== 'string') return false;
+                const lr = r.toLowerCase();
+                return lr === Restriction.Player || lr === Restriction.AnyTarget || lr === Restriction.Opponent || lr === Restriction.You;
+            });
+
+            if (!playerAllowed) return false;
+
+            // If player is allowed, we must still ensure no exclusive restrictions (like 'Creature' or 'Ability') are present.
+            // These are logically AND-ed, so "Any Target" AND "Ability" means only something that is BOTH.
+            // Since a player is never an ability, it fails.
+            for (const r of restrictions) {
+                if (typeof r !== 'string') continue;
+                const lr = r.toLowerCase();
+                if ([Restriction.Creature, Restriction.Artifact, Restriction.Land, Restriction.Enchantment,
+                Restriction.Planeswalker, Restriction.Instant, Restriction.Sorcery, Restriction.Ability,
+                Restriction.Spell, Restriction.Permanent].includes(lr as any)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // 3. Object-based validation (Cards, Spells, Abilities)
@@ -189,9 +232,15 @@ export class TargetValidator {
             // StackObjects that might lack a definition but have a type (Abilities)
             const targetAsStack = targetObj as StackObject;
             if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === AbilityType.Spell)) {
-                return !!restrictions.some(r => {
-                    const resObj = r as { value?: string };
-                    const rv = (typeof r === 'string' ? r : (resObj.value || '')).toLowerCase();
+                return !!restrictions.some((r: string | TargetRestriction) => {
+                    const rv = (typeof r === 'string' ? r : (r as any).value || '').toLowerCase();
+                    if (rv.includes('_or_')) {
+                        return rv.split('_or_').some((p: string) => {
+                            const part = p.trim();
+                            return (part === Restriction.Ability && targetAsStack.type.includes('Ability')) ||
+                                   (part === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
+                        });
+                    }
                     return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) ||
                         (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
                 });
@@ -231,14 +280,14 @@ export class TargetValidator {
         }
 
         // Alternatives pass (Logic OR / Complex types)
-        const alternatives = restrictions.filter(r => {
+        const alternatives = restrictions.filter((r: string | TargetRestriction) => {
             if (typeof r !== 'string') return true;
             const lr = r.toLowerCase();
             return lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX;
         });
 
         if (alternatives.length > 0) {
-            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context));
+            return alternatives.every((r: string | TargetRestriction) => this.evaluateComplexRestriction(state, targetObj, r, context));
         }
 
         return true;
@@ -249,7 +298,7 @@ export class TargetValidator {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
             if (RestrictionRegistry[token]) return !!RestrictionRegistry[token].matches(state, targetObj, lr, context);
-            if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context));
+            if (lr.includes('_or_')) return lr.split('_or_').some((p: string) => this.matchesRestrictions(state, targetObj, [p.trim()], context));
             return this.matchesRestrictions(state, targetObj, [r], context);
         }
 
@@ -263,9 +312,9 @@ export class TargetValidator {
         if ((restrictionType === 'any' || restrictionType === 'all' || restrictionType === 'not') && ('restrictions' in resObj || 'restriction' in resObj)) {
             const logicRes = resObj as LogicRestriction;
             const subs = logicRes.restrictions || (logicRes.restriction ? [logicRes.restriction] : []);
-            
-            if (restrictionType === 'any') return subs.some(subR => this.matchesRestrictions(state, targetObj, [subR], context));
-            if (restrictionType === 'all') return subs.every(subR => this.matchesRestrictions(state, targetObj, [subR], context));
+
+            if (restrictionType === 'any') return subs.some((subR: string | TargetRestriction) => this.matchesRestrictions(state, targetObj, [subR], context));
+            if (restrictionType === 'all') return subs.every((subR: string | TargetRestriction) => this.matchesRestrictions(state, targetObj, [subR], context));
             if (restrictionType === 'not') return subs.length > 0 && !this.matchesRestrictions(state, targetObj, [subs[0]], context);
         }
 

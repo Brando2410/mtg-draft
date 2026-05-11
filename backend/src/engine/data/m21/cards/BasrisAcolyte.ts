@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const BasrisAcolyte: CardDefinition = {
     name: "Basri's Acolyte",
@@ -28,8 +28,8 @@ export const BasrisAcolyte: CardDefinition = {
             effects: [{
                 type: EffectType.AddCounters,
                 amount: 1,
-                counterType: 'P1P1',
-                targetMapping: TargetMapping.Target1
+                counterType: CounterType.P1P1,
+                targetMapping: TargetMapping.TargetAll
             }]
         }
     ],

@@ -12,6 +12,8 @@ export const PrismariCharm: CardDefinition = {
   abilities: [
     {
       type: AbilityType.Spell,
+      minChoices: 1,
+      maxChoices: 1,
       modes: [
         {
           label: 'Surveil 2, then draw a card',

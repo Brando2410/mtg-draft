@@ -191,10 +191,9 @@ export class RuleUtils {
     public static hasKeyword(obj: Targetable | undefined, keyword: string): boolean {
         const def = this.getDef(obj);
         if (!def) return false;
-        const search = keyword.toLowerCase();
-        const printed = (def.keywords || []).some((k) => k.toLowerCase() === search);
-        const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some((k) => k.toLowerCase() === search);
-
+        const search = keyword.toLowerCase().replace(/\s/g, '');
+        const printed = (def.keywords || []).some((k) => k.toLowerCase().replace(/\s/g, '') === search);
+        const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some((k) => k.toLowerCase().replace(/\s/g, '') === search);
 
         if (printed || effective) return true;
 

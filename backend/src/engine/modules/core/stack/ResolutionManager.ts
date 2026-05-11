@@ -100,7 +100,12 @@ export class ResolutionManager {
 
         const sourceId = sourceIdOverride || action?.sourceId || "";
         const meta = getActionMeta(action);
-        const stackObj = stackObjOverride || meta.stackObj || meta.parentContext?.stackObject;
+        let stackObj = stackObjOverride || meta.stackObj || meta.parentContext?.stackObject;
+
+        // Sync with the actual stack object if it exists to ensure effectIndex updates are preserved
+        if (stackObj?.id) {
+            stackObj = state.stack.find(s => s.id === stackObj!.id) || stackObj;
+        }
 
         let currentCtx: EngineFrame | undefined = contextOverride;
         if (!currentCtx && action?.data) {
@@ -263,6 +268,7 @@ export class ResolutionManager {
             }
         }
 
+        state.isSticky = true;
         engine.resetPriorityToActivePlayer();
     }
 

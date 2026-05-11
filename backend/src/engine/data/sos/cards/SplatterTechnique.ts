@@ -10,6 +10,8 @@ export const SplatterTechnique: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
 

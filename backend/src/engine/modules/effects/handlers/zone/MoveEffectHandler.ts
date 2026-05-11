@@ -54,10 +54,12 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     // Fallback to stack targets ONLY if this is a top-level effect resolution and no targets were provided
-    const finalTargetIds =
+    // Ensure uniqueness to prevent redundant effect triggers (especially sub-effects)
+    const finalTargetIds = Array.from(new Set(
       targetIds.length === 0 && !parentContext
         ? stackObject?.targets || []
-        : targetIds;
+        : targetIds
+    ));
 
     let selectionType = effect.selectionType;
     if (!selectionType) {
@@ -99,16 +101,29 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       return this.resolveLibraryTopMoves(state, { ...effectiveEffect, fromTop: fromTopResolved }, affectedPlayerId, context);
     }
 
-    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effectiveEffect, finalTargetIds, context);
-    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effectiveEffect as unknown as SearchEffect, context);
-    if (selectionType === SelectionType.ALL) return this.resolveMassMove(state, effectiveEffect, finalTargetIds, context);
-    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effectiveEffect, affectedPlayerId, context);
-
-    if (effect.targetDefinitions && finalTargetIds.length === 0 && !effect.targetMapping) {
-      return this.resolveInteractiveMovementSelection(state, effectiveEffect, affectedPlayerId, context);
+    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) {
+      this.resolveMoveTargets(state, effectiveEffect, finalTargetIds, context);
+      return true;
+    }
+    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) {
+      return SearchEffectHandler.handle(state, effectiveEffect as unknown as SearchEffect, context) ?? true;
+    }
+    if (selectionType === SelectionType.ALL) {
+      this.resolveMassMove(state, effectiveEffect, finalTargetIds, context);
+      return true;
+    }
+    if (effect.type === EffectType.ExileUntilManaValue) {
+      this.resolveExileUntilManaValue(state, effectiveEffect, affectedPlayerId, context);
+      return true;
     }
 
-    return this.resolveSingleTargetMove(state, effectiveEffect, finalTargetIds, context);
+    if (effect.targetDefinitions && finalTargetIds.length === 0 && !effect.targetMapping) {
+      this.resolveInteractiveMovementSelection(state, effectiveEffect, affectedPlayerId, context);
+      return true;
+    }
+
+    this.resolveSingleTargetMove(state, effectiveEffect, finalTargetIds, context);
+    return true;
   }
 
   private resolveInteractiveMovementSelection(
@@ -573,16 +588,19 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
         // --- NESTED EFFECTS SUPPORT ---
         if (effect.effects && effect.effects.length > 0) {
-          const { effect: EP_LOCAL } = getProcessors(state);
-          EP_LOCAL.resolveEffects({
-            state,
-            context: EP_LOCAL.createEngineFrame(state, {
-              sourceId: context.sourceId || stackObject?.id || tid,
-              effects: effect.effects,
-              targets: [tid],
-              stackObject,
-              parentContext: context,
-            }),
+          effect.effects.forEach(subEff => {
+            let subTargetIds = [tid];
+            if (subEff.targetMapping === TargetMapping.Target1Controller) {
+              subTargetIds = [RuleUtils.getController(obj as GameObject)];
+            } else if (subEff.targetMapping === TargetMapping.Target1Owner) {
+              subTargetIds = [obj.ownerId];
+            }
+
+            EffectProcessor.injectPostEffect(context, {
+              ...subEff,
+              targetIds: subTargetIds,
+              targetMapping: undefined, // Clear to ensure targetIds are used
+            });
           });
         }
       }
@@ -872,16 +890,25 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     // 4. --- NESTED EFFECTS SUPPORT ---
     if (effect.effects && effect.effects.length > 0) {
-      const { effect: EP_LOCAL } = getProcessors(state);
-      EP_LOCAL.resolveEffects({
-        state,
-        context: EP_LOCAL.createEngineFrame(state, {
-          sourceId: stackObject?.sourceId || controllerId,
-          effects: effect.effects,
-          targets: cardsToMove.map(c => c.id),
-          stackObject,
-          parentContext: context,
-        }),
+      // In mass moves, we apply sub-effects to each moved object individually
+      // to ensure correct controller resolution and avoid suspension conflicts.
+      // We inject them in reverse order so they resolve in the order objects were moved.
+      const reversedCards = [...cardsToMove].reverse();
+      reversedCards.forEach(c => {
+        effect.effects!.forEach(subEff => {
+          let subTargetIds = [c.id];
+          if (subEff.targetMapping === TargetMapping.Target1Controller) {
+            subTargetIds = [RuleUtils.getController(c)];
+          } else if (subEff.targetMapping === TargetMapping.Target1Owner) {
+            subTargetIds = [c.ownerId];
+          }
+
+          EffectProcessor.injectPostEffect(context, {
+            ...subEff,
+            targetIds: subTargetIds,
+            targetMapping: undefined,
+          });
+        });
       });
     }
   }
@@ -945,16 +972,19 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       // --- CHAINING ---
       const subEffects = effect.next ? [effect.next] : effect.effects;
       if (subEffects && subEffects.length > 0) {
-        const { effect: EP_LOCAL } = getProcessors(state);
-        EP_LOCAL.resolveEffects({
-          state,
-          context: EP_LOCAL.createEngineFrame(state, {
-            sourceId: stackObject?.sourceId || context.sourceId || "",
-            effects: subEffects,
-            targets: targetIds,
-            stackObject,
-            parentContext: context,
-          }),
+        subEffects.forEach(subEff => {
+          let subTargetIds = [tid];
+          if (subEff.targetMapping === TargetMapping.Target1Controller) {
+            subTargetIds = [RuleUtils.getController(obj as GameObject)];
+          } else if (subEff.targetMapping === TargetMapping.Target1Owner) {
+            subTargetIds = [obj.ownerId];
+          }
+
+          EffectProcessor.injectPostEffect(context, {
+            ...subEff,
+            targetIds: subTargetIds,
+            targetMapping: undefined,
+          });
         });
       }
     });

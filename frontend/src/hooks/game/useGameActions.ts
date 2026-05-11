@@ -49,9 +49,7 @@ export const useGameActions = (roomId: string, playerId: string) => {
     socket.emit('toggle_pass_turn', { roomId, playerId });
   };
 
-  const toggleAutoOrder = () => {
-    socket.emit('toggle_auto_order', { roomId, playerId });
-  };
+
 
   const allAttack = (battlefield: any[], attackers: any[] = []) => {
     const creatures = battlefield.filter((obj: any) => {
@@ -64,6 +62,10 @@ export const useGameActions = (roomId: string, playerId: string) => {
     });
 
     creatures.forEach((c: any) => tapPermanent(c.id));
+  };
+
+  const concede = () => {
+    socket.emit('concede', { roomId, playerId });
   };
 
   return {
@@ -79,7 +81,7 @@ export const useGameActions = (roomId: string, playerId: string) => {
     playCard,
     discardCard,
     togglePassTurn,
-    toggleAutoOrder,
-    allAttack
+    allAttack,
+    concede
   };
 };

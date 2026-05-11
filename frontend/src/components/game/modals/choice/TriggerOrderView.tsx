@@ -16,10 +16,10 @@ export const TriggerOrderView = memo(({ orderedTriggers, setOrderedTriggers }: T
              <span className="bg-[#0b0f1a] px-6 text-indigo-400">Resolves Last</span>
              <span className="bg-[#0b0f1a] px-6 text-amber-400">Resolves First</span>
         </div>
-        <Reorder.Group axis="x" values={orderedTriggers} onReorder={setOrderedTriggers} className="flex flex-row justify-center gap-10 w-full py-4">
+        <Reorder.Group axis="x" values={orderedTriggers} onReorder={setOrderedTriggers} className="flex flex-row justify-center gap-12 w-full py-8">
             {orderedTriggers.map((trigger, idx) => (
                 <Reorder.Item key={trigger.id || `trigger-${idx}`} value={trigger} className="relative group/trigger cursor-grab active:cursor-grabbing">
-                    <div className="relative transform transition-transform group-hover/trigger:scale-[1.05] scale-90 -my-6">
+                    <div className="relative transform transition-transform group-hover/trigger:scale-[1.05] scale-100">
                         <GameCard obj={{ id: trigger.id, definition: trigger.definition || { name: trigger.name, image_url: trigger.image_url, types: ['Ability'] } } as any} variant="small" />
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 bg-black/60 backdrop-blur-md rounded-full border border-white/10 opacity-0 group-hover/trigger:opacity-100 transition-all shadow-xl">
                           <GripVertical className="w-4 h-4 text-indigo-400" />

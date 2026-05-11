@@ -3,14 +3,14 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",
-
-
     colors: ["R", "W"],
     types: ["Instant"],
     oracleText: "Choose one —\n• Each opponent sacrifices a nontoken artifact.\n• Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield.\n• Creatures you control get +1/+1 and gain trample until end of turn.",
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
 

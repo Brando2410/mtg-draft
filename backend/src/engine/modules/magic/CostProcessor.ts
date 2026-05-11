@@ -223,24 +223,26 @@ export class CostProcessor {
       case CostType.SacrificeSelf: {
         // CR 701.17: To sacrifice a permanent, move it to its owner's graveyard.
         const sacCost = cost as SacrificeCost;
-        let toSac;
+        let objectsToSac: GameObject[] = [];
+
         if (sacCost.targetMapping === 'SELF' || sacCost.type === CostType.SacrificeSelf) {
-          toSac = source;
-          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
+            objectsToSac = [source];
         } else {
-          // Check for pre-selected target from modal choice
-          const chosenId = state.interaction.lastSelections[CostType.Sacrifice]?.[0];
-          if (chosenId) {
-            toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
-          } else {
-            // Fallback for auto-order/automated effects (not recommended for complex costs)
-            const { targeting: TargetingProcessor } = getProcessors(state);
-            toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] })));
-          }
+            const chosenIds = state.interaction.lastSelections[CostType.Sacrifice] || [];
+            if (chosenIds.length > 0) {
+                chosenIds.forEach((id: string) => {
+                    const obj = state.battlefield.find(c => String(c.id) === String(id));
+                    if (obj) objectsToSac.push(obj);
+                });
+            } else {
+                // Fallback for auto-order/automated effects
+                const { targeting: TargetingProcessor } = getProcessors(state);
+                const fallback = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id, effects: [], targets: [] })));
+                if (fallback) objectsToSac = [fallback];
+            }
         }
 
-        if (toSac) {
-          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
+        objectsToSac.forEach(toSac => {
           const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
           TriggerProcessor.onEvent(state, {
             type: 'ON_SACRIFICE',
@@ -249,8 +251,10 @@ export class CostProcessor {
           });
           ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId);
           logger.info(state, LogCategory.ACTION, `${player.name} sacrificed ${toSac.definition.name} as a cost.`);
-        } else {
-          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
+        });
+
+        if (objectsToSac.length === 0) {
+            logger.info(state, LogCategory.ACTION, `[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
         }
         delete state.interaction.lastSelections[CostType.Sacrifice];
         break;

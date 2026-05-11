@@ -163,6 +163,40 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     }
   });
 
+  socket.on('leave_room', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const playerIndex = room.players.findIndex(p => p.playerId === playerId);
+    if (playerIndex !== -1) {
+      const player = room.players[playerIndex];
+      LoggerService.info('SOCKET', `Player leaving room: ${player.name}`, { roomId, playerId });
+      
+      room.players.splice(playerIndex, 1);
+      
+      // If room is empty, destroy it
+      if (room.players.length === 0) {
+        rooms.delete(roomId);
+        LoggerService.info('SOCKET', `Room ${roomId} deleted because all players left.`);
+      } else {
+        // If host left, assign a new host
+        if (room.hostPlayerId === playerId) {
+          const nextPlayer = room.players[0];
+          room.hostPlayerId = nextPlayer.playerId;
+          room.host = nextPlayer.id;
+          LoggerService.info('SOCKET', `New host assigned for room ${roomId}: ${nextPlayer.name}`);
+        }
+        io.to(roomId).emit('room_update', room);
+      }
+      
+      socket.leave(roomId);
+      delete socket.data.roomId;
+      delete socket.data.playerId;
+      
+      await PersistenceService.saveRooms(rooms);
+    }
+  });
+
   socket.on('destroy_room', async ({ roomId }) => {
     const room = rooms.get(roomId);
     if (!room || room.host !== socket.id) return;

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type PlayerState, Step, Phase } from '@shared/engine_types';
+import type { PlayerState, Step, Phase } from '@shared/engine_types';
 import { ManaPoolView } from './ManaPoolView';
 import { Stopper } from './avatar/Stopper';
 import { ScryBubble } from './avatar/ScryBubble';
@@ -55,8 +55,8 @@ export const Avatar = memo(({
   return (
     <div className={`flex flex-col items-center gap-0 relative z-[200]`}>
       <AnimatePresence>
-        {player.manaPool && Object.values(player.manaPool).some(c => c > 0) && (
-          <ManaPoolView pool={player.manaPool} isOpponent={isOpponent} />
+        {(player.manaPool && Object.values(player.manaPool).some(c => c > 0) || (player.restrictedMana && player.restrictedMana.length > 0)) && (
+          <ManaPoolView pool={player.manaPool} restrictedMana={player.restrictedMana} isOpponent={isOpponent} />
         )}
       </AnimatePresence>
 

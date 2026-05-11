@@ -32,9 +32,9 @@ const FROMHAND: IRestrictionHandler = {
 
 export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     "SHARES_COLOR_WITH_SOURCE": gameObjectRestriction((state, obj, r, context) => {
-        const { sourceId } = context;
-        const source = RuleUtils.findObject(state, sourceId);
-        if (source && isGameObject(source)) {
+        const { sourceId, stackObject } = context;
+        const source = stackObject?.sourceObject || RuleUtils.findObject(state, sourceId);
+        if (source && RuleUtils.isEntity(source)) {
             const sourceColors = RuleUtils.getColors(source, state);
             const targetColors = RuleUtils.getColors(obj, state);
             return !!sourceColors.some((c: string) => targetColors.includes(c));
@@ -62,10 +62,10 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
         return !!TP.sourceHasQualities(obj, ['oneormorecolors'], state);
     }),
     "SAMENAMEASSOURCE": gameObjectRestriction((state, obj, r, context) => {
-        const { sourceId } = context;
-        const source = RuleUtils.findObject(state, sourceId);
-        if (source && isGameObject(source)) {
-            const sourceName = source.definition.name;
+        const { sourceId, stackObject } = context;
+        const source = stackObject?.sourceObject || RuleUtils.findObject(state, sourceId);
+        if (source && RuleUtils.isEntity(source)) {
+            const sourceName = (source as any).definition?.name;
             const targetName = obj.definition.name;
             return sourceName === targetName;
         }
@@ -73,7 +73,24 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     }),
     "HASXINMANACOST": gameObjectRestriction((state, obj) => {
         return (obj.definition.manaCost || "").includes("X");
-    })
+    }),
+    "INSTANT_OR_SORCERY_OR_ABILITY": {
+        matches(state, targetObj, r, context) {
+            const { targeting: TP } = getProcessors(state);
+            return TP.matchesRestrictions(state, targetObj, [{ type: 'any', restrictions: ['instant', 'sorcery', 'ability'] }], context);
+        }
+    },
+    "HAS_SINGLE_TARGET": {
+        matches(state, targetObj) {
+            return (targetObj as any).targets?.length === 1;
+        }
+    },
+    "ANY": {
+        matches() { return true; }
+    },
+    "ALL": {
+        matches() { return true; }
+    },
 };
 
 // --- KEYWORD CHECK ---
@@ -82,13 +99,11 @@ knownKeywords.forEach(kw => {
     const normalizedKw = kw.toUpperCase().replace(/[\s_]/g, '');
 
     SpecializedRestrictions[normalizedKw] = gameObjectRestriction((state, obj) => {
-        const stats = LayerProcessor.getEffectiveStats(obj, state);
-        return !!stats.keywords.some((k: string) => k.toLowerCase() === kw);
+        return RuleUtils.hasKeyword(obj, kw);
     });
 
     SpecializedRestrictions[`WITHOUT${normalizedKw}`] = gameObjectRestriction((state, obj) => {
-        const stats = LayerProcessor.getEffectiveStats(obj, state);
-        return !stats.keywords.some((k: string) => k.toLowerCase() === kw);
+        return !RuleUtils.hasKeyword(obj, kw);
     });
 });
 

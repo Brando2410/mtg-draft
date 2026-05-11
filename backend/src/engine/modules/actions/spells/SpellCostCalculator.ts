@@ -2,6 +2,7 @@ import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, Conti
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
+import { RegistryUtils } from '../../../utils/RegistryUtils';
 
 
 /**
@@ -86,6 +87,34 @@ export class SpellCostCalculator {
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
         let effectiveCost: string | null = null;
+
+        // --- MODAL MODE COSTS ---
+        const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
+        if (lastChosenModeIndex !== undefined) {
+            const logic = RegistryUtils.getEffectiveLogic(state, card);
+            const modalAbility = RegistryUtils.getModalAbility(logic, currentDef);
+            if (modalAbility?.modes) {
+                const indices = Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex];
+                
+                // Check if ANY selected mode is an alternative cost (Rule 118.9)
+                const hasAlternativeMode = indices.some(idx => modalAbility.modes![idx as number]?.isAlternativeCost);
+                if (hasAlternativeMode) {
+                    parsed.generic = 0;
+                    parsed.colored = {};
+                    parsed.xCount = 0;
+                }
+
+                indices.forEach(idx => {
+                    const mode = modalAbility.modes![idx as number];
+                    if (mode?.costs) {
+                        additionalCosts.push(...mode.costs);
+                    }
+                    if (mode?.additionalCosts) {
+                        additionalCosts.push(...mode.additionalCosts);
+                    }
+                });
+            }
+        }
 
         // 0. Check for Free Cast permissions (Alternative Costs)
         // Rule: Only apply free cast if explicitly chosen (isFreeCast: true) OR as a fallback for non-hand zones.
@@ -289,30 +318,50 @@ export class SpellCostCalculator {
             }
         }
 
-        let finalGeneric = Math.max(0, parsed.generic + extraGeneric);
+        // --- ADDITIONAL COST RESOLUTION (Rule 601.2f) ---
+        // 1. Filter ALL additional costs by condition
+        additionalCosts = additionalCosts.filter(c => {
+            if (!(c as any).condition) return true;
+            const { condition: ConditionProcessor } = getProcessors(state);
+            return ConditionProcessor.matchesCondition(state, (c as any).condition, {
+                sourceId: card.id,
+                controllerId: card.controllerId || card.ownerId,
+                cardToPlay: { ...card, isFlashbackCast: isFlashback },
+                event: { type: TriggerEvent.CastSpell, playerId: card.controllerId, payload: { object: card, targetIds: targets } },
+                effects: [],
+                targets: []
+            });
+        });
 
-        // --- CHOICE COST RESOLUTION ---
+        // 2. Resolve Choice Costs (recursive if they contain mana)
         const choiceCostIndex = additionalCosts.findIndex(c => c.type === CostType.Choice);
         if (choiceCostIndex !== -1) {
             const choice = additionalCosts[choiceCostIndex] as ChoiceCost;
             const chosenIndex = state.interaction.lastChoiceIndex;
             if (chosenIndex !== undefined && (choice as ChoiceCost).choices?.[chosenIndex]) {
                 const chosenCosts = (choice as ChoiceCost).choices[chosenIndex].costs;
-                // Remove the choice and insert its components
                 additionalCosts.splice(choiceCostIndex, 1, ...chosenCosts);
-
-                // Add any mana costs from the choice to the total
-                chosenCosts.forEach((cc: AbilityCost) => {
-                    if (cc.type === CostType.Mana) {
-                        const ccParsed = ManaProcessor.parseManaCost(cc.value);
-                        finalGeneric += ccParsed.generic;
-                        Object.entries(ccParsed.colored).forEach(([s, c]) => {
-                            parsed.colored[s] = (parsed.colored[s] || 0) + c;
-                        });
-                    }
-                });
             }
         }
+
+        // 3. Separate Mana costs from non-mana costs
+        const manaCosts = additionalCosts.filter(c => c.type === 'Mana');
+        const nonManaCosts = additionalCosts.filter(c => c.type !== 'Mana');
+
+        // 4. Merge all additional mana into the 'parsed' pool before applying reductions
+        manaCosts.forEach(cc => {
+            const ccParsed = ManaProcessor.parseManaCost(cc.value);
+            parsed.generic += ccParsed.generic;
+            Object.entries(ccParsed.colored).forEach(([s, c]) => {
+                parsed.colored[s] = (parsed.colored[s] || 0) + c;
+            });
+        });
+
+        // 5. Apply generic reductions to the total pool (Base + Additional)
+        let finalGeneric = Math.max(0, parsed.generic + extraGeneric);
+
+        // 6. Update the array to only contain the non-mana costs (which will be handled interactively)
+        additionalCosts = nonManaCosts;
 
         let costStr = '';
         const { xCount } = parsed;

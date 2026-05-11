@@ -194,6 +194,7 @@ export interface PlayerState {
     maxHandSize: number;
     name: string;
     ownerId: PlayerId;      // Harmonized for Targetable union
+    playerId: PlayerId;    // Compatibility alias
     passUntilEndOfTurn: boolean;
     pendingDiscardCount: number;
     poisonCounters: number;
@@ -320,6 +321,8 @@ export interface InteractionMetadata {
     xValue?: number;
     exiledIds?: string[];
     chosenName?: string;
+    parentSourceId?: string;
+    parentStackId?: string;
 
     // --- Phase 5 Migration Fields ---
     manaSnapshot?: ManaPool;
@@ -327,6 +330,7 @@ export interface InteractionMetadata {
     producedMana?: Partial<ManaPool>;
     tappedLandIds?: string[];
     isCopyTargeting?: boolean;
+    isChangeTargeting?: boolean;
     isCostTargeting?: boolean;
     isResolutionX?: boolean;
     xValueConfirmed?: boolean;
@@ -474,6 +478,7 @@ export interface PendingAction {
 import type { Mutation } from './mutations';
 
 export interface GameState {
+    isSticky?: boolean;
     _entityMap?: Record<string, BaseEntity>;
     _lastLayerHash?: string;
     _objectCache?: Map<string, GameObject | StackObject> & {
@@ -519,8 +524,10 @@ export interface GameState {
     ruleRegistry: RuleRegistry;
     stack: StackObject[];
     stateVersion: number;
+    status?: 'active' | 'completed';
     turnNumber: number;
     turnState: TurnState;
+    winner?: PlayerId;
 }
 
 export interface RuleRegistry {

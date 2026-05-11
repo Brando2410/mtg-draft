@@ -339,11 +339,13 @@ export class TargetMapper {
 
     logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Mapping ${mapping} for source ${sourceId}. Context targets: ${targets?.join(', ')}`);
 
-    // Centralized target resolution: Prioritize context targets (current resolution) 
-    // over stack object targets (original declaration).
-    const resolvedTargets = (targets && targets.length > 0)
-      ? targets
-      : (context.stackObject?.targets || []);
+    // Centralized target resolution: Prioritize originalTargets if we are in an effect handler 
+    // that has already resolved its victims, otherwise fall back to context targets.
+    const resolvedTargets = (context.originalTargets && context.originalTargets.length > 0)
+      ? context.originalTargets
+      : (targets && targets.length > 0)
+        ? targets
+        : (context.stackObject?.targets || []);
 
     // Check TargetMappingRegistry (The modular system)
     const handler = TargetMappingRegistry[mapping.toUpperCase()];

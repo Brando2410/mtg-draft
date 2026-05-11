@@ -2,6 +2,8 @@ import { IRestrictionHandler } from "../IRestrictionHandler";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { Targetable } from "@shared/engine_types";
 import { gameObjectRestriction } from "./HandlerUtils";
+import { getProcessors } from "../../../ProcessorRegistry";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 const TAPPED = gameObjectRestriction((state, obj) => !!obj.isTapped);
 const UNTAPPED = gameObjectRestriction((state, obj) => !obj.isTapped);
@@ -50,7 +52,34 @@ const BLOCKING = gameObjectRestriction((state, obj) => {
 
 const OTHER: IRestrictionHandler = {
     matches(state, targetObj, r, context) {
-        return targetObj.id !== context.sourceId;
+        const id = targetObj.id;
+        
+        // Basic check: is it the exact same object?
+        if (id === context.sourceId) return false;
+        
+        const stackObj = context.stackObject;
+        if (stackObj && id === stackObj.sourceId) {
+            getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} for stack object ${stackObj.id}. sourceId match: ${stackObj.sourceId}`);
+            return false;
+        }
+
+        const sourceObj = RuleUtils.findObject(state, context.sourceId);
+        if (sourceObj && RuleUtils.isStackObject(sourceObj) && id === sourceObj.sourceId) {
+             getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via sourceObj lookup for ${context.sourceId}. Object sourceId: ${sourceObj.sourceId}`);
+             return false;
+        }
+
+        // Final fallback: check the actual source of the trigger if it's a copy
+        const sObj = stackObj || sourceObj;
+        if (sObj && RuleUtils.isStackObject(sObj) && (sObj.isCopy || sObj.type.includes('Ability')) && sObj.sourceId === id) {
+             getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via final fallback. sObj ID: ${sObj.id}, sObj sourceId: ${sObj.sourceId}`);
+             return false;
+        }
+
+        // Log EVERY check for a while to see what's happening
+        getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-CHECK] Target: ${id}, context.sourceId: ${context.sourceId}, stackObj.sourceId: ${stackObj?.sourceId || 'None'}, stackObj.isCopy: ${!!stackObj?.isCopy}`);
+
+        return true;
     }
 };
 
@@ -70,9 +99,19 @@ export const StateRestrictions: Record<string, IRestrictionHandler> = {
         }
     },
     OTHER,
+    OTHER_RESUME: {
+        matches(state, targetObj, r, context) {
+            if (!OTHER.matches(state, targetObj, r, context)) return false;
+            // Additional logic for resumption handling if needed
+            return true;
+        }
+    },
     SELF: {
         matches(state, targetObj, r, context) {
-            return targetObj.id === context.sourceId;
+            const id = targetObj.id;
+            if (id === context.sourceId) return true;
+            if (context.stackObject && id === context.stackObject.sourceId) return true;
+            return false;
         }
     },
     HASCOUNTER: gameObjectRestriction((state, obj, restriction) => {

@@ -1,0 +1,896 @@
+{
+  "name": "New Deck55",
+  "cards": [
+    {
+      "scryfall_id": "ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9",
+      "name": "Winds of Abandon",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9.jpg?1775936442",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Overload"
+      ]
+    },
+    {
+      "scryfall_id": "ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9",
+      "name": "Winds of Abandon",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9.jpg?1775936442",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Overload"
+      ]
+    },
+    {
+      "scryfall_id": "ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9",
+      "name": "Winds of Abandon",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9.jpg?1775936442",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Overload"
+      ]
+    },
+    {
+      "scryfall_id": "ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9",
+      "name": "Winds of Abandon",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddf7fa6e-e38c-4f3d-8d8b-6ecbccdbb8f9.jpg?1775936442",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Overload"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "db465858-0593-4850-8f1d-400fe230a18d",
+      "name": "Bitter Triumph",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/db465858-0593-4850-8f1d-400fe230a18d.jpg?1775936553",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "db465858-0593-4850-8f1d-400fe230a18d",
+      "name": "Bitter Triumph",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/db465858-0593-4850-8f1d-400fe230a18d.jpg?1775936553",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "db465858-0593-4850-8f1d-400fe230a18d",
+      "name": "Bitter Triumph",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/db465858-0593-4850-8f1d-400fe230a18d.jpg?1775936553",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "db465858-0593-4850-8f1d-400fe230a18d",
+      "name": "Bitter Triumph",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/db465858-0593-4850-8f1d-400fe230a18d.jpg?1775936553",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ba09360a-067e-48a5-bdc5-a19fd066a785",
+      "name": "Extus, Oriq Overlord",
+      "rarity": "mythic",
+      "color": [
+        "W",
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "mana_cost": "{1}{W}{B}{B}",
+      "keywords": [
+        "Double Strike"
+      ]
+    },
+    {
+      "scryfall_id": "ba09360a-067e-48a5-bdc5-a19fd066a785",
+      "name": "Extus, Oriq Overlord",
+      "rarity": "mythic",
+      "color": [
+        "W",
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "mana_cost": "{1}{W}{B}{B}",
+      "keywords": [
+        "Double Strike"
+      ]
+    },
+    {
+      "scryfall_id": "5e1b68a4-fb8d-4b59-b049-73505296f775",
+      "name": "Necrotic Fumes",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/e/5e1b68a4-fb8d-4b59-b049-73505296f775.jpg?1637082347",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5e1b68a4-fb8d-4b59-b049-73505296f775",
+      "name": "Necrotic Fumes",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/e/5e1b68a4-fb8d-4b59-b049-73505296f775.jpg?1637082347",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5e1b68a4-fb8d-4b59-b049-73505296f775",
+      "name": "Necrotic Fumes",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/e/5e1b68a4-fb8d-4b59-b049-73505296f775.jpg?1637082347",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e968efff-635b-4780-9bbe-099e75a1841b",
+      "name": "Return the Favor",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/9/e968efff-635b-4780-9bbe-099e75a1841b.jpg?1775936710",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{R}{R}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "e968efff-635b-4780-9bbe-099e75a1841b",
+      "name": "Return the Favor",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/9/e968efff-635b-4780-9bbe-099e75a1841b.jpg?1775936710",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{R}{R}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "e968efff-635b-4780-9bbe-099e75a1841b",
+      "name": "Return the Favor",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/9/e968efff-635b-4780-9bbe-099e75a1841b.jpg?1775936710",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{R}{R}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "e968efff-635b-4780-9bbe-099e75a1841b",
+      "name": "Return the Favor",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/9/e968efff-635b-4780-9bbe-099e75a1841b.jpg?1775936710",
+      "cmc": 2,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{R}{R}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "d5d50e02-80c8-4b7d-9f51-7f1d79f9f263",
+      "name": "Crop Rotation",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/5/d5d50e02-80c8-4b7d-9f51-7f1d79f9f263.jpg?1775936740",
+      "cmc": 1,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d5d50e02-80c8-4b7d-9f51-7f1d79f9f263",
+      "name": "Crop Rotation",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/5/d5d50e02-80c8-4b7d-9f51-7f1d79f9f263.jpg?1775936740",
+      "cmc": 1,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0f7d3839-0bc3-402b-b9ea-c903f82d39da",
+      "name": "Sublime Epiphany",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/f/0f7d3839-0bc3-402b-b9ea-c903f82d39da.jpg?1743206406",
+      "cmc": 6,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{4}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0f7d3839-0bc3-402b-b9ea-c903f82d39da",
+      "name": "Sublime Epiphany",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/f/0f7d3839-0bc3-402b-b9ea-c903f82d39da.jpg?1743206406",
+      "cmc": 6,
+      "type_line": "",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "mana_cost": "{4}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6d9efae9-365d-46c8-be92-d4a3038f0414",
+      "name": "Requisition Raid",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/d/6d9efae9-365d-46c8-be92-d4a3038f0414.jpg?1775936425",
+      "cmc": 1,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{W}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "6d9efae9-365d-46c8-be92-d4a3038f0414",
+      "name": "Requisition Raid",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/d/6d9efae9-365d-46c8-be92-d4a3038f0414.jpg?1775936425",
+      "cmc": 1,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{W}",
+      "keywords": [
+        "Spree"
+      ]
+    },
+    {
+      "scryfall_id": "6d9efae9-365d-46c8-be92-d4a3038f0414",
+      "name": "Requisition Raid",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/d/6d9efae9-365d-46c8-be92-d4a3038f0414.jpg?1775936425",
+      "cmc": 1,
+      "type_line": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "mana_cost": "{W}",
+      "keywords": [
+        "Spree"
+      ]
+    }
+  ],
+  "sideboard": [
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+      "name": "Basri's Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
+      "cmc": 4,
+      "type_line": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "mana_cost": "{2}{W}{W}",
+      "keywords": [
+        "Lifelink"
+      ]
+    }
+  ],
+  "cardCount": 41,
+  "lastUpdated": "2026-05-11T10:18:08.985Z"
+}

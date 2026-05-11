@@ -89,6 +89,7 @@ export interface Room {
         wins: Record<string, number>;
         status: 'pending' | 'active' | 'completed';
         engineState?: any;
+        joinedPlayers?: string[];
     }[];
     checkpoint?: GameState; // DEBUG: Saved game state
     serverTime?: number;

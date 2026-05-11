@@ -33,6 +33,22 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return false;
         }
     },
+    "ACTIVATED_ABILITY": {
+        matches(state, targetObj: Targetable) {
+            if (isStackObject(targetObj)) {
+                return targetObj.type === 'ActivatedAbility';
+            }
+            return false;
+        }
+    },
+    "TRIGGERED_ABILITY": {
+        matches(state, targetObj: Targetable) {
+            if (isStackObject(targetObj)) {
+                return targetObj.type === 'TriggeredAbility';
+            }
+            return false;
+        }
+    },
     "ARTIFACT_OR_CREATURE": gameObjectRestriction((state, obj) => {
         const mask = obj.typeMask || 0;
         return (mask & (CardType.Artifact | CardType.Creature)) !== 0;

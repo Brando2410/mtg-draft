@@ -66,14 +66,14 @@ export const CardChoiceGrid = memo(({
             </div>
         )}
         
-        <div className="flex flex-wrap justify-center gap-8 p-6 w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-12 gap-y-8 p-6 w-full justify-items-center">
             {filteredCardChoices.map((choice: any, idx: number) => {
                 const originalIdx = choices.indexOf(choice);
                 const isSelected = selectedIndices.includes(originalIdx);
                 const selectionCount = selectedIndices.filter(i => i === originalIdx).length;
                 return (
                     <motion.div key={choice.cardData.id || `choice-card-${idx}-${originalIdx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)} onContextMenu={(e) => handleChoiceRightClick(e, originalIdx)}>
-                        <div className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)]">
+                        <div className="w-[calc(var(--u)*32)] h-[calc(var(--u)*23.1)]">
                             <GameCard obj={choice.cardData} variant="battlefield" onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
                         </div>
                         {isSelected && (

@@ -1,9 +1,7 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const AdventurousEaterHaveaBite: CardDefinition = {
     name: "Adventurous Eater // Have a Bite",
     manaCost: "{2}{B} // {B}",
-
-
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Human", "Warlock"],
@@ -11,7 +9,6 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
     oracleText: "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "2",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -21,7 +18,6 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
     ],
     preparedFace: {
         name: "Have a Bite",
-
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -31,7 +27,7 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
                 type: AbilityType.Spell,
                 targetDefinitions: [{ type: TargetType.Creature }],
                 effects: [
-                    { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
+                    { type: EffectType.AddCounters, amount: 1, counterType: CounterType.P1P1, targetMapping: TargetMapping.Target1 },
                     { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
                 ]
             }

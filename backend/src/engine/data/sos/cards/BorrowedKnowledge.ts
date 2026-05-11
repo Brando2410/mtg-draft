@@ -2,22 +2,16 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const BorrowedKnowledge: CardDefinition = {
     name: "Borrowed Knowledge",
     manaCost: "{2}{R}{W}",
-
-
-    colors: [
-        "R",
-        "W"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["R", "W"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Choose one —\n• Discard your hand, then draw cards equal to the number of cards in target opponent's hand.\n• Discard your hand, then draw cards equal to the number of cards discarded this way.",
     abilities: [
         {
             type: AbilityType.Spell,
-            isModal: true,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: "Discard hand, draw cards equal to opponent's hand size",

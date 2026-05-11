@@ -9,6 +9,8 @@ export const SilverquillCharm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     targetDefinitions: [{ type: TargetType.Creature, count: 1 }],

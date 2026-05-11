@@ -60,8 +60,22 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
           const winnerId = match.players.find(id => id !== lostPlayer.id);
           if (winnerId) {
             match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
-            match.status = 'completed';
-            LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
+            // Best of 1 for now or check for 2 wins? 
+            // The UI says Best of 3, let's stick to 2 wins if we want.
+            // But usually simple tournaments here are 1 match = 1 win.
+            // Let's check if they reached 2 wins for Bo3.
+            if (match.wins[winnerId] >= 2) {
+              match.status = 'completed';
+              LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
+              advanceTournament(room);
+            } else {
+              // Reset for next game in Bo3?
+              // For now, let's just make 1 win = completed to keep it simple unless Bo3 is strictly required.
+              // Actually, let's make it 1 win for now to ensure advancement works.
+              match.status = 'completed';
+              LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
+              advanceTournament(room);
+            }
           }
         }
       }
@@ -112,34 +126,196 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('join_tournament_match', async ({ roomId, playerId, matchIndex }: { roomId: string, playerId: string, matchIndex: number }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.matches || !room.matches[matchIndex]) return;
+
+    const match = room.matches[matchIndex];
+    if (match.status !== 'pending') return;
+
+    if (!match.joinedPlayers) match.joinedPlayers = [];
+    if (!match.joinedPlayers.includes(playerId)) {
+      match.joinedPlayers.push(playerId);
+      LoggerService.info('TOURNAMENT', `Player ${playerId} joined match ${matchIndex}`);
+    }
+
+    // Auto-join bots
+    const otherPlayerId = match.players.find(id => id !== playerId);
+    if (otherPlayerId) {
+      const otherPlayer = room.players.find(p => p.playerId === otherPlayerId);
+      if (otherPlayer?.isBot && !match.joinedPlayers.includes(otherPlayerId)) {
+        match.joinedPlayers.push(otherPlayerId);
+        LoggerService.info('TOURNAMENT', `Bot ${otherPlayerId} automatically joined match ${matchIndex}`);
+      }
+    }
+
+    // Start match if both are present
+    if (match.joinedPlayers.length === 2) {
+      const updatedMatch = createMatch(room, match.players[0], match.players[1]);
+      if (updatedMatch) {
+        room.matches[matchIndex] = {
+           ...updatedMatch,
+           wins: match.wins 
+        };
+        LoggerService.info('TOURNAMENT', `Match ${matchIndex} is now ACTIVE`);
+      }
+    }
+
+    io.to(roomId).emit('room_update', room);
+    await PersistenceService.saveRooms(rooms);
+  });
+
+  socket.on('spectate_tournament_match', async ({ roomId, playerId, matchIndex }: { roomId: string, playerId: string, matchIndex: number }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.matches || !room.matches[matchIndex]) return;
+
+    const match = room.matches[matchIndex];
+    
+    // If the match is pending and both players are bots, a human spectating it should trigger its start
+    if (match.status === 'pending') {
+      const p1 = room.players.find(p => p.playerId === match.players[0]);
+      const p2 = room.players.find(p => p.playerId === match.players[1]);
+
+      if (p1?.isBot && p2?.isBot) {
+        LoggerService.info('TOURNAMENT', `Starting bot-vs-bot match ${matchIndex} via spectator ${playerId}`);
+        const updatedMatch = createMatch(room, match.players[0], match.players[1]);
+        if (updatedMatch) {
+          room.matches[matchIndex] = {
+            ...updatedMatch,
+            wins: match.wins
+          };
+          io.to(roomId).emit('room_update', room);
+          await PersistenceService.saveRooms(rooms);
+        }
+      }
+    }
+  });
+
+  const createMatch = (room: Room, player1Id: string, player2Id: string) => {
+    const p1 = room.players.find(p => p.playerId === player1Id);
+    const p2 = room.players.find(p => p.playerId === player2Id);
+    if (!p1 || !p2) return null;
+
+    const playerIds = [p1.playerId, p2.playerId];
+    const decksByPlayer: Record<string, Card[]> = {
+      [p1.playerId]: p1.deck ? (Array.isArray(p1.deck) ? p1.deck : (p1.deck.mainEntry || p1.deck.cards || [])) : [],
+      [p2.playerId]: p2.deck ? (Array.isArray(p2.deck) ? p2.deck : (p2.deck.mainEntry || p2.deck.cards || [])) : []
+    };
+    const playerNames = { [p1.playerId]: p1.name, [p2.playerId]: p2.name };
+    const playerAvatars = { [p1.playerId]: p1.avatar || 'ajani.png', [p2.playerId]: p2.avatar || 'ajani.png' };
+    
+    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
+    engine.startGame();
+
+    return {
+      players: [p1.playerId, p2.playerId],
+      wins: { [p1.playerId]: 0, [p2.playerId]: 0 },
+      status: 'active' as const,
+      engineState: engine.getState(),
+      joinedPlayers: [p1.playerId, p2.playerId]
+    };
+  };
+
+  const getWinner = (match: any) => {
+    const p1 = match.players[0];
+    const p2 = match.players[1];
+    return (match.wins[p1] || 0) > (match.wins[p2] || 0) ? p1 : p2;
+  };
+
+  const getLoser = (match: any) => {
+    const p1 = match.players[0];
+    const p2 = match.players[1];
+    return (match.wins[p1] || 0) > (match.wins[p2] || 0) ? p2 : p1;
+  };
+
+  const advanceTournament = (room: Room) => {
+    const matches = room.matches || [];
+    const playerCount = room.rules.playerCount || 8;
+
+    LoggerService.info('TOURNAMENT', `Checking advancement for room ${room.id}. Current matches: ${matches.length}`);
+
+    if (playerCount === 8) {
+      // Round 1 -> Round 2 (Semis + Consolation Semis)
+      if (matches.length === 4 && matches.every(m => m.status === 'completed')) {
+        const w0 = getWinner(matches[0]);
+        const w1 = getWinner(matches[1]);
+        const w2 = getWinner(matches[2]);
+        const w3 = getWinner(matches[3]);
+
+        const l0 = getLoser(matches[0]);
+        const l1 = getLoser(matches[1]);
+        const l2 = getLoser(matches[2]);
+        const l3 = getLoser(matches[3]);
+        
+        // Winners Bracket (Semis)
+        matches.push({ players: [w0, w1], wins: { [w0]: 0, [w1]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 4
+        matches.push({ players: [w2, w3], wins: { [w2]: 0, [w3]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 5
+        
+        // Losers Bracket (Consolation Semis)
+        matches.push({ players: [l0, l1], wins: { [l0]: 0, [l1]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 6
+        matches.push({ players: [l2, l3], wins: { [l2]: 0, [l3]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 7
+        
+        LoggerService.info('TOURNAMENT', `Advanced to Semi-Finals & Consolation Semis`);
+      }
+      // Round 2 -> Round 3 (Finals, 3rd, 5th, 7th place)
+      else if (matches.length === 8 && matches.slice(4).every(m => m.status === 'completed')) {
+        const w4 = getWinner(matches[4]);
+        const w5 = getWinner(matches[5]);
+        const l4 = getLoser(matches[4]);
+        const l5 = getLoser(matches[5]);
+
+        const w6 = getWinner(matches[6]);
+        const w7 = getWinner(matches[7]);
+        const l6 = getLoser(matches[6]);
+        const l7 = getLoser(matches[7]);
+
+        // 1st & 2nd Place
+        matches.push({ players: [w4, w5], wins: { [w4]: 0, [w5]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 8
+        // 3rd & 4th Place
+        matches.push({ players: [l4, l5], wins: { [l4]: 0, [l5]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 9
+        // 5th & 6th Place
+        matches.push({ players: [w6, w7], wins: { [w6]: 0, [w7]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 10
+        // 7th & 8th Place
+        matches.push({ players: [l6, l7], wins: { [l6]: 0, [l7]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 11
+        
+        LoggerService.info('TOURNAMENT', `Advanced to All Finals (1st-8th)`);
+      }
+      else if (matches.length === 12 && matches.slice(8).every(m => m.status === 'completed')) {
+        room.status = 'completed';
+        LoggerService.info('TOURNAMENT', `Tournament fully completed!`);
+      }
+    } else if (playerCount === 4) {
+      if (matches.length === 2 && matches.every(m => m.status === 'completed')) {
+        const w0 = getWinner(matches[0]);
+        const w1 = getWinner(matches[1]);
+        const l0 = getLoser(matches[0]);
+        const l1 = getLoser(matches[1]);
+
+        // 1st Place Match
+        matches.push({ players: [w0, w1], wins: { [w0]: 0, [w1]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 2
+        // 3rd Place Match
+        matches.push({ players: [l0, l1], wins: { [l0]: 0, [l1]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 3
+
+        LoggerService.info('TOURNAMENT', `Advanced to Final & 3rd Place`);
+      } else if (matches.length === 4 && matches.slice(2).every(m => m.status === 'completed')) {
+        room.status = 'completed';
+      }
+    }
+  };
+
   const startTournamentMatches = (io: Server, room: Room) => {
     LoggerService.info('TOURNAMENT', `Starting matches for room ${room.id}`);
 
-    const players = room.players.filter(p => !p.isBot);
+    const players = room.players;
     const matches: any[] = [];
 
     for (let i = 0; i < players.length; i += 2) {
       if (i + 1 < players.length) {
-        const p1 = players[i];
-        const p2 = players[i + 1];
-
-        const playerIds = [p1.playerId, p2.playerId];
-        const decksByPlayer: Record<string, Card[]> = {
-          [p1.playerId]: p1.deck ? (Array.isArray(p1.deck) ? p1.deck : (p1.deck.mainEntry || p1.deck.cards || [])) : [],
-          [p2.playerId]: p2.deck ? (Array.isArray(p2.deck) ? p2.deck : (p2.deck.mainEntry || p2.deck.cards || [])) : []
-        };
-        const playerNames = {
-          [p1.playerId]: p1.name,
-          [p2.playerId]: p2.name
-        };
-        const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
-        engine.startGame();
-
         matches.push({
-          players: [p1.playerId, p2.playerId],
-          wins: { [p1.playerId]: 0, [p2.playerId]: 0 },
-          status: 'active',
-          engineState: engine.getState()
+          players: [players[i].playerId, players[i + 1].playerId],
+          wins: { [players[i].playerId]: 0, [players[i + 1].playerId]: 0 },
+          status: 'pending' as const,
+          joinedPlayers: []
         });
       }
     }
@@ -200,6 +376,18 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
   socket.on('pass_priority', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
     withMatch(roomId, playerId, (engine) => {
       engine.passPriority(playerId);
+    });
+  });
+
+  socket.on('concede', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const player = state.players[playerId];
+      if (player && !player.hasLost) {
+        player.hasLost = true;
+        engine.log(`${player.name} conceded the game.`);
+        engine.checkStateBasedActions();
+      }
     });
   });
 

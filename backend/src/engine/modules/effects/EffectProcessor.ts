@@ -142,18 +142,22 @@ export class EffectProcessor {
     const { logger } = getProcessors(state);
 
     const startIndex = context.effectIndex ?? 0;
+    // Clone effects to prevent permanent modification of the source array (e.g. stackObject.effects)
+    // when injecting sub-effects like SearchLibrary or conditional follow-ups.
+    const activeEffects = [...effects];
+    context.effects = activeEffects;
 
-    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. isResumption: ${context.isResumption}. Targets: ${targets.join(', ')}`);
+    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${activeEffects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. isResumption: ${context.isResumption}. Targets: ${targets.join(', ')}`);
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
     // Only check at the very beginning of the original resolution sequence
-    if (startIndex === 0 && !context.isResumption && !parentContext && !skipFizzleCheck && targets.length > 0 && effects.some(e => {
+    if (startIndex === 0 && !context.isResumption && !parentContext && !skipFizzleCheck && targets.length > 0 && activeEffects.some(e => {
       const tm = (e.targetMapping || "").toString();
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
       const { targeting: TP } = getProcessors(state);
 
-      const fizzle = TP.shouldFizzle(state, context, targets, effects);
+      const fizzle = TP.shouldFizzle(state, context, targets, activeEffects);
 
       if (fizzle) {
         logger.info(state, LogCategory.ACTION, `[FIZZLE] ${stackObject?.sourceObject?.definition.name || "Spell"}: All targets have become illegal.`);
@@ -161,9 +165,9 @@ export class EffectProcessor {
       }
     }
 
-    for (let i = startIndex; i < effects.length; i++) {
-      const effect = effects[i];
-      logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${effects.length}: Type=${effect.type} Source=${sourceId}`);
+    for (let i = startIndex; i < activeEffects.length; i++) {
+      const effect = activeEffects[i];
+      logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${activeEffects.length}: Type=${effect.type} Source=${sourceId}`);
 
       // CR 608.2: Update the effectIndex BEFORE execution so that any choices 
       // capture the correct resumption point in their metadata.
@@ -218,7 +222,7 @@ export class EffectProcessor {
           return false;
         }
 
-        logger.info(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Injecting ${effects.length - (i + 1)} remaining effects into ${state.pendingAction.type} for ${sourceId}. Next Index: ${i + 1}`);
+        logger.info(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Injecting ${activeEffects.length - (i + 1)} remaining effects into ${state.pendingAction.type} for ${sourceId}. Next Index: ${i + 1}`);
 
         const existingData = (state.pendingAction.data || {}) as import('@shared/engine_types').BaseActionData;
 
@@ -443,6 +447,7 @@ export class EffectProcessor {
       return handler.handle(state, effect, {
         ...context,
         targets: allResolvedTargets,
+        originalTargets: targets, // Preserve original targets for secondary mapping resolution
       });
     } else {
       logger.error(state, LogCategory.ACTION, `[HANDLER-MISSING] No handler registered for effect type: ${effect.type}`);

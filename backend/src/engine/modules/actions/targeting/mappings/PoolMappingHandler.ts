@@ -39,11 +39,18 @@ export class PoolMappingHandler implements ITargetMappingHandler {
         finalRestrictions.push(...restrictions);
 
         // Determine Implicit Restrictions from Mapping String
-        if (m.includes('CREATURE_AND_PLANESWALKER')) finalRestrictions.push('creature_or_planeswalker');
-        else if (m.includes('CREATURE')) finalRestrictions.push(Restriction.Creature);
-        else if (m.includes('PERMANENT')) finalRestrictions.push(Restriction.Permanent);
-        else if (m.includes('PLANESWALKER')) finalRestrictions.push(Restriction.Planeswalker);
-        else if (m.includes('LAND')) finalRestrictions.push(Restriction.Land);
+        if (m.includes('CREATURE_AND_PLANESWALKER')) {
+            finalRestrictions.push(Restriction.Creature);
+            finalRestrictions.push(Restriction.Planeswalker);
+        } else if (m.includes('CREATURE')) {
+            finalRestrictions.push(Restriction.Creature);
+        } else if (m.includes('PERMANENT')) {
+            finalRestrictions.push(Restriction.Permanent);
+        } else if (m.includes('PLANESWALKER')) {
+            finalRestrictions.push(Restriction.Planeswalker);
+        } else if (m.includes('LAND')) {
+            finalRestrictions.push(Restriction.Land);
+        }
 
         if (m.includes('SPIRIT')) finalRestrictions.push('spirit');
         if (m.includes('FRACTAL')) finalRestrictions.push('fractal');
@@ -58,8 +65,8 @@ export class PoolMappingHandler implements ITargetMappingHandler {
 
         if (m.includes('YOU_CONTROL')) {
             finalRestrictions.push(Restriction.YouControl);
-        } else if (m.includes('OPPONENT_CREATURE')) {
-            finalRestrictions.push(Restriction.OpponentControls);
+        } else if (m.includes('OPPONENT_CREATURE') || m.includes('OPPONENT_CONTROL') || m.includes('OPPONENTS_CONTROL') || m.includes('NOT_CONTROLLED')) {
+            finalRestrictions.push(Restriction.OpponentControl);
         }
 
         // Determine Source Zones

@@ -12,6 +12,7 @@ import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { ResolutionManager } from '../stack/ResolutionManager';
 import { SpellValidator } from '../../actions/spells/SpellValidator';
+import { SpellCostCalculator } from '../../actions/spells/SpellCostCalculator';
 
 
 
@@ -33,6 +34,7 @@ export class PriorityProcessor {
     isAuto = false
   ) {
     const { logger } = getProcessors(state);
+    if (state.status === 'completed') return;
 
     // 1. Intercept for special actions
     if (state.pendingAction?.playerId === playerId) {
@@ -173,6 +175,7 @@ export class PriorityProcessor {
     const isPending = state.pendingAction && String(state.pendingAction.playerId) === String(playerId);
     const { logger } = getProcessors(state);
 
+    if (state.status === 'completed') return;
     if (!isPriority && !isPending) return;
 
     const player = state.players[playerId];
@@ -212,6 +215,14 @@ export class PriorityProcessor {
     const isAdministrative = currentStepId === 'untap' || (currentStepId === 'cleanup' && state.stack.length === 0);
     const hasManualStop = !isAdministrative && (player?.stops?.[stopKey] || (isAutoSkipStep && player?.stops?.[beginKey]));
     const isSkipActive = player?.passUntilEndOfTurn;
+
+    // --- STICKY PRIORITY: Pause once after stack changes (CR 117.4) ---
+    // This prevents "blink and you miss it" resolution when no actions are available.
+    if (state.isSticky && !isSkipActive && !player.fullControl && !hasManualStop) {
+      state.isSticky = false;
+      logger.info(state, LogCategory.ACTION, `[STICKY-PRIORITY] Sticky pause for ${player.name} to allow viewing stack resolution.`);
+      return;
+    }
 
     // Skip if:
     // 1. No actions found (canAct = false)
@@ -416,7 +427,11 @@ export class PriorityProcessor {
     // 4. Affordability (Mana and Additional Costs)
     const { layer: LayerProc } = getProcessors(state);
     const stats = preComputedStats || cardToPlay!.effectiveStats || LayerProc.getEffectiveStats(cardToPlay!, state);
-    const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay!, [], undefined, isFlashback, stats).totalMana;
+    
+    // Capture both mana and additional costs from the calculator
+    const costSummary = SpellCostCalculator.getEffectiveCosts(state, cardToPlay!, [], undefined, isFlashback, stats);
+    const effectiveCost = preComputedCost || stats.manaCost || costSummary.totalMana;
+    const additionalCosts = costSummary.additionalCosts;
 
     const isLand = RuleUtils.isLand(cardToPlay!);
     if (isLand) {
@@ -426,18 +441,38 @@ export class PriorityProcessor {
     } else if (!player.manaCheat) {
       const { priority: PriorityProcessor } = getProcessors(state);
       const canFreeCast = PriorityProcessor.findFreeCastPermission(state, playerId, cardToPlay!.id);
+      
+      // Mana Check
       if (!canFreeCast && !ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay!)) {
         return false;
       }
 
       // Check for mandatory additional costs (e.g. Sacrifice a creature)
-      const spellAbility = cardToPlay!.definition.abilities?.find((a: any) => a.type === AbilityType.Spell) as any;
-      const additionalCosts = spellAbility?.additionalCosts || [];
       if (additionalCosts.length > 0) {
         const { targeting: TargetingProcessor } = getProcessors(state);
         const canPayExtras = (additionalCosts as any[]).every(cost => {
           if (cost.type === 'Sacrifice') {
-            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
+            return state.battlefield.some((o: GameObject) => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
+          }
+          if (cost.type === 'Discard') {
+            return player.hand.some((c: GameObject) => c.id !== cardToPlay!.id && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
+          }
+          if (cost.type === 'PayLife') {
+             const lifeVal = cost.value === 'X' ? 0 : (parseInt(cost.value || '0'));
+             return player.life >= lifeVal;
+          }
+          if (cost.type === 'Exile') {
+            const zones = cost.sourceZones || [Zone.Battlefield];
+            const pool = zones.flatMap((z: Zone) => {
+                if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
+                if (z === Zone.Graveyard) return player.graveyard;
+                if (z === Zone.Hand) return player.hand;
+                return [] as GameObject[];
+            });
+            return pool.some((o: GameObject) => o.id !== cardToPlay!.id && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
+          }
+          if (cost.type === 'TapSelection') {
+            return state.battlefield.some((o: GameObject) => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
           }
           return true;
         });

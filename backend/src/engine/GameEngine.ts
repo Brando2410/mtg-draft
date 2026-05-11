@@ -38,6 +38,7 @@ export class GameEngine implements EngineContext {
       priorityPlayerId: players[0],
       currentPhase: Phase.Beginning,
       currentStep: Step.Untap,
+      status: 'active',
       turnNumber: 1,
       battlefield: [],
       exile: [],
@@ -165,6 +166,7 @@ export class GameEngine implements EngineContext {
     if (!player) return false;
     if (player.library.length === 0) {
       player.hasLostDueToEmptyLibrary = true;
+      this.checkStateBasedActions(); // Immediately process the loss
       return false;
     }
     MovementHandler.handle(
@@ -324,6 +326,9 @@ export class GameEngine implements EngineContext {
 
         const activePlayers = Object.values(this.state.players).filter(p => !p.hasLost);
         if (activePlayers.length <= 1 && Object.keys(this.state.players).length > 1) {
+          this.state.status = 'completed';
+          this.state.winner = activePlayers[0]?.playerId;
+          this.log(`Game Over. Winner: ${this.getPlayerName(this.state.winner || 'None')}`);
           return;
         }
 

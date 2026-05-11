@@ -9,7 +9,6 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     oracleText: "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -20,7 +19,6 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     ],
     preparedFace: {
         name: "Heroic Stanza",
-
         manaCost: "{1}{W/B}",
         colors: ["B", "W"],
         types: ["Sorcery"],

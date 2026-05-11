@@ -14,6 +14,7 @@ import battlefieldBg from '../../assets/syd-roberts-portfolio-dsk-battlefield-li
 import { ZoneInspector } from './modals/ZoneInspector';
 import { OrderingModal } from './modals/OrderingModal';
 import { EscMenu } from './modals/EscMenu';
+import { GameOverModal } from './modals/GameOverModal';
 import { TurnTransitionOverlay } from './TurnTransitionOverlay';
 import { useCardZoom } from '../../hooks/game/useCardZoom';
 import { useGameActions } from '../../hooks/game/useGameActions';
@@ -22,17 +23,16 @@ import { useKeyboardControls } from '../../hooks/game/useKeyboardControls';
 interface GameViewProps {
   room: Room;
   playerId: string;
-  onBack: () => void;
   customGameState?: any;
 }
 
-export const GameView = ({ room, playerId, onBack, customGameState }: GameViewProps) => {
+export const GameView = ({ room, playerId, customGameState }: GameViewProps) => {
   const [showDebug, setShowDebug] = useState(false);
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
 
-  const { resetMatch, backToLobby } = useDraftStore();
+  const { resetMatch, leaveRoom } = useDraftStore();
   const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
   const actions = useGameActions(room.id, effectivePlayerId);
   
@@ -266,10 +266,12 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
         isOpen={showEscMenu}
         onClose={() => setShowEscMenu(false)}
         onResetMatch={resetMatch}
-        onBackToLobby={backToLobby}
-        onBack={onBack}
-        onToggleAutoOrder={actions.toggleAutoOrder}
-        autoOrderTriggers={me?.autoOrderTriggers}
+        onBack={() => {
+          if (gameState.players[effectivePlayerId]) {
+            actions.concede();
+          }
+          leaveRoom();
+        }}
       />
 
       <AnimatePresence>
@@ -296,6 +298,17 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
         battlefield={gameState.battlefield} 
         onOrderClick={handleOrderClick}
       />
+
+      <AnimatePresence>
+        {gameState.status === 'completed' && (
+          <GameOverModal 
+            winnerId={gameState.winner}
+            playerId={effectivePlayerId}
+            winnerName={gameState.winner ? (gameState.players[gameState.winner]?.name || 'Unknown') : 'Draw'}
+            onLeave={leaveRoom}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

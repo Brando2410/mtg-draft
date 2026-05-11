@@ -537,12 +537,19 @@ export class TriggerProcessor {
 
       if (event.type === TriggerEvent.CastSpell) {
         const castId = RuleUtils.getSource(event);
+        const eventObjId = RuleUtils.getEventObject(event, state)?.id;
+        
         // Standard trigger (source is card/object itself)
         if (tEvents.includes(TriggerEvent.CastSpell)) {
           if (t.isGlobal) {
             // Global triggers don't need identity match
-          } else if (castId !== t.sourceId) {
-            return false;
+          } else if (castId !== t.sourceId && eventObjId !== t.sourceId) {
+            // It's not a self-trigger. 
+            // If the trigger is active on the battlefield, it's a "Whenever you cast" trigger and should match.
+            const activeZone = t.activeZone || Zone.Battlefield;
+            if (activeZone !== Zone.Battlefield) {
+              return false;
+            }
           }
         }
       }

@@ -98,6 +98,7 @@ export class TriggerStacker {
     }
 
     state.stack.push(stackObj);
+    state.isSticky = true;
     logger.info(state, LogCategory.TRIGGER, `[STACK-PUSH] Trigger ${stackObj.id} (Source: ${stackObj.sourceId}) pushed to stack.`);
     getProcessors(state).action.updateEntityCache(state, stackObj);
     state.consecutivePasses = 0;

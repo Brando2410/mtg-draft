@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const Erode: CardDefinition = {
     name: "Erode",
     manaCost: "{W}",
-
-
     colors: ["W"],
     types: ["Instant"],
     oracleText: "Destroy target creature or planeswalker. Its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
@@ -33,6 +31,7 @@ export const Erode: CardDefinition = {
                                     targetDefinitions: [{
                                         type: TargetType.Land,
                                         count: 1,
+                                        minCount: 0,
                                         optional: true,
                                         restrictions: [Restriction.Basic]
                                     }],

@@ -9,17 +9,18 @@ export const SublimeEpiphany: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            multiMode: { type: 'CHOOSE_ONE_OR_MORE' },
+            minChoices: 1,
+            maxChoices: 5,
             modes: [
                 {
                     label: 'Counter target spell',
-                    targetDefinitions: [{ type: TargetType.Spell, count: 1 }],
+                    targetDefinitions: [{ type: TargetType.Any, count: 1, restrictions: [Restriction.Spell] }],
                     effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Counter target activated or triggered ability',
                     targetDefinitions: [{
-                        type: TargetType.AnyTarget,
+                        type: TargetType.Any,
                         count: 1,
                         restrictions: [Restriction.Ability]
                     }],

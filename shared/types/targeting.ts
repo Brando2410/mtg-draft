@@ -240,6 +240,8 @@ const _Restriction = {
     NonAura: 'non_aura',
     NotAura: 'non_aura',
     Spell: 'spell',
+    ActivatedAbility: 'activated_ability',
+    TriggeredAbility: 'triggered_ability',
 } as const;
 
 /**

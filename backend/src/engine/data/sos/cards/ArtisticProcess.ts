@@ -3,14 +3,14 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const ArtisticProcess: CardDefinition = {
     name: "Artistic Process",
     manaCost: "{3}{R}{R}",
-
-
     colors: ["R"],
     types: ["Sorcery"],
     oracleText: "Choose one —\n• Artistic Process deals 6 damage to target creature.\n• Artistic Process deals 2 damage to each creature you don't control.\n• Create a 3/3 blue and red Elemental creature token with flying. It gains haste until end of turn.",
     abilities: [
         {
             type: AbilityType.Spell,
+            minChoices: 1,
+            maxChoices: 1,
             modes: [
                 {
                     label: 'Deals 6 damage to target creature',

@@ -80,10 +80,11 @@ export class ManaPoolManager {
               } else {
                 matches = rm.restrictions.every((r: string) => {
                   const lowR = r.toLowerCase();
+                  const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
                   if (lowR === 'instant_or_sorcery') {
                     return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
                   }
-                  return RuleUtils.isType(payingFor, lowR) || RuleUtils.hasSubtype(payingFor, lowR);
+                  return RuleUtils.isType(payingFor, lowR) || RuleUtils.hasSubtype(payingFor, lowR) || oracleText.includes(lowR);
                 });
               }
             }

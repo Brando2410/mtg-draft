@@ -231,6 +231,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   },
 
   leaveRoom: () => {
+    const { room, playerId } = get();
+    if (room) socket.emit('leave_room', { roomId: room.id, playerId });
     localStorage.removeItem('mtg_room_id');
     set({ room: null, activeView: 'menu' });
   },
