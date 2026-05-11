@@ -109,13 +109,13 @@ export const GameView = ({ room, playerId, customGameState }: GameViewProps) => 
       <TurnTransitionOverlay activePlayerId={gameState.activePlayerId} playerId={effectivePlayerId} />
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
-      <div className="fixed top-[3vh] left-[3vh] flex items-center gap-[1vw] z-[400]">
+      <div className="fixed top-[calc(var(--u)*4.4)] left-[calc(var(--u)*4.4)] flex items-center gap-[var(--sp-4)] z-[400]">
           <button 
             onClick={() => setShowDebug(true)}
             className="p-3 bg-white/5 hover:bg-indigo-500/20 rounded-2xl border border-white/5 transition-all group"
             title="Open Debug Console (Key: D)"
           >
-              <ShieldAlert className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+              <ShieldAlert className="w-5 h-5 text-indigo-400 transition-transform" />
           </button>
           <button 
             onClick={() => setShowEscMenu(true)}
@@ -242,7 +242,7 @@ export const GameView = ({ room, playerId, customGameState }: GameViewProps) => 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="fixed left-[5vh] bottom-[5vh] z-[3000] pointer-events-none"
+                className="fixed left-[calc(var(--u)*6.6)] bottom-[calc(var(--u)*6.6)] z-[3000] pointer-events-none"
               >
                   <GameCard obj={hoveredCard} variant="zoom" />
               </motion.div>

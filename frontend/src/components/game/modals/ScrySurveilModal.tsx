@@ -132,7 +132,7 @@ export const ScrySurveilModal = ({ pendingAction, me, onResolve }: ScrySurveilMo
 
              <button
                onClick={handleConfirm}
-               className="flex items-center gap-3 px-12 py-5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 rounded-2xl font-black uppercase italic tracking-wider transition-all shadow-xl hover:scale-105 active:scale-95 shadow-yellow-400/20"
+               className="btn-premium-primary max-w-[calc(var(--u)*40)]"
              >
                <Check className="w-6 h-6" />
                Confirm Order
@@ -208,7 +208,7 @@ export const ScrySurveilModal = ({ pendingAction, me, onResolve }: ScrySurveilMo
           >
             <button 
               onClick={() => setMinimized(false)}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black italic uppercase tracking-widest shadow-2xl shadow-indigo-600/40 border border-white/20 flex items-center gap-3 animate-bounce-subtle"
+              className="h-[calc(var(--u)*7.5)] px-[var(--sp-12)] btn-premium-primary"
             >
               <Eye className="w-5 h-5" />
               Return to Choice

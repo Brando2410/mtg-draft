@@ -43,14 +43,14 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
             <motion.div 
               initial={{ scale: 0.9, y: 20 }} 
               animate={{ scale: 1, y: 0 }}
-              className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] shadow-2xl max-w-5xl w-full flex flex-col items-center gap-10 text-center relative"
+              className="bg-[#0b0f1a]/95 border border-white/10 p-[var(--sp-10)] rounded-[calc(var(--u)*8)] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-[95vw] w-full flex flex-col items-center gap-[var(--sp-10)] text-center relative backdrop-blur-2xl"
             >
               {/* MINIMIZE BUTTON */}
               <button 
                 onClick={() => setMinimized(true)}
-                className="absolute top-4 left-1/2 -translate-x-1/2 p-2 px-4 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-black z-30 tracking-[0.2em]"
+                className="absolute top-[var(--sp-4)] left-1/2 -translate-x-1/2 h-[calc(var(--u)*4.5)] px-[var(--sp-6)] bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-[var(--sp-2)] text-[var(--fs-xs)] font-black z-30 tracking-widest border border-white/10"
               >
-                <EyeOff className="w-3.5 h-3.5" />
+                <EyeOff className="w-[var(--sp-4)] h-[var(--sp-4)]" />
                 SHOW BATTLEFIELD
               </button>
 
@@ -104,7 +104,7 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
                               </div>
                           </div>
 
-                          <div className="transition-transform duration-200 hover:scale-[1.02] pointer-events-none group-hover:drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                          <div className="transition-transform duration-200 pointer-events-none group-hover:drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
                             <GameCard 
                                 obj={obj} 
                                 variant="small" 
@@ -124,10 +124,9 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
                   
                   <button 
                     onClick={handleConfirm}
-                    className="group relative px-16 py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl transition-all shadow-2xl shadow-indigo-600/20 active:scale-95"
+                    className="btn-premium-primary max-w-[calc(var(--u)*48)]"
                   >
-                    <div className="absolute inset-x-0 -bottom-2 h-4 bg-indigo-900/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <span className="text-xl font-black italic uppercase tracking-widest text-white">Confirm Order</span>
+                    <span className="text-[var(--fs-2xl)] font-black italic uppercase tracking-widest text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">Confirm Order</span>
                   </button>
 
                   <button 
@@ -153,9 +152,9 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
           >
             <button 
               onClick={() => setMinimized(false)}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black italic uppercase tracking-widest shadow-2xl shadow-indigo-600/40 border border-white/20 flex items-center gap-3 animate-bounce-subtle"
+              className="h-[calc(var(--u)*7.5)] px-[var(--sp-12)] btn-premium-primary"
             >
-              <Eye className="w-5 h-5" />
+              <Eye className="w-[var(--sp-6)] h-[var(--sp-6)]" />
               Return to Ordering
             </button>
           </motion.div>

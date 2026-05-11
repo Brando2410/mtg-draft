@@ -41,7 +41,7 @@ export const CardChoiceGrid = memo(({
   return (
     <>
         {availablePlayerIds.length > 1 && (
-            <div className="flex items-center justify-center gap-4 mb-8 bg-white/5 p-2 rounded-full border border-white/10 backdrop-blur-md">
+            <div className="flex items-center justify-center gap-[var(--sp-4)] mb-[var(--sp-8)] bg-white/5 p-[var(--sp-2)] rounded-full border border-white/10 backdrop-blur-md">
                 {availablePlayerIds.map(pid => {
                     const isMe = pid === me?.id;
                     const isActive = pid === activeViewedPlayerId;
@@ -52,11 +52,11 @@ export const CardChoiceGrid = memo(({
                         <button 
                             key={pid}
                             onClick={() => setViewedPlayerId(pid)}
-                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${isActive ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                            className={`px-[var(--sp-8)] py-[var(--sp-3)] rounded-full text-[var(--fs-xs)] font-black uppercase tracking-widest transition-all flex items-center gap-[var(--sp-3)] ${isActive ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                         >
                             {playerName}
                             {countInTab > 0 && (
-                                <span className="w-5 h-5 bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center text-[10px] shadow-lg animate-in zoom-in duration-300">
+                                <span className="w-[var(--sp-5)] h-[var(--sp-5)] bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center text-[var(--fs-xs)] shadow-lg animate-in zoom-in duration-300">
                                     {countInTab}
                                 </span>
                             )}
@@ -66,7 +66,7 @@ export const CardChoiceGrid = memo(({
             </div>
         )}
         
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-12 gap-y-8 p-6 w-full justify-items-center">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-[var(--sp-12)] gap-y-[var(--sp-8)] p-[var(--sp-6)] w-full justify-items-center">
             {filteredCardChoices.map((choice: any, idx: number) => {
                 const originalIdx = choices.indexOf(choice);
                 const isSelected = selectedIndices.includes(originalIdx);
@@ -80,7 +80,7 @@ export const CardChoiceGrid = memo(({
                             <>
                                 <div className="absolute inset-x-[-4px] inset-y-[-4px] border-[4px] border-yellow-400 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.8)] pointer-events-none z-10" />
                                 {maxChoices > 1 && (
-                                    <div className="absolute -top-4 -right-4 w-10 h-10 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-sm italic">
+                                    <div className="absolute -top-[var(--sp-4)] -right-[var(--sp-4)] w-[var(--sp-12)] h-[var(--sp-12)] bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-[calc(var(--u)*0.5)] border-[#0b0f1a] shadow-2xl z-30 text-[var(--fs-sm)] italic">
                                         {allowDuplicates ? `x${selectionCount}` : selectedIndices.indexOf(originalIdx) + 1}
                                     </div>
                                 )}

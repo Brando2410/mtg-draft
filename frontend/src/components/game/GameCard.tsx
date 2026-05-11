@@ -64,7 +64,9 @@ export const GameCard = memo(({
   const isCurrentlyDeclaringAttack = isDeclaringAttacks && isAttacking;
   const lungeDirection = isOpponent ? 1 : -1;
   const verticalShift = (isAttacking || isBlocking) ? (lungeDirection * 30) : 0;
-  const isActuallyTapped = isTapped && variant !== 'zoom';
+  // State visibility: only show tapped/counters on battlefield or when explicitly zoomed
+  const isStateful = variant === 'battlefield' || variant === 'zoom';
+  const isActuallyTapped = isTapped && isStateful;
 
   const handleChoice = (choice: string) => onClick?.(choice);
 
@@ -87,16 +89,16 @@ export const GameCard = memo(({
       onMouseLeave={() => onHoverEnd?.(obj.id)}
       onClick={() => onClick?.(obj.id)}
       className={`relative shrink-0 cursor-pointer flex flex-col overflow-visible [container-type:inline-size] ${dimensions.rounded}
-        ${(variant !== 'zoom' && variant !== 'full') ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
-        ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
-        ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
+        ${(variant !== 'zoom' && variant !== 'full') ? `border-[calc(var(--u)*0.15)] ${borderClass} shadow-xl` : ''}
+        ${variant === 'battlefield' ? 'hover:ring-[calc(var(--u)*0.3)] hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
+        ${isTargetable ? 'ring-[calc(var(--u)*0.4)] ring-red-500 ring-offset-[calc(var(--u)*0.2)] ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
         ${(isPlayable && !isOpponent) ? (
-          (isPrepared || obj.isVirtual) ? 'ring-[3px] ring-fuchsia-500 !border !border-fuchsia-400' :
-            (effectiveStats?.isPermissionPlay) ? 'ring-[3px] ring-orange-500 !border !border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]' :
-              'ring-[3px] ring-cyan-400 !border !border-cyan-400'
+          (isPrepared || obj.isVirtual) ? 'ring-[calc(var(--u)*0.3)] ring-fuchsia-500 !border !border-fuchsia-400' :
+            (effectiveStats?.isPermissionPlay) ? 'ring-[calc(var(--u)*0.3)] ring-orange-500 !border !border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]' :
+              'ring-[calc(var(--u)*0.3)] ring-cyan-400 !border !border-cyan-400'
         ) : ''} 
-        ${isSelected ? 'ring-2 ring-yellow-400' : ''}
-        ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''} shadow-lg`}
+        ${isSelected ? 'ring-[calc(var(--u)*0.2)] ring-yellow-400' : ''}
+        ${isCurrentlyDeclaringAttack ? 'ring-[calc(var(--u)*0.4)] ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''} shadow-lg`}
     >
       {/* PLAYABLE GLOW */}
       {(isPlayable && !isOpponent) && (
@@ -104,7 +106,7 @@ export const GameCard = memo(({
           initial={{ opacity: 0.3 }}
           animate={{ opacity: [0.3, 0.7, 0.3] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute inset-[-3px] z-[-1] rounded-[inherit]
+          className={`absolute inset-[calc(var(--u)*-0.3)] z-[-1] rounded-[inherit]
             ${(isPrepared || obj.isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' :
               (effectiveStats?.isPermissionPlay) ? 'bg-orange-500/20 shadow-[0_0_20px_rgba(249,115,22,0.8)]' :
                 'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
@@ -118,8 +120,8 @@ export const GameCard = memo(({
             ${isOpponent ? '-bottom-7 rotate-180' : '-top-7'}
           `}>
           <div className="relative">
-            <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[16px] border-b-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,1)]" />
-            <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[14px] border-b-yellow-400 opacity-50" />
+            <div className="w-0 h-0 border-l-[calc(var(--u)*1.2)] border-l-transparent border-r-[calc(var(--u)*1.2)] border-r-transparent border-b-[calc(var(--u)*1.6)] border-b-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,1)]" />
+            <div className="absolute top-[calc(var(--u)*0.2)] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[calc(var(--u)*1.0)] border-l-transparent border-r-[calc(var(--u)*1.0)] border-r-transparent border-b-[calc(var(--u)*1.4)] border-b-yellow-400 opacity-50" />
           </div>
         </div>
       )}
@@ -128,7 +130,7 @@ export const GameCard = memo(({
       {variant === 'battlefield' && !hideHeader && (
         <div
           style={{ ...(borderStyle?.headerBackground ? { background: borderStyle.headerBackground } : {}), height: headerHeight }}
-          className={`flex-none flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
+          className={`flex-none flex items-center px-[var(--sp-2)] border-b overflow-hidden rounded-t-sm z-30 transition-colors
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
           <h3 style={{ fontSize: headerFontSize }} className="font-black tracking-tighter truncate flex-1 min-w-0 text-left leading-none">
@@ -163,19 +165,19 @@ export const GameCard = memo(({
           )}
 
           {variant === 'zoom' && (
-            <div className={`relative group/zoom flex ${definition.faces && definition.faces.length > 1 ? 'flex-row gap-4 p-4 items-start bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/5' : 'flex-col'}`}>
+            <div className={`relative group/zoom flex ${definition.faces && definition.faces.length > 1 ? 'flex-row gap-[var(--sp-4)] p-[var(--sp-4)] items-start bg-slate-900/40 backdrop-blur-md rounded-[calc(var(--u)*2)] border border-white/5' : 'flex-col'}`}>
               {definition.faces && definition.faces.length > 1 ? (
                 definition.faces.map((face, idx) => (
                   <div key={idx} className="flex-1 min-w-0 flex flex-col items-center">
-                    <img src={face.image_url || definition.image_url} alt={face.name} className="w-full h-auto rounded-xl shadow-2xl border-2 border-white/10" />
-                    <div className="mt-2 text-[10px] font-black uppercase text-white/40 tracking-widest">{idx === 0 ? 'Front' : 'Back'}</div>
+                    <img src={face.image_url || definition.image_url} alt={face.name} className="w-full h-auto rounded-[calc(var(--u)*1.5)] shadow-2xl border border-white/10" />
+                    <div className="mt-[var(--sp-2)] text-[var(--fs-xs)] font-black uppercase text-white/40 tracking-widest">{idx === 0 ? 'Front' : 'Back'}</div>
                   </div>
                 ))
               ) : (
-                <img src={definition.image_url} alt={definition.name} className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/10" />
+                <img src={definition.image_url} alt={definition.name} className="w-full h-auto rounded-[calc(var(--u)*2)] shadow-2xl border border-white/10" />
               )}
               {definition.faces && definition.faces.length > 1 && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg border border-indigo-400/50 uppercase tracking-tighter z-50">
+                <div className="absolute -top-[var(--sp-3)] left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[var(--fs-xs)] font-black px-[var(--sp-3)] py-[var(--sp-1)] rounded-full shadow-lg border border-indigo-400/50 uppercase tracking-tighter z-50">
                   Double Faced Card
                 </div>
               )}
@@ -197,11 +199,11 @@ export const GameCard = memo(({
               )}
 
               {variant === 'battlefield' && (
-                <div className="flex flex-col gap-1 items-start mt-1">
-                  <div className="flex flex-wrap gap-0.5">
+                <div className="flex flex-col gap-[var(--sp-1)] items-start mt-[var(--sp-1)]">
+                  <div className="flex flex-wrap gap-[var(--sp-05)]">
                     {(effectiveStats?.keywords || []).map(k => <KeywordIcon key={k} keyword={k} />)}
                     {summoningSickness && isCreature && !isTapped && (
-                      <div title="Summoning Sickness" className="w-4 h-4 bg-indigo-600/80 rounded flex items-center justify-center text-[8px] animate-pulse shadow-sm">💤</div>
+                      <div title="Summoning Sickness" className="w-[var(--sp-4)] h-[var(--sp-4)] bg-indigo-600/80 rounded flex items-center justify-center text-[var(--fs-xs)] animate-pulse shadow-sm">💤</div>
                     )}
                   </div>
                 </div>
@@ -242,7 +244,7 @@ export const GameCard = memo(({
         </>
       )}
 
-      {variant !== 'zoom' && <CounterBadges counters={counters} variant={variant} />}
+      {isStateful && <CounterBadges counters={counters} variant={variant} />}
       <ContextualActions pendingAction={pendingAction} objId={obj.id} onChoice={handleChoice} />
     </motion.div>
   );

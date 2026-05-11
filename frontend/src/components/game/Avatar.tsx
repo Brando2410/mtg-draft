@@ -60,14 +60,14 @@ export const Avatar = memo(({
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-[4vh] relative h-[6vh]">
-          <div className="flex gap-4 items-center">
+      <div className="flex items-center gap-[calc(var(--u)*6.6)] relative h-[calc(var(--u)*9.9)]">
+          <div className="flex gap-[var(--sp-4)] items-center">
               <Stopper {...commonProps} id="beginning" label="Beginning" />
               <Stopper {...commonProps} id="main1" label="Main 1" />
-              <div className="w-8 h-px bg-gradient-to-r from-transparent to-white/10 mx-1" />
+              <div className="w-[var(--sp-8)] h-px bg-gradient-to-r from-transparent to-white/10 mx-[var(--sp-1)]" />
           </div>
 
-          <div className="relative group/avatar w-[9vh] h-[9vh]">
+          <div className="relative group/avatar w-[calc(var(--u)*13.2)] h-[calc(var(--u)*13.2)]">
               {/* PREMIUM SHOCKWAVE PULSE */}
               <AnimatePresence>
                 {showPulse && (
@@ -106,7 +106,7 @@ export const Avatar = memo(({
                             rotate: impact.rotation 
                         }}
                         transition={{ duration: 1, ease: "circOut" }}
-                        className={`absolute left-1/2 -translate-x-1/2 font-black italic text-3xl z-[300] pointer-events-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]
+                        className={`absolute left-1/2 -translate-x-1/2 font-black italic text-[var(--fs-3xl)] z-[300] pointer-events-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]
                             ${impact.amount > 0 ? 'text-emerald-400' : 'text-red-500'}
                         `}
                     >
@@ -139,7 +139,7 @@ export const Avatar = memo(({
                       repeat: Infinity, 
                       ease: "easeInOut" 
                     }}
-                    className={`absolute inset-[-4px] rounded-full z-0 pointer-events-none border-2
+                    className={`absolute inset-[calc(var(--u)*-0.6)] rounded-full z-0 pointer-events-none border-[calc(var(--u)*0.3)]
                         ${isPriority ? 'border-indigo-400/30' : 'border-white/10'}
                     `}
                   />
@@ -158,9 +158,9 @@ export const Avatar = memo(({
                     : (isActive ? '0 0 30px rgba(99, 102, 241, 0.2)' : '0 0 20px rgba(0,0,0,0.5)')
                 }}
                 transition={{ duration: 0.1 }}
-                className={`w-full h-full rounded-full border-2 overflow-hidden transition-all cursor-pointer relative z-10
+                className={`w-full h-full rounded-full border-[calc(var(--u)*0.3)] overflow-hidden transition-all cursor-pointer relative z-10
                   ${isPriority ? 'border-indigo-400' : (isActive ? 'border-white/40' : 'border-white/20')}
-                  ${targetable ? 'ring-4 ring-red-500 animate-pulse border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : ''}
+                  ${targetable ? 'ring-[calc(var(--u)*0.6)] ring-red-500 animate-pulse border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : ''}
                   bg-slate-950 flex items-center justify-center`}
               >
                   <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center relative bg-slate-900">
@@ -184,9 +184,9 @@ export const Avatar = memo(({
 
                   <motion.div 
                     animate={showPulse ? { scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' } : { scale: 1, backgroundColor: 'rgba(0,0,0,0.8)' }}
-                    className="absolute inset-x-0 bottom-0 py-1 flex items-center justify-center border-t border-white/10 z-20 backdrop-blur-sm transition-all"
+                    className="absolute inset-x-0 bottom-0 py-[var(--sp-1)] flex items-center justify-center border-t border-white/10 z-20 backdrop-blur-sm transition-all"
                   >
-                      <span className={`text-xl font-black italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] leading-none transition-colors
+                      <span className={`text-[var(--fs-xl)] font-black italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] leading-none transition-colors
                         ${showPulse === 'gain' ? 'text-emerald-400' : showPulse === 'loss' ? 'text-red-400' : 'text-white'}
                       `}>
                           {player.life}
@@ -197,8 +197,8 @@ export const Avatar = memo(({
               <ScryBubble scryNotice={scryNotice} isOpponent={isOpponent} />
           </div>
 
-          <div className="flex gap-4 items-center">
-              <div className="w-8 h-px bg-gradient-to-l from-transparent to-white/10 mx-1" />
+          <div className="flex gap-[var(--sp-4)] items-center">
+              <div className="w-[var(--sp-8)] h-px bg-gradient-to-l from-transparent to-white/10 mx-[var(--sp-1)]" />
               <Stopper {...commonProps} id="main2" label="Main 2" />
               <Stopper {...commonProps} id="end" label="End Step" />
           </div>

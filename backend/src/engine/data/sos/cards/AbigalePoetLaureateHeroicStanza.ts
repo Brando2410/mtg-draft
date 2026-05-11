@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CounterType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     name: "Abigale, Poet Laureate // Heroic Stanza",
     manaCost: "{1}{W}{B} // {1}{W/B}",
@@ -13,7 +13,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'SPELL_IS_CREATURE',
+            condition: ConditionType.SpellIsCreature,
             effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
         }
     ],
@@ -31,7 +31,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
                     {
                         type: EffectType.AddCounters,
                         amount: 1,
-                        counterType: '+1/+1',
+                        counterType: CounterType.P1P1,
                         targetMapping: TargetMapping.Target1
                     }
                 ]

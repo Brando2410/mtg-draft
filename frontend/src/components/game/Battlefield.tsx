@@ -69,9 +69,9 @@ export const Battlefield = memo(({
         <TargetingArrows stack={stack} battlefield={battlefield} pendingAction={pendingAction} hoveredCardId={hoveredCardId} />
         
         {/* OPPONENT SIDE */}
-        <div className="w-full h-1/2 flex flex-col relative">
-           <div className="h-[30%] flex items-center justify-end px-[0.5vw] bg-black/40 border-b border-white/5 shrink-0 overflow-hidden">
-                <div className="flex gap-[2vh] h-[85%] items-center">
+        <div className="w-full flex-1 flex flex-col relative">
+           <div className="h-[34%] flex items-center justify-end px-[calc(var(--u)*1.1)] bg-black/40 border-b border-white/5 shrink-0">
+                <div className="flex gap-[calc(var(--u)*4.4)] h-full items-center">
                     {(exile || []).filter(o => o.ownerId === opponent?.id).length > 0 && (
                         <ZonePile label="exile" count={(exile || []).filter(o => o.ownerId === opponent?.id).length} cards={(exile || []).filter(o => o.ownerId === opponent?.id)} type="exile" onClick={() => onInspectZone({ label: "Enemy Exile", cards: (exile || []).filter(o => o.ownerId === opponent?.id), type: 'exile', isMe: false })} />
                     )}
@@ -80,7 +80,7 @@ export const Battlefield = memo(({
                 </div>
            </div>
 
-           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] border-b border-white/5 bg-black/20 px-[0.5vw] relative shrink-0">
+           <div className="h-[33%] grid grid-cols-[1fr,calc(var(--u)*18.5),1fr] border-b border-white/5 bg-black/20 px-[calc(var(--u)*1.1)] relative shrink-0">
                 <div className="h-full border-r border-white/5">
                     <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
                 </div>
@@ -101,23 +101,23 @@ export const Battlefield = memo(({
                 </div>
            </div>
 
-           <div className="h-[35%] relative shrink-0 px-[0.5vw]">
+           <div className="h-[33%] relative shrink-0 px-[calc(var(--u)*1.1)]">
                 <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
            </div>
         </div>
 
         {/* MIDDLE DIVIDER GAP */}
-        <div className="w-full h-[3vh] border-y border-white/5 bg-white/[0.01] relative z-10 flex items-center justify-center py-[0.5vh] shrink-0">
+        <div className="w-full h-[calc(var(--u)*6.6)] border-y border-white/5 bg-white/[0.01] relative z-10 flex items-center justify-center py-[calc(var(--u)*1.1)] shrink-0">
             <ActionPrompt pendingAction={pendingAction} isMe={pendingAction?.playerId === me?.id} />
         </div>
 
         {/* PLAYER SIDE */}
-        <div className="w-full h-1/2 flex flex-col relative">
-           <div className="h-[35%] border-b border-white/5 shrink-0 px-[0.5vw]">
+        <div className="w-full flex-1 flex flex-col relative">
+           <div className="h-[33%] border-b border-white/5 shrink-0 px-[calc(var(--u)*1.1)]">
                 <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
            </div>
 
-           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] bg-black/20 border-b border-white/5 px-[0.5vw] relative shrink-0">
+           <div className="h-[33%] grid grid-cols-[1fr,calc(var(--u)*18.5),1fr] bg-black/20 border-b border-white/5 px-[calc(var(--u)*1.1)] relative shrink-0">
                 <div className="h-full border-r border-white/5">
                     <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
                 </div>
@@ -138,8 +138,8 @@ export const Battlefield = memo(({
                 </div>
            </div>
 
-           <div className="h-[30%] flex items-center justify-start px-[0.5vw] bg-black/40 shrink-0 overflow-hidden">
-                <div className="flex gap-[2vh] h-[85%] items-center">
+           <div className="h-[34%] flex items-center justify-start px-[calc(var(--u)*1.1)] bg-black/40 shrink-0">
+                <div className="flex gap-[calc(var(--u)*4.4)] h-full items-center">
                     <ZonePile label="lib" count={me?.library.length || 0} type="library" />
                     <ZonePile label="grave" count={me?.graveyard.length || 0} cards={me?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Your Graveyard", cards: me?.graveyard || [], type: 'graveyard', isMe: true })} />
                     {(exile || []).filter(o => o.ownerId === me?.id).length > 0 && (
@@ -150,7 +150,7 @@ export const Battlefield = memo(({
         </div>
 
         {/* STACK OVERLAY */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 overflow-visible">
+        <div className="absolute right-[calc(var(--u)*5)] top-1/2 -translate-y-1/2 z-50 overflow-visible">
             <StackView 
                 stack={stack} pendingAction={pendingAction} me={me} opponent={opponent} exile={exile} battlefield={battlefield}
                 onTapCard={onTapCard} targetableIds={targetableIds}

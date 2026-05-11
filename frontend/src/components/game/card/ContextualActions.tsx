@@ -39,7 +39,7 @@ export const ContextualActions = memo(({ pendingAction, objId, onChoice }: Conte
                 e.stopPropagation();
                 onChoice(`CHOICE_${idx}`);
               }}
-              className="w-full py-[1.2vh] px-[2vh] rounded-xl font-black text-[calc(var(--u)*1.2)] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95 bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/40 shadow-xl backdrop-blur-sm"
+              className="btn-premium-primary"
             >
               {choice.label}
             </button>

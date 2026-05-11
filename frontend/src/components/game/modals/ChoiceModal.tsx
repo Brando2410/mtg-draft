@@ -140,23 +140,23 @@ export const ChoiceModal = memo(({
             <motion.div 
               initial={{ scale: 0.9, y: 10 }} 
               animate={{ scale: 1, y: 0 }}
-              className="bg-[#0b0f1a]/95 border border-white/10 p-5 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-[95vw] w-[1400px] flex flex-row items-stretch gap-0 text-center relative overflow-hidden backdrop-blur-2xl"
+              className="bg-[#0b0f1a]/95 border border-white/10 p-[var(--sp-5)] rounded-[calc(var(--u)*6)] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-[95vw] w-[calc(var(--u)*185)] flex flex-row items-stretch gap-0 text-center relative overflow-hidden backdrop-blur-2xl"
             >
               <SourceObjectPreview sourceObjects={sourceObjects} />
 
               <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8 relative min-h-0 bg-black/5 border-l border-white/10">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[calc(var(--u)*40)] h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
                   
                   <button 
                     onClick={() => setMinimized(true)}
-                    className="absolute top-6 right-8 p-2 px-6 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-black z-30 tracking-widest border border-white/10 group backdrop-blur-md"
+                    className="absolute top-[var(--sp-6)] right-[var(--sp-8)] p-[var(--sp-2)] px-[var(--sp-6)] bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-[var(--sp-2)] text-[var(--fs-xs)] font-black z-30 tracking-widest border border-white/10 group backdrop-blur-md"
                   >
-                    <EyeOff className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                    <EyeOff className="w-[var(--sp-4)] h-[var(--sp-4)] transition-transform" />
                     MINIMIZE
                   </button>
 
-                  <div className="flex flex-col gap-1 mb-4 select-none px-6 w-full text-center">
-                    <h3 className={`font-black italic uppercase tracking-tighter text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] ${isCostChoice ? 'text-3xl' : 'text-5xl'}`}>
+                  <div className="flex flex-col gap-[var(--sp-1)] mb-[var(--sp-4)] select-none px-[var(--sp-6)] w-full text-center">
+                    <h3 className="font-black italic uppercase tracking-tighter text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]" style={{ fontSize: isCostChoice ? 'var(--fs-3xl)' : 'var(--fs-5xl)' }}>
                       {isScrySurveil ? (pendingAction.type === ActionType.Surveil ? "Surveil" : "Scry") : 
                        isOrderTriggers ? "Order Triggers" : 
                        (pendingAction.data?.label || (hasCards ? "Choose a Card" : "Choose an Option"))}
@@ -164,7 +164,7 @@ export const ChoiceModal = memo(({
                     <div className="w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent blur-[2px]" />
                   </div>
 
-                  <div className={`w-full custom-scrollbar overflow-x-auto overflow-y-auto max-h-[60vh] px-8 py-6 flex flex-col items-center ${hasCards || isOrderTriggers ? 'bg-black/30 rounded-[2.5rem] border border-white/5 shadow-inner mx-8' : ''}`}>
+                  <div className={`w-full custom-scrollbar overflow-x-auto overflow-y-auto max-h-[60vh] px-[var(--sp-8)] py-[var(--sp-6)] flex flex-col items-center ${hasCards || isOrderTriggers ? 'bg-black/30 rounded-[calc(var(--u)*6)] border border-white/5 shadow-inner mx-[var(--sp-8)]' : ''}`}>
                       {isScrySurveil && <ScrySurveilView scryState={scryState} setScryState={setScryState} moveCard={moveCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} type={pendingAction.type as ActionType} />}
                       {isOrderTriggers && <TriggerOrderView orderedTriggers={orderedTriggers} setOrderedTriggers={setOrderedTriggers} />}
                       {isManaToggle && <ManaChoiceToggleView hybridGroups={pendingAction.data?.hybridGroups || meta.hybridGroups} toggleState={manaToggleState} setToggleState={setManaToggleState} />}
@@ -186,25 +186,37 @@ export const ChoiceModal = memo(({
                           />
                       )}
                       {!isOrderTriggers && !isScrySurveil && !isManaToggle && buttonChoices.length === 0 && !hasCards && (
-                          <div className="p-10 border-2 border-dashed border-red-500/20 rounded-[2rem] text-red-500/40 font-black uppercase tracking-[0.2em] italic">
+                          <div className="p-[var(--sp-12)] border-2 border-dashed border-red-500/20 rounded-[calc(var(--u)*4)] text-red-500/40 font-black uppercase tracking-[0.2em] italic text-[var(--fs-lg)]">
                               No choices available to select
                           </div>
                       )}
                   </div>
 
-                  <div className="flex flex-row items-center justify-center gap-6 w-full max-w-xl mt-6 relative z-20">
+                  <div className="flex flex-row items-center justify-center gap-[var(--sp-6)] w-full max-w-[calc(var(--u)*100)] mt-[var(--sp-6)] relative z-20">
                     {(!isOrderTriggers && !isScrySurveil && !isManaToggle && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
-                      <button onClick={() => onTapCard?.(`CHOICE_undo`)} className="flex-1 max-w-[140px] p-4 bg-red-500/5 hover:bg-red-500/10 rounded-2xl border border-red-500/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-red-500/60 hover:text-red-500">
+                      <button 
+                        onClick={() => onTapCard?.(`CHOICE_undo`)} 
+                        className="max-w-[calc(var(--u)*24)] btn-premium-danger"
+                      >
                         CANCEL
                       </button>
                     )}
                     {noneChoice && !isOrderTriggers && !isManaToggle && (
-                      <button onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)} className="flex-1 max-w-[140px] p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-white/70 hover:text-white">
+                      <button 
+                        onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)} 
+                        className="max-w-[calc(var(--u)*24)] btn-premium-secondary"
+                      >
                         SKIP
                       </button>
                     )}
-                    <button disabled={!isOrderTriggers && !isScrySurveil && !isManaToggle && selectedIndices.length < minChoices} onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else if (isManaToggle) confirmManaToggle(); else confirmSelection(); }} className={`flex-1 max-w-[240px] p-5 rounded-2xl border-none text-base font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${(isOrderTriggers || isScrySurveil || isManaToggle || selectedIndices.length >= minChoices) ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 scale-105 shadow-[0_0_30px_rgba(250,204,21,0.4)]' : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'}`}>
-                      {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : isManaToggle ? "Confirm Payment" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
+                    <button 
+                      disabled={!isOrderTriggers && !isScrySurveil && !isManaToggle && selectedIndices.length < minChoices} 
+                      onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else if (isManaToggle) confirmManaToggle(); else confirmSelection(); }} 
+                      className={`max-w-[calc(var(--u)*45)] ${(isOrderTriggers || isScrySurveil || isManaToggle || selectedIndices.length >= minChoices) ? 'btn-premium-primary' : 'btn-premium-empty'}`}
+                    >
+                      <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                        {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : isManaToggle ? "Confirm" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
+                      </span>
                     </button>
                   </div>
               </div>
@@ -223,7 +235,7 @@ export const ChoiceModal = memo(({
           >
             <button 
               onClick={() => setMinimized(false)}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center gap-3 border border-white/20 font-black italic uppercase tracking-widest text-xs transition-all hover:scale-105"
+              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center gap-3 border border-white/20 font-black italic uppercase tracking-widest text-xs transition-all"
             >
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
               PENDING CHOICE

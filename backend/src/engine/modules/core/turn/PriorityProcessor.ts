@@ -218,10 +218,13 @@ export class PriorityProcessor {
 
     // --- STICKY PRIORITY: Pause once after stack changes (CR 117.4) ---
     // This prevents "blink and you miss it" resolution when no actions are available.
-    if (state.isSticky && !isSkipActive && !player.fullControl && !hasManualStop) {
+    if (state.isSticky) {
+      const shouldPause = !isSkipActive && !player.fullControl && !hasManualStop && !isAdministrative;
       state.isSticky = false;
-      logger.info(state, LogCategory.ACTION, `[STICKY-PRIORITY] Sticky pause for ${player.name} to allow viewing stack resolution.`);
-      return;
+      if (shouldPause) {
+        logger.info(state, LogCategory.ACTION, `[STICKY-PRIORITY] Sticky pause for ${player.name} to allow viewing stack resolution.`);
+        return;
+      }
     }
 
     // Skip if:

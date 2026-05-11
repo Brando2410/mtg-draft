@@ -18,6 +18,7 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
   const cardCount = hand.length;
 
   const getCardRotation = (index: number) => {
+    if (cardCount <= 1) return 0;
     const middle = (cardCount - 1) / 2;
     // Steeper spread for a more professional 'fan' look
     const maxSpread = 30; // Total rotation from end to end
@@ -28,18 +29,18 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
     const middle = (cardCount - 1) / 2;
     const offset = Math.abs(index - middle);
     // Sit slightly lower in the frame for better visibility
-    return -20 - (offset * 3);
+    return -2 - (offset * 0.3);
   };
 
   const getCardX = (index: number) => {
     const middle = (cardCount - 1) / 2;
-    // Tight horizontal overlap
-    const spacing = 45;
+    // Tight horizontal overlap using U units
+    const spacing = 5.5;
     return (index - middle) * spacing;
   };
 
   return (
-    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-32 flex items-start justify-center z-[600] pointer-events-none">
+    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[calc(var(--u)*100)] h-[calc(var(--u)*16)] flex items-start justify-center z-[600] pointer-events-none">
       <div className="relative w-full h-full flex items-start justify-center">
         <AnimatePresence>
           {(hand || []).map((card, index) => {
@@ -56,11 +57,11 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
             return (
               <motion.div
                 key={card.id || index}
-                initial={{ y: -200, opacity: 0 }}
+                initial={{ y: 'calc(var(--u)*-20)', opacity: 0 }}
                 animate={{
                   // Keep them tucked at the top, slightly lower if revealed
-                  y: isRevealed ? yBase + 15 : yBase,
-                  x: xBase,
+                  y: `calc(var(--u)*${isRevealed ? yBase + 2 : yBase})`,
+                  x: `calc(var(--u)*${xBase})`,
                   opacity: 1,
                   // Stay in the hand's fan orientation (opponent view)
                   rotate: rotation + 180,
@@ -68,14 +69,14 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
                   zIndex: isRevealed ? 700 : index,
                   transition: { type: 'spring', stiffness: 100, damping: 20 }
                 }}
-                exit={{ y: -200, opacity: 0 }}
+                exit={{ y: 'calc(var(--u)*-20)', opacity: 0 }}
                 whileHover={{
-                  y: isRevealed ? yBase + 25 : yBase + 10,
+                  y: `calc(var(--u)*${isRevealed ? yBase + 3 : yBase + 1.5})`,
                   scale: 1.2,
                   zIndex: 800,
                   transition: { type: 'spring', stiffness: 400, damping: 25 }
                 }}
-                className="absolute w-20 h-28 origin-center pointer-events-auto cursor-help"
+                className="absolute w-[calc(var(--u)*10)] h-[calc(var(--u)*14)] origin-center pointer-events-auto cursor-help"
                 onMouseEnter={() => isRevealed && onHoverStart?.(cardWithFlags)}
                 onMouseLeave={() => isRevealed && onHoverEnd?.(card.id)}
               >

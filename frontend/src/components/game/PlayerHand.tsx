@@ -34,9 +34,8 @@ export const PlayerHand = memo(({
   ];
 
   const totalCards = allCards.length;
-  // Dynamic spread: Use viewport-relative spacing (converted to rem for consistency)
-  const maxHandWidthRem = 48; 
-  const spacingRem = Math.min(3.8, maxHandWidthRem / Math.max(totalCards, 1));
+  // Dynamic spread: Use universal units for spacing
+  const spacing = Math.min(8.5, 120 / Math.max(totalCards, 1));
 
   const getCardRotation = (index: number) => {
     if (totalCards <= 1) return 0;
@@ -47,18 +46,17 @@ export const PlayerHand = memo(({
   const getCardY = (index: number) => {
     const middle = (totalCards - 1) / 2;
     const offset = Math.abs(index - middle);
-    // Vertical arch in VH units for perfect scaling
-    // Vertical arch sitting higher from total bottom
-    return 6 + (offset * 0.6); 
+    // Vertical arch in unit increments
+    return 6 + (offset * 0.8); 
   };
 
   const getCardX = (index: number) => {
     const middle = (totalCards - 1) / 2;
-    return (index - middle) * (spacingRem * 1.1); // Tightened spread
+    return (index - middle) * spacing; 
   };
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-[35vh] flex items-end justify-center z-[600] pointer-events-none">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-[calc(var(--u)*46)] flex items-end justify-center z-[600] pointer-events-none">
       <div className="relative w-full h-full flex items-end justify-center pointer-events-none">
         <AnimatePresence>
           {allCards.map((card, index) => {
@@ -69,16 +67,16 @@ export const PlayerHand = memo(({
             return (
               <motion.div
                 key={card.id}
-                initial={{ y: '30vh', opacity: 0, rotate: rotation }}
+                initial={{ y: 'calc(var(--u)*40)', opacity: 0, rotate: rotation }}
                 animate={{ 
-                  y: `${yBase}vh`, 
-                  x: `${xBase}vw`,
+                  y: `calc(var(--u)*${yBase})`, 
+                  x: `calc(var(--u)*${xBase})`,
                   opacity: 1, 
                   rotate: rotation,
                   zIndex: index, 
                   transition: { type: 'tween', duration: 0.3, ease: "easeOut" }
                 }}
-                exit={{ y: '40vh', opacity: 0 }}
+                exit={{ y: 'calc(var(--u)*50)', opacity: 0 }}
                 whileHover={{ 
                   y: 0, 
                   rotate: 0,
@@ -109,7 +107,7 @@ export const PlayerHand = memo(({
       </div>
 
       {/* SUBTLE VIGNETTE (Optional, non-blocking) */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-[-1]" />
+      <div className="absolute inset-x-0 bottom-0 h-[calc(var(--u)*20)] bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-[-1]" />
     </div>
   );
 }, (prevProps, nextProps) => {

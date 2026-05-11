@@ -38,14 +38,14 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 border-2 border-indigo-500/30 p-10 rounded-[3rem] shadow-[0_0_50px_rgba(79,70,229,0.2)] max-w-md w-full flex flex-col items-center gap-8 text-center relative"
+              className="bg-[#0b0f1a]/95 border border-white/10 p-[var(--sp-10)] rounded-[calc(var(--u)*8)] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-md w-full flex flex-col items-center gap-[var(--sp-8)] text-center relative backdrop-blur-2xl"
             >
               {/* MINIMIZE BUTTON */}
               <button 
                 onClick={() => setMinimized(true)}
-                className="absolute top-4 left-1/2 -translate-x-1/2 p-2 px-4 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-black z-30 tracking-[0.2em]"
+                className="absolute top-[var(--sp-4)] left-1/2 -translate-x-1/2 h-[calc(var(--u)*4.5)] px-[var(--sp-6)] bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-[var(--sp-2)] text-[var(--fs-xs)] font-black z-30 tracking-widest border border-white/10 backdrop-blur-md"
               >
-                <EyeOff className="w-3.5 h-3.5" />
+                <EyeOff className="w-[var(--sp-4)] h-[var(--sp-4)]" />
                 SHOW BATTLEFIELD
               </button>
 
@@ -83,19 +83,19 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
                   </button>
                 </div>
 
-                <div className="flex items-center gap-4 w-full">
+                <div className="flex items-center gap-[var(--sp-4)] w-full">
                   <button 
                     onClick={() => onResolve?.('undo')}
-                    className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black uppercase italic tracking-widest transition-all"
+                    className="flex-1 btn-premium-danger"
                   >
                     Cancel
                   </button>
                   
                   <button 
                     onClick={() => onResolve?.(value)}
-                    className="flex-[2] py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-950 rounded-2xl font-black uppercase italic tracking-widest transition-all shadow-xl shadow-yellow-400/10"
+                    className="flex-[2] btn-premium-primary"
                   >
-                    Submit X={value}
+                    <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] uppercase tracking-widest">Submit X={value}</span>
                   </button>
                 </div>
               </div>
@@ -115,9 +115,9 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
           >
             <button 
               onClick={() => setMinimized(false)}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black italic uppercase tracking-widest shadow-2xl shadow-indigo-600/40 border border-white/20 flex items-center gap-3 animate-bounce-subtle"
+              className="h-[calc(var(--u)*7.5)] px-[var(--sp-12)] btn-premium-primary"
             >
-              <Eye className="w-5 h-5" />
+              <Eye className="w-[var(--sp-6)] h-[var(--sp-6)]" />
               Return to Selection
             </button>
           </motion.div>

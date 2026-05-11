@@ -13,6 +13,10 @@ export class SpellValidator {
     public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, bypassPermission = false, forceFlashback?: boolean): GameObject | null {
         const player = state.players[playerId];
 
+        // 0. Priority Search: Dynamic and Paradigm Copies (Resumption/Virtual Objects)
+        if (state.paradigmCopies && state.paradigmCopies[cardInstanceId]) return state.paradigmCopies[cardInstanceId];
+        if (state.dynamicCopies && state.dynamicCopies[cardInstanceId]) return state.dynamicCopies[cardInstanceId];
+
         // 1. Search in Hand (Real objects)
         const cardInHand = player.hand.find(c => c.id === cardInstanceId);
         if (cardInHand) return cardInHand;
@@ -93,9 +97,6 @@ export class SpellValidator {
             realObj.isVirtual = true;
             return realObj;
         }
-
-        if (state.paradigmCopies && state.paradigmCopies[cardInstanceId]) return state.paradigmCopies[cardInstanceId];
-        if (state.dynamicCopies && state.dynamicCopies[cardInstanceId]) return state.dynamicCopies[cardInstanceId];
 
         return null;
     }

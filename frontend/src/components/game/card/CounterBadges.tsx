@@ -6,7 +6,7 @@ interface CounterBadgesProps {
 }
 
 export const CounterBadges = memo(({ counters, variant }: CounterBadgesProps) => {
-  const isZoom = variant === 'zoom' || variant === 'full';
+  const isZoom = variant === 'zoom';
   const scaleFactor = isZoom ? 3 : 1;
   const positionClass = isZoom 
     ? "right-[5%] top-1/2 -translate-y-1/2" 

@@ -22,22 +22,22 @@ export const ActionPrompt = memo(({ pendingAction, isMe }: ActionPromptProps) =>
       >
           {!isMe ? (
               <div className="flex flex-col items-center">
-                  <h2 className="relative text-3xl font-black text-white/40 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
+                  <h2 className="relative text-[var(--fs-3xl)] font-black text-white/40 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
                       {pendingAction.type === ActionType.Discard ? 'Opponent is discarding...' : 'Opponent is making a choice...'}
                   </h2>
                   {pendingAction.data?.label && (
-                      <span className="relative text-[10px] text-indigo-400 font-bold uppercase tracking-[0.3em] mt-2 block">{pendingAction.data.label}</span>
+                      <span className="relative text-[var(--fs-xs)] text-indigo-400 font-bold uppercase tracking-[0.3em] mt-[var(--sp-2)] block">{pendingAction.data.label}</span>
                   )}
               </div>
           ) : (
               !([ActionType.Choice, ActionType.ResolutionChoice, ActionType.ModalSelection, ActionType.OptionalAction, ActionType.Scry, ActionType.Surveil, ActionType.ChooseX] as any[]).includes(pendingAction.type) && (
-                  <div className="flex flex-col items-center">
-                      <h2 className="relative text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
+                   <div className="flex flex-col items-center">
+                      <h2 className="relative text-[var(--fs-3xl)] font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
                           {pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :
                           pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
                           pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
                           pendingAction.type === ActionType.Discard ? (
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-[var(--sp-3)]">
                                   <span>{pendingAction.data?.label || 'Discard'}</span>
                                   <span className="font-black text-cyan-400">
                                       ({pendingAction.data?.count ?? pendingAction.count ?? 1})

@@ -26,9 +26,9 @@ export const ZonePile = memo(({ label, count, topCard, cards, onClick, type = 'l
   return (
     <div 
         onClick={onClick}
-        className={`flex flex-col items-center gap-[1vh] group cursor-pointer pointer-events-auto`}
+        className={`flex flex-col items-center gap-[var(--sp-2)] group cursor-pointer pointer-events-auto`}
     >
-        <div className="relative w-[10vh] h-[13.5vh] group-hover:ring-[3px] group-hover:ring-indigo-400/80 group-hover:shadow-[0_0_25px_rgba(129,140,248,0.6)] rounded-lg transition-all duration-300">
+        <div className="relative w-[calc(var(--u)*14.5)] h-[calc(var(--u)*20.2)] group-hover:ring-[calc(var(--u)*0.4)] group-hover:ring-indigo-400/80 group-hover:shadow-[0_0_25px_rgba(129,140,248,0.6)] rounded-lg transition-all duration-300">
             {/* STACK DEPTH EFFECT */}
             {Array.from({ length: depth }).map((_, i) => (
                 <div 
@@ -37,7 +37,7 @@ export const ZonePile = memo(({ label, count, topCard, cards, onClick, type = 'l
                         ${isLibrary ? 'bg-[#1a1c24] border-black/40' : 'bg-slate-900'}
                     `}
                     style={{ 
-                        transform: `translate(${i * 1.5}px, ${-i * 1.5}px)`,
+                        transform: `translate(calc(var(--u) * ${i * 0.2}), calc(var(--u) * ${-i * 0.2}))`,
                         zIndex: -i
                     }}
                 />
@@ -48,30 +48,30 @@ export const ZonePile = memo(({ label, count, topCard, cards, onClick, type = 'l
                 ${isLibrary ? 'bg-gradient-to-br from-[#1a1c24] to-[#0a0c10]' : 'bg-slate-900'}
             `}>
                 {isLibrary ? (
-                    <div className="flex flex-col items-center relative w-full h-full p-4">
+                    <div className="flex flex-col items-center relative w-full h-full p-[var(--sp-4)]">
                          {/* Arena-style Card Back Placeholder */}
-                         <div className="absolute inset-2 border border-white/5 rounded-md" />
-                         <div className="mt-8 w-12 h-16 rounded-full bg-indigo-500/5 blur-xl absolute" />
-                         <div className="relative flex flex-col items-center gap-2 mt-auto mb-4">
-                             <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 flex items-center justify-center">
-                                 <div className="w-4 h-4 bg-indigo-500/10 rounded-full blur-sm" />
+                         <div className="absolute inset-[calc(var(--u)*0.5)] border border-white/5 rounded-md" />
+                         <div className="mt-[var(--sp-8)] w-[calc(var(--u)*10)] h-[calc(var(--u)*14)] rounded-full bg-indigo-500/5 blur-xl absolute" />
+                         <div className="relative flex flex-col items-center gap-[var(--sp-2)] mt-auto mb-[var(--sp-4)]">
+                             <div className="w-[calc(var(--u)*6)] h-[calc(var(--u)*6)] rounded-full border-[calc(var(--u)*0.2)] border-indigo-500/20 flex items-center justify-center">
+                                 <div className="w-[calc(var(--u)*3)] h-[calc(var(--u)*3)] bg-indigo-500/10 rounded-full blur-sm" />
                              </div>
-                             <span className="text-[7px] font-black uppercase text-white/20 tracking-[0.4em]">MAGIC</span>
+                             <span className="text-[var(--fs-xs)] font-black uppercase text-white/20 tracking-[0.4em]">MAGIC</span>
                          </div>
                     </div>
                 ) : effectiveTopCard ? (
                     <img src={effectiveTopCard.definition.image_url} className="w-full h-full object-cover" alt="" />
-                ) : (
-                    <div className="flex flex-col items-center gap-4 opacity-20">
-                         <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center">
-                             <div className="w-6 h-6 bg-white/5 rounded-sm rotate-45" />
+                 ) : (
+                    <div className="flex flex-col items-center gap-[var(--sp-4)] opacity-20">
+                         <div className="w-[calc(var(--u)*10)] h-[calc(var(--u)*10)] rounded-full border border-white/10 flex items-center justify-center">
+                             <div className="w-[calc(var(--u)*5)] h-[calc(var(--u)*5)] bg-white/5 rounded-sm rotate-45" />
                          </div>
-                         <div className="text-[8px] font-black text-white uppercase tracking-widest italic">{label}</div>
+                         <div className="text-[var(--fs-xs)] font-black text-white uppercase tracking-widest italic">{label}</div>
                     </div>
                 )}
                 
                 {/* COUNT BADGE (Arena Style) */}
-                <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-[2px] py-[0.1vh] px-1 flex items-center justify-center gap-1.5 border-t border-white/10">
+                <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-[2px] py-[calc(var(--u)*0.3)] px-1 flex items-center justify-center gap-1.5 border-t border-white/10">
                      <span className="text-[calc(var(--u)*1.2)] font-black text-white/50 uppercase tracking-tight italic select-none leading-none">
                         {label}
                      </span>

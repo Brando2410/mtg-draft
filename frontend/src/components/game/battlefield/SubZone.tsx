@@ -132,7 +132,7 @@ export const SubZone = memo(({
                     {allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id).map((aura, i) => (
                         <div 
                             key={aura.id || `aura-${i}`} 
-                            className="absolute -top-4 -right-2 z-10 hover:z-50 hover:scale-150 transition-all cursor-pointer"
+                            className="absolute -top-4 -right-2 z-10 hover:z-50 transition-all cursor-pointer"
                             style={{ transform: `translateX(${i * 10}px)` }}
                             onClick={(e) => { e.stopPropagation(); onTapCard?.(aura.id); }}
                         >
@@ -152,10 +152,10 @@ export const SubZone = memo(({
 
   }, [cards, allBattlefieldCards, onTapCard, stackSameName, targetableIds, onHoverStart, onHoverEnd, isDeclaringAttacks, attackers, pendingAction]);
 
-  const isWrapped = content.length > 6;
+  const visibleCount = content.length;
+  const isWrapped = visibleCount > 6;
   const wrapScale = isWrapped ? 0.55 : 1;
-  const count = cards.length;
-  const internalScale = (count > 5 && !isWrapped) ? Math.max(0.2, 1 - (count - 5) * 0.08) : 1;
+  const internalScale = (visibleCount > 5 && !isWrapped) ? Math.max(0.2, 1 - (visibleCount - 5) * 0.08) : 1;
 
   const zoneStyle = {
     '--card-w': `calc(var(--u) * 20 * ${internalScale * wrapScale})`,
