@@ -403,10 +403,10 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
       </div>
 
       {/* ═══ LOWER SECTION (Deck + Sideboard side by side) ═══ */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <motion.div layout className="flex-1 flex overflow-hidden min-h-0">
 
         {/* DECK AREA (CMC Columns with stacked card strips) */}
-        <div className="flex-1 bg-[#0b0b0d] relative overflow-x-auto overflow-y-hidden flex gap-2 px-3 pt-3 custom-scrollbar-h">
+        <motion.div layout className="flex-1 bg-[#0b0b0d] relative overflow-x-auto overflow-y-hidden flex gap-2 px-3 pt-3 custom-scrollbar-h">
           {[0, 1, 2, 3, 4, 5, 6].map(cmc => {
             const cards = cmcColumns[cmc];
             return (
@@ -430,7 +430,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
               </div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* SIDEBOARD (only in bottom half) */}
         <SideboardSidebar
@@ -445,7 +445,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
           onDrop={() => { }}
           renderManaSymbols={renderManaSymbols}
         />
-      </div>
+      </motion.div>
 
       {/* BOTTOM BAR */}
       <div className="h-[clamp(48px,7vh,72px)] bg-[#08080a] border-t border-white/5 flex items-center px-6 justify-between shrink-0 z-50">
@@ -585,6 +585,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
           >
             {(() => {
               const z = zoomCard;
+              if (!z) return null;
               return (
                 <>
                   <motion.div
@@ -615,7 +616,6 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 };
