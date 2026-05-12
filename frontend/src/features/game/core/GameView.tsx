@@ -1,25 +1,27 @@
-import { type Room } from '@shared/types';
-import { Settings, ShieldAlert, Eye } from 'lucide-react';
+import { type Room, type TournamentMatch } from '@shared/types';
+import { Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Battlefield } from './Battlefield';
-import { PlayerHand } from './PlayerHand';
-import { OpponentHand } from './OpponentHand';
-import { DebugConsole } from './DebugConsole';
+import { Battlefield } from '../arena/battlefield/Battlefield';
+import { PlayerHand } from '../arena/players/PlayerHand';
+import { OpponentHand } from '../arena/players/OpponentHand';
+import { DebugConsole } from '../modals/DebugConsole';
 import { ActionButton } from './ActionButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type GameObject, ActionType } from '@shared/engine_types';
-import { useDraftStore } from '../../store/useDraftStore';
-import { GameCard } from './GameCard';
-import battlefieldBg from '../../assets/syd-roberts-portfolio-dsk-battlefield-lightsoff.jpg';
-import { ZoneInspector } from './modals/ZoneInspector';
-import { OrderingModal } from './modals/OrderingModal';
-import { EscMenu } from './modals/EscMenu';
-import { GameOverModal } from './modals/GameOverModal';
-import { RestartMatchModal } from './modals/RestartMatchModal';
-import { TurnTransitionOverlay } from './TurnTransitionOverlay';
-import { useCardZoom } from '../../hooks/game/useCardZoom';
-import { useGameActions } from '../../hooks/game/useGameActions';
-import { useKeyboardControls } from '../../hooks/game/useKeyboardControls';
+import { useDraftStore } from '../../../store/useDraftStore';
+import { GameCard } from '../arena/objects/GameCard';
+import battlefieldBg from '../../../assets/syd-roberts-portfolio-dsk-battlefield-lightsoff.jpg';
+import { ZoneInspector } from '../modals/ZoneInspector';
+import { Ordering } from '../modals/Ordering';
+import { EscMenu } from '../modals/EscMenu';
+import { GameOver } from '../modals/GameOver';
+import { RestartMatch } from '../modals/RestartMatch';
+import { TurnTransitionOverlay } from '../arena/battlefield/TurnTransitionOverlay';
+import { useCardZoom } from '../../../hooks/game/useCardZoom';
+import { useGameActions } from '../../../hooks/game/useGameActions';
+import { useKeyboardControls } from '../../../hooks/game/useKeyboardControls';
+import { useSpectatorPresence } from '../../../hooks/game/useSpectatorPresence';
+import { GameHeader } from './GameHeader';
 
 interface GameViewProps {
   room: Room;
@@ -41,27 +43,22 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
   const actions = useGameActions(room.id, effectivePlayerId);
   
-  const currentMatch = room.matches?.find((m: any) => m.players.includes(effectivePlayerId) && m.status === 'active');
+  const currentMatch = room.matches?.find((m: TournamentMatch) => m.players.includes(effectivePlayerId) && m.status === 'active');
   const restartRequestedBy = currentMatch?.restartRequestedBy;
   const isRequestingRestart = restartRequestedBy === effectivePlayerId;
   const requesterName = restartRequestedBy ? room.players.find(p => p.playerId === restartRequestedBy)?.name : undefined;
 
-  const currentMatchIndex = room.matches?.findIndex((m: any) => m.players.includes(effectivePlayerId) && m.status === 'active') ?? -1;
-  const spectators = room.players.filter(p => 
-    p.watchingMatchIndex === currentMatchIndex && 
-    currentMatchIndex !== -1 &&
-    !room.matches![currentMatchIndex].players.includes(p.playerId)
-  );
-  const spectatorCount = spectators.length;
+  const { spectatorCount, spectators, lastSpectatorName } = useSpectatorPresence({ room, playerId, effectivePlayerId });
 
+  // Point 6: Automatic POV Fallback
   useEffect(() => {
-    if (currentMatchIndex !== -1) {
-      actions.socket.emit('update_watching_match', { roomId: room.id, playerId, matchIndex: currentMatchIndex });
+    if (gameState && !gameState.players[effectivePlayerId]) {
+      const remainingPlayerId = Object.keys(gameState.players)[0];
+      if (remainingPlayerId) {
+        setEffectivePlayerId(remainingPlayerId);
+      }
     }
-    return () => {
-      actions.socket.emit('update_watching_match', { roomId: room.id, playerId, matchIndex: null });
-    };
-  }, [currentMatchIndex, room.id, playerId]);
+  }, [gameState?.players, effectivePlayerId]);
 
   useKeyboardControls({
     onToggleFullControl: actions.toggleFullControl,
@@ -145,48 +142,26 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
       <TurnTransitionOverlay activePlayerId={gameState.activePlayerId} playerId={effectivePlayerId} />
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
-      <div className="fixed top-[calc(var(--u)*4.4)] left-[calc(var(--u)*4.4)] flex items-center gap-[var(--sp-4)] z-[400]">
-        <button
-          onClick={() => setShowDebug(true)}
-          className="p-3 bg-white/5 hover:bg-indigo-500/20 rounded-2xl border border-white/5 transition-all group"
-          title="Open Debug Console (Key: D)"
-        >
-          <ShieldAlert className="w-5 h-5 text-indigo-400 transition-transform" />
-        </button>
-        <button
-          onClick={() => setShowEscMenu(true)}
-          className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all group"
-          title="Game Menu (Key: ESC)"
-        >
-          <Settings className="w-5 h-5 text-white/40 group-hover:text-white transition-colors rotate-90" />
-        </button>
+      <GameHeader
+        onOpenDebug={() => setShowDebug(true)}
+        onOpenMenu={() => setShowEscMenu(true)}
+        spectators={spectators}
+        spectatorCount={spectatorCount}
+      />
 
-        {spectatorCount > 0 && (
-          <div 
-            className="flex items-center gap-2 px-3 py-3 bg-indigo-600/20 rounded-2xl border border-indigo-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(79,70,229,0.2)] animate-in fade-in slide-in-from-left-2 duration-500 group/specs relative"
-          >
-            <Eye className="w-5 h-5 text-indigo-400" />
-            <span className="text-xs font-black text-indigo-300 tabular-nums">{spectatorCount}</span>
-
-            {/* Spectator List Tooltip */}
-            <div className="absolute top-full left-0 mt-2 opacity-0 translate-y-2 pointer-events-none group-hover/specs:opacity-100 group-hover/specs:translate-y-0 transition-all duration-300 z-[1000]">
-              <div className="bg-[#0f111a]/95 border border-white/10 rounded-2xl p-3 shadow-2xl backdrop-blur-xl min-w-[150px]">
-                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 px-1">Spectators</div>
-                <div className="flex flex-col gap-1.5">
-                  {spectators.map((s, idx) => (
-                    <div key={idx} className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/5 rounded-lg transition-colors">
-                      <div className="w-4 h-4 rounded-full bg-slate-800 border border-white/10 overflow-hidden">
-                        <img src={`/avatars/${s.avatar || 'ajani.png'}`} className="w-full h-full object-cover" alt="" />
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-300 truncate">{s.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      {/* Spectator Notification Toast */}
+      {lastSpectatorName && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[1000] animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-3 px-6 py-3 bg-indigo-600/90 backdrop-blur-xl border border-indigo-400/50 rounded-full shadow-[0_0_30px_rgba(79,70,229,0.4)]">
+            <div className="p-1 bg-white/20 rounded-full">
+              <Eye className="w-4 h-4 text-white" />
             </div>
+            <p className="text-sm font-bold text-white whitespace-nowrap">
+              <span className="text-indigo-200">{lastSpectatorName}</span> is now spectating
+            </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <OpponentHand
         hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]}
@@ -279,6 +254,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
           passUntilEndOfTurn={me?.passUntilEndOfTurn}
           onTogglePassTurn={actions.togglePassTurn}
           fullControl={me?.fullControl}
+          onChoiceResolve={actions.resolveChoice}
         />
       </div>
 
@@ -295,6 +271,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         }}
         onHoverStart={startZoom}
         onHoverEnd={stopZoom}
+        pendingAction={gameState.pendingAction}
       />
 
       {/* ZOOM OVERLAY */}
@@ -358,14 +335,14 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         )}
       </AnimatePresence>
 
-      <OrderingModal
+      <Ordering
         pendingAction={gameState.pendingAction}
         me={me}
         battlefield={gameState.battlefield}
         onOrderClick={handleOrderClick}
       />
 
-      <RestartMatchModal
+      <RestartMatch
         isOpen={!!restartRequestedBy}
         isRequesting={isRequestingRestart}
         requesterName={requesterName}
@@ -375,7 +352,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
 
       <AnimatePresence>
         {gameState.status === 'completed' && (
-          <GameOverModal
+          <GameOver
             winnerId={gameState.winner}
             playerId={effectivePlayerId}
             winnerName={gameState.winner ? (gameState.players[gameState.winner]?.name || 'Unknown') : 'Draw'}

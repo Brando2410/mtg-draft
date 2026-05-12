@@ -361,6 +361,8 @@ export const ActionType = {
   ChooseX: "CHOOSE_X",
   OrderTriggers: "ORDER_TRIGGERS",
   LegendRule: "LEGEND_RULE",
+  Mulligan: "MULLIGAN",
+  StartingPlayerSelection: "STARTING_PLAYER_SELECTION",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

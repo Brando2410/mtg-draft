@@ -29,7 +29,8 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, cards, 
 
     cards.forEach(card => {
       const types = card.types || [];
-      const isLand = types.includes('Land');
+      const isLand = types.some(t => t.toLowerCase() === 'land') || 
+                     (card.typeLine || '').toLowerCase().includes('land');
       
       if (!isLand) {
         nonLandCount++;

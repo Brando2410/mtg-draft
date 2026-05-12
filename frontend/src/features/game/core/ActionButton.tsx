@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ActionType, Step, Phase } from '@shared/engine_types';
 import { Sword, Shield, Zap, Diamond, Compass, ChevronsRight } from 'lucide-react';
-import { useActionButtonLogic } from '../../hooks/game/useActionButtonLogic';
+import { useActionButtonLogic } from '../../../hooks/game/useActionButtonLogic';
 
 interface ActionButtonProps {
   hasPriority: boolean;
@@ -25,6 +25,7 @@ interface ActionButtonProps {
   onTogglePassTurn?: () => void;
   onClear?: () => void;
   onUndo?: () => void;
+  onChoiceResolve?: (choice: number) => void;
 }
 
 interface PhaseIndicatorProps {
@@ -101,7 +102,8 @@ export const ActionButton = memo(({
   passUntilEndOfTurn = false,
   onTogglePassTurn,
   onClear,
-  onUndo
+  onUndo,
+  onChoiceResolve
 }: ActionButtonProps) => {
   const { 
     buttonText, 
@@ -121,6 +123,14 @@ export const ActionButton = memo(({
     attackerCount,
     blockerCount
   });
+
+  const handlePass = () => {
+    if (pendingAction?.type === ActionType.Mulligan) {
+        onChoiceResolve?.(0); // Index 0 is "Keep"
+    } else {
+        onPass();
+    }
+  };
 
   const isCombat = currentPhase === Phase.Combat;
   const showCombatNavigator = isCombat || fullControl;
@@ -171,6 +181,17 @@ export const ActionButton = memo(({
                         </motion.button>
                     )}
 
+                    {pendingAction?.type === ActionType.Mulligan && (
+                        <motion.button
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={() => onChoiceResolve?.(1)} // Index 1 is "Mulligan"
+                            className="btn-premium-danger w-full max-w-[calc(var(--u)*28)] !h-[calc(var(--u)*4.5)] !text-[var(--fs-sm)]"
+                        >
+                            MULLIGAN
+                        </motion.button>
+                    )}
+
                     {/* TARGETING CANCELLATION */}
                     {pendingAction?.type === ActionType.Targeting && (
                         <div className="flex flex-col gap-[var(--sp-1)] w-full items-center">
@@ -195,7 +216,7 @@ export const ActionButton = memo(({
                     <div className="flex flex-col items-center">
                         {/* MAIN ACTION BUTTON */}
                         <button
-                            onClick={onPass}
+                            onClick={handlePass}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
                             disabled={isDisabled}

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 're
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
 import { DraftPoolBuilder } from '../features/collection/DraftPoolBuilder';
-import { DraftPackView } from '../features/game/DraftPackView';
+import { DraftPackView } from '../features/game/draft/DraftPackView';
 import { Collection } from '../features/collection/Collection';
 import { MainMenu } from '../features/menu/MainMenu';
 import { GameModeSelection } from '../features/menu/GameModeSelection';
@@ -13,12 +13,12 @@ import { Lobby } from '../features/lobby/Lobby';
 import { TournamentBracket } from '../features/lobby/TournamentBracket';
 import { SealedSetup } from '../features/lobby/SealedSetup';
 import { DeckBuilder } from '../features/deck-builder/DeckBuilder';
-import { GameView } from '../features/game/GameView';
+import { GameView } from '../features/game/core/GameView';
 import { PageLayout } from '../components/shared/PageLayout';
 import { useDraftStore } from '../store/useDraftStore';
 import { socket } from '../services/socket';
 import { DraftHistory } from '../features/history/DraftHistory';
-import { LimitedEventOver } from '../features/game/LimitedEventOver';
+import { LimitedEventOver } from '../features/game/modals/LimitedEventOver';
 
 interface AppRouterProps {
   setIsAdminOpen: (val: boolean) => void;
@@ -71,11 +71,13 @@ export const AppRouter = ({
     localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
     setSkipRestore(true);
     setActiveView('builder');
+    navigate('/cube-builder');
   };
 
   const handleSelectDeckFromCollection = (deckData: any) => {
     setSelectedDeck(deckData);
     setActiveView('deck_builder');
+    navigate('/deck-builder');
   };
 
   useEffect(() => {
@@ -594,6 +596,8 @@ const EventWrapper = ({ rooms, playerId, isEditingDeck, setIsEditingDeck, specta
           room={room}
           playerId={playerId}
           customGameState={room.matches?.find((m: any) => m.players.includes(playerId))?.engineState || room.gameState}
+          onBack={() => navigate('/')}
+          onLeave={() => navigate('/')}
         />
       ) : (
         <DraftPackView

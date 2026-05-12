@@ -9,6 +9,7 @@ import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 import { ResolutionManager } from '../core/stack/ResolutionManager';
 import { StackProcessor } from '../core/stack/StackProcessor';
 import { getActionMeta } from '@shared/utils/ActionUtils';
+import { MulliganProcessor } from '../core/MulliganProcessor';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -114,8 +115,10 @@ export class ChoiceProcessor {
         const isChoosingX = action.type === ActionType.ChooseX;
         const isOrderTriggers = action.type === ActionType.OrderTriggers;
         const isTargeting = action.type === ActionType.Targeting;
+        const isMulligan = action.type === ActionType.Mulligan;
+        const isStartingPlayer = action.type === ActionType.StartingPlayerSelection;
 
-        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting) return false;
+        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting && !isMulligan && !isStartingPlayer) return false;
         if (!action.data) return false;
         const actionData = action.data;
         const meta = getActionMeta(action);
@@ -140,6 +143,24 @@ export class ChoiceProcessor {
         // Handle "Back/Undo"
         if (firstSelection === 'undo' || firstSelection === -1) {
             return this.handleUndo(state, playerId, action);
+        }
+
+        if (isStartingPlayer) {
+            const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
+            const choice = actionData.choices?.[choiceIdx];
+            const chosenId = choice?.value as PlayerId;
+            state.pendingAction = undefined;
+            MulliganProcessor.resolveStartingPlayer(state, engine, chosenId);
+            return true;
+        }
+
+        if (isMulligan) {
+            const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
+            const choice = actionData.choices?.[choiceIdx];
+            const decision = choice?.value as 'keep' | 'mulligan';
+            state.pendingAction = undefined;
+            MulliganProcessor.resolveMulligan(state, engine, playerId, decision);
+            return true;
         }
 
         if (isChoosingX) {
@@ -250,6 +271,12 @@ export class ChoiceProcessor {
             }
 
             // Resume whatever was happening at the current level first
+            if (meta.isMulliganPutBack) {
+                const cardIds = selections.filter(s => typeof s === 'string') as string[];
+                MulliganProcessor.resolvePutBack(state, engine, playerId, cardIds);
+                return true;
+            }
+
             return ResolutionManager.resume(state, engine, undefined, undefined, undefined, action);
         }
 

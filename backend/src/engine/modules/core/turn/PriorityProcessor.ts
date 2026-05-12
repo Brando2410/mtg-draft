@@ -414,8 +414,12 @@ export class PriorityProcessor {
 
     if (!cardToPlay) return false;
 
-    if (state.pendingAction && state.pendingAction.playerId === playerId) {
-      return false;
+    if (state.pendingAction) {
+        // If there's a pending action, you can ONLY "play" (glow/click) if it's a DISCARD action for YOU.
+        // This is specifically to support the London Mulligan and standard discard effects via hand interaction.
+        if (state.pendingAction.type !== ActionType.Discard || state.pendingAction.playerId !== playerId) {
+            return false;
+        }
     }
 
     if (!this.validateTiming(state, playerId, cardToPlay, false, checkPriority)) {

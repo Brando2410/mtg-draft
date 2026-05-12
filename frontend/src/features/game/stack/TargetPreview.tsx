@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameCard } from '../GameCard';
+import { GameCard } from '../arena/objects/GameCard';
 import { type GameObject, type StackObject } from '@shared/engine_types';
 
 interface TargetPreviewProps {

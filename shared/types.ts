@@ -75,6 +75,15 @@ export interface DraftState {
 export * from './engine_types';
 import { type GameState } from './engine_types';
 
+export interface TournamentMatch {
+    players: string[];
+    wins: Record<string, number>;
+    status: 'pending' | 'active' | 'completed';
+    engineState?: any;
+    joinedPlayers?: string[];
+    restartRequestedBy?: string;
+}
+
 export interface Room {
     id: string;
     host: string; // Socket ID
@@ -90,14 +99,8 @@ export interface Room {
     isNormalMatch?: boolean;
     draftState?: DraftState;
     gameState?: GameState;
-    matches?: {
-        players: string[];
-        wins: Record<string, number>;
-        status: 'pending' | 'active' | 'completed';
-        engineState?: any;
-        joinedPlayers?: string[];
-        restartRequestedBy?: string;
-    }[];
+    matches?: TournamentMatch[];
     checkpoint?: GameState; // DEBUG: Saved game state
     serverTime?: number;
+    restartRequestedBy?: string;
 }

@@ -20,3 +20,4 @@ export * from './state/LayerProcessor';
 export * from './state/StateBasedActionsProcessor';
 export * from './actions/targeting/TargetingProcessor';
 export * from './core/RestrictionValidator';
+export * from './core/MulliganProcessor';

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, Users, ChevronRight, X, LayoutPanelLeft, Trash2 } from 'lucide-react';
 import { DeckReviewView } from '../deck-builder/DeckReviewView';
-import { LimitedEventOver } from '../game/LimitedEventOver';
+import { LimitedEventOver } from '../game/modals/LimitedEventOver';
 import { TournamentBracket } from '../lobby/TournamentBracket';
 import { useDraftStore } from '../../store/useDraftStore';
 
@@ -160,7 +160,10 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
                     <Trash2 className="w-[clamp(14px,1.5vw,18px)] h-[clamp(14px,1.5vw,18px)]" />
                   </button>
                   <div className="flex-1 sm:flex-none">
-                    <button className="w-full sm:w-auto px-[clamp(1.5rem,3vw,2.5rem)] py-[clamp(0.75rem,1.5vh,1.25rem)] bg-indigo-500/10 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white rounded-[clamp(0.75rem,1.5vw,1.25rem)] font-black uppercase tracking-[0.2em] text-[clamp(9px,1vw,11px)] flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-105">
+                    <button 
+                      onClick={() => setSelectedDraft(record)}
+                      className="w-full sm:w-auto px-[clamp(1.5rem,3vw,2.5rem)] py-[clamp(0.75rem,1.5vh,1.25rem)] bg-indigo-500/10 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white rounded-[clamp(0.75rem,1.5vw,1.25rem)] font-black uppercase tracking-[0.2em] text-[clamp(9px,1vw,11px)] flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-105"
+                    >
                       {record.type === 'tournament' ? 'Visualizza Risultati' : 'Visualizza Mazzo'}
                       <ChevronRight className="w-[clamp(14px,1.5vw,18px)] h-[clamp(14px,1.5vw,18px)] translate-x-0 group-hover:translate-x-1.5 transition-transform" />
                     </button>

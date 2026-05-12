@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameCard } from './GameCard';
+import { GameCard } from '../objects/GameCard';
 
 interface PlayerHandProps {
   hand: GameObject[];
@@ -11,6 +11,7 @@ interface PlayerHandProps {
   onHoverEnd?: (id: string) => void;
   targetableIds?: Set<string>;
   stateVersion?: number;
+  pendingAction?: any;
 }
 
 /**
@@ -25,7 +26,8 @@ export const PlayerHand = memo(({
   onPlayCard, 
   onHoverStart, 
   onHoverEnd,
-  targetableIds = new Set()
+  targetableIds = new Set(),
+  pendingAction
 }: PlayerHandProps) => {
   
   const allCards = [
@@ -95,6 +97,7 @@ export const PlayerHand = memo(({
                         isTargetable={targetableIds.has(card.id)}
                         onHoverStart={onHoverStart}
                         onHoverEnd={onHoverEnd}
+                        pendingAction={pendingAction}
                     />
 
 

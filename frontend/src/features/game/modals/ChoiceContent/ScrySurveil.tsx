@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Reorder } from 'framer-motion';
-import { GameCard } from '../../GameCard';
+import { GameCard } from '../../arena/objects/GameCard';
 import { ActionType, type GameObject } from '@shared/engine_types';
 
 interface ScrySurveilViewProps {

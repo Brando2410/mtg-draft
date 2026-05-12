@@ -60,6 +60,11 @@ export const useActionButtonLogic = ({
         text = blockerCount > 0 ? `${blockerCount} Blocker${blockerCount > 1 ? 's' : ''}` : "No Blocks";
         sub = "To Damage";
         orange = true;
+      } else if (pendingAction.type === ActionType.Mulligan) {
+        text = "KEEP";
+        sub = `Mulligans: ${pendingAction.data?.mCount ?? 0}`;
+        orange = true;
+        disabled = false;
       } else if (pendingAction.type === ActionType.Choice || pendingAction.type === ActionType.ModalSelection || pendingAction.type === ActionType.ResolutionChoice) {
         const isContextual = pendingAction.data?.isContextual;
         text = isContextual ? "Waiting" : "Confirm";

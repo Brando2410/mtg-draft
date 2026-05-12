@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ActionType, type PlayerState } from '@shared/engine_types';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface XSelectionModalProps {
+interface XSelectionProps {
   pendingAction: any;
   me: PlayerState | undefined;
   onResolve: (payload: any) => void;
 }
 
-export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModalProps) => {
+export const XSelection = ({ pendingAction, me, onResolve }: XSelectionProps) => {
   const [value, setValue] = useState(0);
   const [minimized, setMinimized] = useState(false);
 

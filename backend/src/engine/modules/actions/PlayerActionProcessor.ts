@@ -450,8 +450,15 @@ export class PlayerActionProcessor {
     if (!card) return { finished: false, success: false };
 
     // CR 701.8: To discard a card, move it from hand to graveyard.
+    // MODIFICATION: London Mulligan "put back" moves to Library Bottom.
     const { action: ActionProcessor } = getProcessors(state);
-    ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, "top", false, true);
+    const isMulligan = state.pendingAction?.data?.isMulliganPutBack;
+    
+    if (isMulligan) {
+      ActionProcessor.moveCard(state, card, Zone.Library, playerId, "bottom", false, true);
+    } else {
+      ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, "top", false, true);
+    }
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
@@ -490,6 +497,17 @@ export class PlayerActionProcessor {
             onFailureEffects
           );
           return { finished: false, success: true };
+        }
+
+        // Handle London Mulligan progression
+        if (isMulligan) {
+          if (state.mulliganState) {
+            state.mulliganState.discardsComplete[playerId] = true;
+          }
+          const { mulligan: MulliganProcessor } = getProcessors(state);
+          state.pendingAction = undefined; // Clear it first, finalizeMulligans will re-set it if needed for next player
+          MulliganProcessor.finalizeMulligans(state, getEngine(state));
+          return { finished: true, success: true };
         }
 
         // Brand New Resolution System: Hand off to ResolutionManager to automate extraction and resumption.

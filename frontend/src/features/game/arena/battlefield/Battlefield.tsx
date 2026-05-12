@@ -3,15 +3,15 @@ import { type PlayerState, type GameObject, type StackObject } from '@shared/eng
 
 // Modular Components
 import { CombatArrows } from './CombatArrows';
-import { StackView } from './StackView';
+import { StackView } from '../../stack/StackView';
 import { TargetingArrows } from './TargetingArrows';
-import { ChoiceModal } from './modals/ChoiceModal';
-import { XSelectionModal } from './modals/XSelectionModal';
-import { ZonePile } from './ZonePile';
-import { Avatar } from './Avatar';
-import { SubZone } from './battlefield/SubZone';
-import { ActionPrompt } from './battlefield/ActionPrompt';
-import { useBattlefieldLogic } from '../../hooks/game/useBattlefieldLogic';
+import { Choice } from '../../modals/Choice';
+import { XSelection } from '../../modals/XSelection';
+import { ZonePile } from '../objects/ZonePile';
+import { Avatar } from '../players/Avatar';
+import { SubZone } from './SubZone';
+import { ActionPrompt } from './ActionPrompt';
+import { useBattlefieldLogic } from '../../../../hooks/game/useBattlefieldLogic';
 
 interface BattlefieldProps {
   me: PlayerState | undefined;
@@ -54,11 +54,11 @@ export const Battlefield = memo(({
   return (
     <div className="flex-1 relative flex flex-col bg-transparent">
       
-      <ChoiceModal 
+      <Choice 
         pendingAction={pendingAction} me={me} opponent={opponent} battlefield={battlefield}
         stack={stack} exile={exile} onTapCard={onTapCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} 
       />
-      <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
+      <XSelection pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
 
       <div 
         className="flex-1 flex flex-col relative" 

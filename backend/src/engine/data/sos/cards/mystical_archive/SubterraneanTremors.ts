@@ -3,8 +3,6 @@ import { CardDefinition } from '@shared/engine_types';
 export const SubterraneanTremors: CardDefinition = {
     name: "Subterranean Tremors",
     manaCost: "{X}{R}",
-
-
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: [],

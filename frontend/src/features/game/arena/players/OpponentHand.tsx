@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameCard } from './GameCard';
+import { GameCard } from '../objects/GameCard';
 
 interface OpponentHandProps {
   hand: GameObject[];

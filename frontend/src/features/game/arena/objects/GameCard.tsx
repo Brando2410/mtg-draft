@@ -1,13 +1,13 @@
 import { memo } from 'react';
-import { type GameObject } from '@shared/engine_types';
+import { type GameObject, ActionType } from '@shared/engine_types';
 import { motion } from 'framer-motion';
 import { Eye } from 'lucide-react';
-import { ManaSymbols, KeywordIcon } from './card/CardIcons';
-import { CardStats } from './card/CardStats';
-import { CounterBadges } from './card/CounterBadges';
-import { ContextualActions } from './card/ContextualActions';
-import { useCardDisplayData } from '../../hooks/game/useCardDisplayData';
-import { useCardDimensions } from '../../hooks/game/useCardDimensions';
+import { ManaSymbols, KeywordIcon } from './CardIcons';
+import { CardStats } from './CardStats';
+import { CounterBadges } from './CounterBadges';
+import { ContextualActions } from './ContextualActions';
+import { useCardDisplayData } from '../../../../hooks/game/useCardDisplayData';
+import { useCardDimensions } from '../../../../hooks/game/useCardDimensions';
 
 export interface GameCardProps {
   obj: GameObject;
@@ -107,9 +107,10 @@ export const GameCard = memo(({
           animate={{ opacity: [0.3, 0.7, 0.3] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className={`absolute inset-[calc(var(--u)*-0.3)] z-[-1] rounded-[inherit]
-            ${(isPrepared || obj.isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' :
-              (effectiveStats?.isPermissionPlay) ? 'bg-orange-500/20 shadow-[0_0_20px_rgba(249,115,22,0.8)]' :
-                'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
+            ${(pendingAction?.type === ActionType.Discard) ? 'bg-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.9)]' :
+              (isPrepared || obj.isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' :
+                (effectiveStats?.isPermissionPlay) ? 'bg-orange-500/20 shadow-[0_0_20px_rgba(249,115,22,0.8)]' :
+                  'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
           `}
         />
       )}

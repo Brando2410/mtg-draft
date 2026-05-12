@@ -30,7 +30,7 @@ export const ActionPrompt = memo(({ pendingAction, isMe }: ActionPromptProps) =>
                   )}
               </div>
           ) : (
-              !([ActionType.Choice, ActionType.ResolutionChoice, ActionType.ModalSelection, ActionType.OptionalAction, ActionType.Scry, ActionType.Surveil, ActionType.ChooseX] as any[]).includes(pendingAction.type) && (
+              !([ActionType.Choice, ActionType.ResolutionChoice, ActionType.ModalSelection, ActionType.OptionalAction, ActionType.Scry, ActionType.Surveil, ActionType.ChooseX, ActionType.Mulligan, ActionType.StartingPlayerSelection] as any[]).includes(pendingAction.type) && (
                    <div className="flex flex-col items-center">
                       <h2 className="relative text-[var(--fs-3xl)] font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
                           {pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :

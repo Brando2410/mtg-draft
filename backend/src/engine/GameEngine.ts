@@ -1,7 +1,7 @@
 import { ChoicePayload, EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator } from './modules';
+import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator, MulliganProcessor } from './modules';
 import { LkiProcessor } from './modules/state/LkiProcessor';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { CostProcessor } from './modules/magic/CostProcessor';
@@ -24,13 +24,15 @@ export class GameEngine implements EngineContext {
   private decks: Record<string, Card[]>;
   private names: Record<string, string>;
   private avatars: Record<string, string>;
+  private bots: Record<string, boolean>;
   public processors: EngineContext['processors'];
 
-  constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}, avatars: Record<string, string> = {}) {
+  constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}, avatars: Record<string, string> = {}, bots: Record<string, boolean> = {}) {
     this.playerOrder = players;
     this.decks = decks;
     this.names = names;
     this.avatars = avatars;
+    this.bots = bots;
 
     this.state = {
       players: {},
@@ -90,7 +92,7 @@ export class GameEngine implements EngineContext {
       stateVersion: 1
     };
 
-    GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
+    GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars, bots);
 
     // Initialize Processor Registry for peer access
     this.processors = {
@@ -120,7 +122,8 @@ export class GameEngine implements EngineContext {
       spellInteractiveManager: SpellInteractiveManager,
       lki: LkiProcessor,
       logger: EngineLogger,
-      oracle: oracle
+      oracle: oracle,
+      mulligan: MulliganProcessor
     };
 
     Object.defineProperty(this.state, 'gameEngine', {
@@ -147,14 +150,7 @@ export class GameEngine implements EngineContext {
   }
 
   public startGame() {
-    for (const playerId of this.playerOrder) {
-      this.shuffleLibrary(playerId);
-      for (let i = 0; i < 7; i++) {
-        this.drawCard(playerId);
-      }
-    }
-    this.state.turnState.cardsDrawnThisTurn = {};
-    this.resetPriorityToActivePlayer();
+    MulliganProcessor.initialize(this.state, this);
   }
 
   public shuffleLibrary(playerId: PlayerId) {

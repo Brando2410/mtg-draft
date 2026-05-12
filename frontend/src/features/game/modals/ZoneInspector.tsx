@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X as CloseIcon, RefreshCw as SwapIcon } from 'lucide-react';
-import { GameCard } from '../GameCard';
+import { GameCard } from '../arena/objects/GameCard';
 import { type GameObject } from '@shared/engine_types';
 
 interface ZoneInspectorProps {

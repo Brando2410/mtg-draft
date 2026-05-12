@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { AnimatePresence } from 'framer-motion';
-import { GameCard } from '../GameCard';
+import { GameCard } from '../objects/GameCard';
 
 export const CardStack = memo(({ 
   cards, 

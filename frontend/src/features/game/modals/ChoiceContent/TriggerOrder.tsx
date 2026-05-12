@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Reorder } from 'framer-motion';
 import { GripVertical } from 'lucide-react';
-import { GameCard } from '../../GameCard';
+import { GameCard } from '../../arena/objects/GameCard';
 
 interface TriggerOrderViewProps {
   orderedTriggers: any[];

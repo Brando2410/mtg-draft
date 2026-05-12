@@ -24,6 +24,7 @@ import { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManage
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
+import type { MulliganProcessor } from "./core/MulliganProcessor";
 import { EngineLogger } from "../utils/EngineLogger";
 import type { oracle as oracleInstance } from "../OracleLogicMap";
 import type { EngineContext } from "../interfaces/EngineContext";
@@ -61,6 +62,7 @@ export interface ProcessorRegistry {
     spellInteractiveManager: typeof SpellInteractiveManager;
     logger: typeof EngineLogger;
     oracle: typeof oracleInstance;
+    mulligan: typeof MulliganProcessor;
 }
 
 /**
@@ -107,6 +109,7 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get spellInteractiveManager() { return require("./actions/spells/SpellInteractiveManager").SpellInteractiveManager; },
         get logger() { return require("../utils/EngineLogger").EngineLogger; },
         get oracle() { return require("../OracleLogicMap").oracle; },
+        get mulligan() { return require("./core/MulliganProcessor").MulliganProcessor; },
     } as unknown as ProcessorRegistry;
 }
 

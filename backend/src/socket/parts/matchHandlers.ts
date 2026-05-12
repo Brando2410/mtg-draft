@@ -15,17 +15,21 @@ import { SealedService } from '../../services/SealedService';
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
 
+  const authorizePlayer = (room: Room, playerId: string, actionName: string): boolean => {
+    const playerRecord = room.players.find(p => p.playerId === playerId);
+    if (!playerRecord || playerRecord.id !== socket.id) {
+      LoggerService.warn('SECURITY', `Unauthorized ${actionName} attempt by socket ${socket.id} claiming to be player ${playerId}`);
+      return false;
+    }
+    return true;
+  };
+
   const withMatch = (roomId: string, playerId: string, callback: (engine: GameEngine, room: Room, matchIndex?: number) => void) => {
     try {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      // SECURITY: Verify that the socket belongs to the player making the action
-      const playerRecord = room.players.find(p => p.playerId === playerId);
-      if (!playerRecord || playerRecord.id !== socket.id) {
-        LoggerService.warn('SECURITY', `Unauthorized action attempt by socket ${socket.id} claiming to be player ${playerId}`);
-        return;
-      }
+      if (!authorizePlayer(room, playerId, 'match action')) return;
 
       let gameState: GameState | undefined;
       let matchIndex: number | undefined;
@@ -52,9 +56,15 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       const playerIds = gameState.players ? Object.keys(gameState.players) : room.players.map(p => p.playerId as PlayerId);
       const playerNames: Record<string, string> = {};
-      room.players.forEach(p => playerNames[p.playerId] = p.name);
+      const playerAvatars: Record<string, string> = {};
+      const bots: Record<string, boolean> = {};
+      room.players.forEach(p => {
+        playerNames[p.playerId] = p.name;
+        playerAvatars[p.playerId] = p.avatar || 'ajani.png';
+        bots[p.playerId] = !!p.isBot;
+      });
 
-      const engine = new GameEngine(playerIds, {}, playerNames);
+      const engine = new GameEngine(playerIds, {}, playerNames, playerAvatars, bots);
       engine.setState(gameState);
 
       // Take a snapshot for delta calculation
@@ -101,6 +111,14 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
             LoggerService.warn('MATCH', `Found lost player ${lostId} but could not determine winner in match ${matchIndex}. Players: ${JSON.stringify(match.players)}`);
           }
         }
+      } else if (lostPlayer && room.gameState) {
+        // Normal match game end detection
+        const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
+        const winnerId = Object.keys(newState.players).find(id => id.toString() !== lostId);
+        newState.status = 'completed';
+        newState.winner = winnerId;
+        room.status = 'completed';
+        LoggerService.info('MATCH', `Normal Match COMPLETED. Winner: ${winnerId}`);
       }
 
       if (matchIndex !== undefined) {
@@ -225,10 +243,11 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   socket.on('request_match_restart', async ({ roomId, playerId }) => {
     const room = rooms.get(roomId);
-    if (!room || !room.matches) return;
-    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (!room) return;
+    
+    const match = room.matches?.find(m => m.players.includes(playerId) && m.status === 'active');
     if (match) {
-      // If opponent is a bot, just restart immediately
+      // Tournament match restart
       const opponentId = match.players.find(id => id !== playerId);
       const opponent = room.players.find(p => p.playerId === opponentId);
       
@@ -244,18 +263,45 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         match.restartRequestedBy = playerId;
         io.to(roomId).emit('room_update', room);
       }
+    } else if (room.gameState) {
+      // Normal match restart
+      const opponent = room.players.find(p => p.playerId !== playerId);
+      if (opponent?.isBot) {
+        const p1 = room.players[0];
+        const p2 = room.players[1];
+        const nextGameMatch = createMatch(room, p1.playerId, p2.playerId);
+        if (nextGameMatch) {
+          room.gameState = nextGameMatch.engineState;
+          room.restartRequestedBy = undefined;
+          io.to(roomId).emit('room_update', room);
+          await PersistenceService.saveRooms(rooms);
+        }
+      } else {
+        room.restartRequestedBy = playerId;
+        io.to(roomId).emit('room_update', room);
+      }
     }
   });
 
   socket.on('accept_match_restart', async ({ roomId, playerId }) => {
     const room = rooms.get(roomId);
-    if (!room || !room.matches) return;
-    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (!room) return;
+
+    const match = room.matches?.find(m => m.players.includes(playerId) && m.status === 'active');
     if (match && match.restartRequestedBy && match.restartRequestedBy !== playerId) {
       const nextGameMatch = createMatch(room, match.players[0], match.players[1]);
       if (nextGameMatch) {
         match.engineState = nextGameMatch.engineState;
         match.restartRequestedBy = undefined;
+        io.to(roomId).emit('room_update', room);
+        await PersistenceService.saveRooms(rooms);
+      }
+    } else if (room.gameState && room.restartRequestedBy && room.restartRequestedBy !== playerId) {
+      const playerIds = Object.keys(room.gameState.players);
+      const nextGameMatch = createMatch(room, playerIds[0], playerIds[1]);
+      if (nextGameMatch) {
+        room.gameState = nextGameMatch.engineState;
+        room.restartRequestedBy = undefined;
         io.to(roomId).emit('room_update', room);
         await PersistenceService.saveRooms(rooms);
       }
@@ -266,19 +312,37 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     const room = rooms.get(roomId);
     if (!room) return;
 
-    const player = room.players.find(p => p.playerId === playerId);
-    if (player) {
-      player.watchingMatchIndex = matchIndex === null ? undefined : matchIndex;
-      io.to(roomId).emit('room_update', room);
+    if (!authorizePlayer(room, playerId, 'update_watching')) return;
+
+    const playerIndex = room.players.findIndex(p => p.playerId === playerId);
+    if (playerIndex !== -1) {
+      room.players[playerIndex].watchingMatchIndex = matchIndex === null ? undefined : matchIndex;
+      
+      // Emit a tiny patch instead of the whole room
+      const patch = [
+        { 
+          op: 'replace', 
+          path: `/players/${playerIndex}/watchingMatchIndex`, 
+          value: matchIndex === null ? null : matchIndex 
+        }
+      ];
+      io.to(roomId).emit('room_patch', patch);
+      
+      // Still save to persistence but don't broadcast full state
+      await PersistenceService.saveRooms(rooms);
     }
   });
 
   socket.on('decline_match_restart', async ({ roomId, playerId }) => {
     const room = rooms.get(roomId);
-    if (!room || !room.matches) return;
-    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (!room) return;
+    
+    const match = room.matches?.find(m => m.players.includes(playerId) && m.status === 'active');
     if (match) {
       match.restartRequestedBy = undefined;
+      io.to(roomId).emit('room_update', room);
+    } else if (room.gameState && room.restartRequestedBy) {
+      room.restartRequestedBy = undefined;
       io.to(roomId).emit('room_update', room);
     }
   });
@@ -295,8 +359,9 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     };
     const playerNames = { [p1.playerId]: p1.name, [p2.playerId]: p2.name };
     const playerAvatars = { [p1.playerId]: p1.avatar || 'ajani.png', [p2.playerId]: p2.avatar || 'ajani.png' };
+    const bots = { [p1.playerId]: !!p1.isBot, [p2.playerId]: !!p2.isBot };
     
-    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
+    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars, bots);
     engine.startGame();
 
     return {
@@ -486,6 +551,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const decksByPlayer: Record<string, Card[]> = {};
       const playerNames: Record<string, string> = {};
       const playerAvatars: Record<string, string> = {};
+      const bots: Record<string, boolean> = {};
 
       for (const p of room.players) {
         const pDeck = p.deck || finalDeck;
@@ -498,9 +564,10 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         decksByPlayer[p.playerId] = cards;
         playerNames[p.playerId] = p.name;
         playerAvatars[p.playerId] = p.avatar || 'ajani.png';
+        bots[p.playerId] = !!p.isBot;
       }
 
-      const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
+      const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars, bots);
       engine.startGame();
       room.status = 'active';
       room.gameState = engine.getState();
@@ -563,62 +630,60 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     const room = rooms.get(roomId);
     if (!room) return;
 
-    // SECURITY: Verify that the socket belongs to the player making the action
-    const playerRecord = room.players.find(p => p.playerId === playerId);
-    if (!playerRecord || playerRecord.id !== socket.id) {
-      LoggerService.warn('SECURITY', `Unauthorized concede attempt by socket ${socket.id} claiming to be player ${playerId}`);
-      return;
-    }
+    if (!authorizePlayer(room, playerId, 'concede')) return;
 
     LoggerService.info('MATCH', `ATOMIC CONCEDE START: Player ${playerId} in room ${roomId}`);
     
     // Find the match this player is currently in
     const matchIndex = room.matches?.findIndex(m => m.players.includes(playerId) && m.status !== 'completed');
-    if (matchIndex === -1 || matchIndex === undefined) {
-      LoggerService.warn('MATCH', `Concede failed: No active match found for player ${playerId}`);
-      return;
-    }
     
-    const match = room.matches![matchIndex];
-    LoggerService.info('MATCH', `Processing concede for Match ${matchIndex}. Current Status: ${match.status}`);
+    if (matchIndex !== undefined && matchIndex !== -1) {
+      const match = room.matches![matchIndex];
+      LoggerService.info('MATCH', `Processing concede for Tournament Match ${matchIndex}.`);
 
-    // 1. Update engine state if it exists
-    if (match.engineState) {
-        const enginePlayer = match.engineState.players[playerId];
-        if (enginePlayer) {
-            enginePlayer.hasLost = true;
-            match.engineState.status = 'completed';
-            match.engineState.winner = match.players.find(id => id !== playerId);
-            LoggerService.info('MATCH', `Engine state updated: Winner set to ${match.engineState.winner}`);
-        }
-    }
-    
-    // 2. Update match score and status
-    const winnerId = match.players.find(id => id !== playerId);
-    if (winnerId) {
-        match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
-        LoggerService.info('MATCH', `Score updated: ${winnerId} now has ${match.wins[winnerId]} wins`);
-        
-        if (match.wins[winnerId] >= 2) {
-            match.status = 'completed';
-            LoggerService.info('MATCH', `Match ${matchIndex} completed! Advancing tournament...`);
-            if (room.status === 'tournament') {
-                advanceTournament(room);
-            }
-        } else {
-            LoggerService.info('MATCH', `Game won but match continues (Bo3). Setting match to pending.`);
-            match.status = 'pending';
-            match.joinedPlayers = [];
-            match.restartRequestedBy = undefined;
-        }
+      // 1. Update engine state if it exists
+      if (match.engineState) {
+          const enginePlayer = match.engineState.players[playerId];
+          if (enginePlayer) {
+              enginePlayer.hasLost = true;
+              match.engineState.status = 'completed';
+              match.engineState.winner = match.players.find(id => id !== playerId);
+          }
+      }
+      
+      // 2. Update match score and status
+      const winnerId = match.players.find(id => id !== playerId);
+      if (winnerId) {
+          match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
+          if (match.wins[winnerId] >= 2) {
+              match.status = 'completed';
+              if (room.status === 'tournament') {
+                  advanceTournament(room);
+              }
+          } else {
+              match.status = 'pending';
+              match.joinedPlayers = [];
+              match.restartRequestedBy = undefined;
+          }
+      }
+    } else if (room.gameState) {
+      // Normal match concede
+      LoggerService.info('MATCH', `Processing concede for Normal Match.`);
+      const enginePlayer = room.gameState.players[playerId];
+      if (enginePlayer) {
+          enginePlayer.hasLost = true;
+          room.gameState.status = 'completed';
+          room.gameState.winner = Object.keys(room.gameState.players).find(id => id !== playerId);
+          room.status = 'completed';
+      }
     } else {
-        LoggerService.error('MATCH', `Critical error: Could not determine winner for concede of ${playerId}`);
+      LoggerService.warn('MATCH', `Concede failed: No active match or gameState found for player ${playerId}`);
+      return;
     }
     
     // 3. Emit FULL room update to ensure all clients sync correctly
     io.to(roomId).emit('room_update', room);
     await PersistenceService.saveRooms(rooms);
-    LoggerService.info('MATCH', `ATOMIC CONCEDE COMPLETE: Room ${roomId} updated.`);
   });
 
   socket.on('toggle_pass_turn', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
@@ -773,6 +838,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     const decksByPlayer: Record<string, Card[]> = {};
     const playerNames: Record<string, string> = {};
     const playerAvatars: Record<string, string> = {};
+    const bots: Record<string, boolean> = {};
 
     const defaultDeck = await PersistenceService.getDeck('m21_test_deck.json');
 
@@ -787,9 +853,10 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       decksByPlayer[p.playerId] = cards;
       playerNames[p.playerId] = p.name;
       playerAvatars[p.playerId] = p.avatar || 'ajani.png';
+      bots[p.playerId] = !!p.isBot;
     }
 
-    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
+    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars, bots);
     engine.startGame();
 
     room.gameState = engine.getState();

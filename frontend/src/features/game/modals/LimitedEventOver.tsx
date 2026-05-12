@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, LayoutPanelLeft, Home, Trophy, Users, Eye, ArrowLeft } from 'lucide-react';
-import { PageLayout } from '../../components/shared/PageLayout';
-import { DeckReviewView } from '../deck-builder/DeckReviewView';
+import { PageLayout } from '../../../components/shared/PageLayout';
+import { DeckReviewView } from '../../deck-builder/DeckReviewView';
 
 interface LimitedEventOverProps {
   room: any;

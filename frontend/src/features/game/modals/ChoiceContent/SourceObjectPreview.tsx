@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { GameCard } from '../../GameCard';
+import { GameCard } from '../../arena/objects/GameCard';
 import { type GameObject } from '@shared/engine_types';
 
 interface SourceObjectPreviewProps {

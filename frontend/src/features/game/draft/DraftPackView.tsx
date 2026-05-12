@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { socket } from '../../services/socket';
-import { DeckReviewView } from '../deck-builder/DeckReviewView';
-import { DraftHeader } from './DraftHeader.tsx';
+import { socket } from '../../../services/socket';
+import { DeckReviewView } from '../../deck-builder/DeckReviewView';
+import { DraftHeader } from './DraftHeader';
 import { PackGrid } from './PackGrid';
-import { SelectionSidebar } from '../collection/SelectionSidebar';
-import { TableViewModal } from '../collection/TableViewModal';
-import { DraftPausedOverlay } from './DraftPausedOverlay';
-import { DraftCompletedOverlay } from './DraftCompletedOverlay';
-import { BotPoolsModal } from './BotPoolsModal';
+import { SelectionSidebar } from '../../collection/SelectionSidebar';
+import { TableViewModal } from '../../collection/TableViewModal';
+import { DraftPausedOverlay } from './DraftPaused';
+import { DraftCompletedOverlay } from './DraftCompleted';
+import { BotPoolsModal } from '../modals/BotPools';
 import type { Room, Card, Player } from '@shared/types';
 
 interface DraftPackViewProps {
@@ -175,17 +175,12 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
     }
   }, [isCompleted, room, currentPlayer]);
 
-  // Auto-exit review at 10 seconds - Only once per pack
+  // Reset auto-close ref when pack changes
   useEffect(() => {
     if (currentPack.length === 0) {
       hasAutoClosedRef.current = false;
     }
-
-    if (timeLeft !== null && timeLeft <= 10 && !isPaused && isReviewOpen && !hasAutoClosedRef.current) {
-      setIsReviewOpen(false);
-      hasAutoClosedRef.current = true;
-    }
-  }, [timeLeft, isPaused, isReviewOpen, currentPack.length]);
+  }, [currentPack.length]);
 
   // Auto-exit review when new pack arrives
   useEffect(() => {
@@ -285,8 +280,14 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
               timeLeft={timeLeft}
               isPaused={isPaused}
               onTogglePause={() => socket.emit('toggle_pause', { roomId: room.id, playerId })}
-              onOpenTable={() => setIsTableOpen(true)}
-              onOpenReview={() => setIsReviewOpen(true)}
+              onOpenTable={() => {
+                console.log("[DraftPackView] Opening Table");
+                setIsTableOpen(true);
+              }}
+              onOpenReview={() => {
+                console.log("[DraftPackView] Opening Review");
+                setIsReviewOpen(true);
+              }}
               currentPlayer={currentPlayer}
               queuedCount={room.draftState?.queues?.[playerIndex!]?.length || 0}
             />

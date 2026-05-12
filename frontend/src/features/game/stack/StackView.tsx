@@ -1,9 +1,9 @@
 import { useState, memo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { type StackObject, type PlayerState, type GameObject } from '@shared/engine_types';
-import { StackItem } from './stack/StackItem';
-import { TargetPreview } from './stack/TargetPreview';
-import { useStackLogic } from '../../hooks/game/useStackLogic';
+import { StackItem } from './StackItem';
+import { TargetPreview } from './TargetPreview';
+import { useStackLogic } from '../../../hooks/game/useStackLogic';
 
 interface StackViewProps {
   stack: StackObject[];
@@ -38,7 +38,7 @@ export const StackView = memo(({ stack, pendingAction, me, opponent, battlefield
 
       <div className="flex-1 w-full flex flex-col-reverse items-center justify-end gap-5 max-h-[65vh] overflow-y-auto px-2 py-4 no-scrollbar scroll-smooth">
         <AnimatePresence mode="popLayout">
-          {effectiveStack.map((sobj, index) => {
+          {effectiveStack.map((sobj: StackObject, index: number) => {
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
             const isTop = index === effectiveStack.length - 1;
             const displayObj = getDisplayObj(sobj);

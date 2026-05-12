@@ -156,7 +156,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   const getColorWeight = (card: SimplifiedCard) => {
     const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G'];
     if (card.typeLine?.toLowerCase().includes('land')) return 200;
-    if (card.colors.length === 0) return 150;
+    if (!card.colors || card.colors.length === 0) return 150;
     if (card.colors.length > 1) return 100;
     return COLOR_ORDER.indexOf(card.colors[0]);
   };
@@ -198,9 +198,9 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
       let matchesColor = true;
       if (filterColor.length > 0) {
         if (filterColor.includes('C')) {
-          matchesColor = card.colors.length === 0 && !isLand;
+          matchesColor = (card.colors?.length === 0) && !isLand;
         } else {
-          matchesColor = filterColor.every(c => card.colors.includes(c));
+          matchesColor = filterColor.every(c => card.colors?.includes(c));
         }
       }
 

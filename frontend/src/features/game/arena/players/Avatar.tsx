@@ -2,9 +2,9 @@ import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PlayerState, Step, Phase } from '@shared/engine_types';
 import { ManaPoolView } from './ManaPoolView';
-import { Stopper } from './avatar/Stopper';
-import { ScryBubble } from './avatar/ScryBubble';
-import { useAvatarLogic } from '../../hooks/game/useAvatarLogic';
+import { Stopper } from './Stopper';
+import { ScryBubble } from './ScryBubble';
+import { useAvatarLogic } from '../../../../hooks/game/useAvatarLogic';
 
 interface AvatarProps {
   player: PlayerState;
@@ -95,7 +95,7 @@ export const Avatar = memo(({
 
               {/* FLOATING LIFE IMPACTS */}
               <AnimatePresence>
-                {impacts.map((impact) => (
+                {impacts.map((impact: { id: string, amount: number, rotation: number }) => (
                     <motion.div
                         key={impact.id}
                         initial={{ opacity: 0, y: isOpponent ? 20 : -20, scale: 0.2, rotate: 0 }}

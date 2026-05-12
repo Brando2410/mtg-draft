@@ -61,7 +61,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
     zoomTimerRef.current = setTimeout(() => {
       setZoomCard(card);
       setIsZoomFlipped(false);
-    }, 1000);
+    }, 600);
   };
 
   const handleHoverEnd = () => {
@@ -152,7 +152,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
       if (pool) {
         const filtered = poolCards.filter(({ card: c }) => {
           const matchesName = !addQuery || c.name.toLowerCase().includes(addQuery.toLowerCase());
-          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => c.colors.includes(col));
+          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => (c.colors || []).includes(col));
           const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
           const matchesLand = !poolFilterLand || (c.types || []).some(t => t.toLowerCase() === 'land');
           return matchesName && matchesColor && matchesCmc && matchesLand;
@@ -347,7 +347,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
                 </span>
                 <div className="flex gap-0.5">
                   {['W', 'U', 'B', 'R', 'G'].map(c => {
-                    const count = deckCards.filter(card => card.colors.includes(c)).length;
+                    const count = deckCards.filter(card => (card.colors || []).includes(c)).length;
                     if (count === 0) return null;
                     return <img key={c} src={manaSymbols[c]} className="w-3 h-3" alt={c} />;
                   })}
@@ -590,14 +590,14 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20">
               <div className="flex flex-col items-center gap-6">
                 <div className="flex gap-16">
-                   <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">L</div>
-                      <span className="text-[9px] font-black uppercase tracking-widest">Aggiungi / Sideboard</span>
-                   </div>
-                   <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">R</div>
-                      <span className="text-[9px] font-black uppercase tracking-widest">Zoom / Rimuovi</span>
-                   </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">L</div>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Aggiungi / Sideboard</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">R</div>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Zoom / Rimuovi</span>
+                  </div>
                 </div>
                 <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.4em]">Il mazzo è vuoto</p>
               </div>

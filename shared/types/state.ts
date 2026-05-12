@@ -187,6 +187,7 @@ export interface PlayerState {
     hasPlayedLandThisTurn: boolean;
     hasWon?: boolean;
     id: PlayerId;
+    isBot?: boolean;
     library: GameObject[];
     life: number;
     manaCheat?: boolean;
@@ -351,6 +352,7 @@ export interface InteractionMetadata {
     declaredTargets?: string[];
     choiceEffects?: import('./effects').EffectDefinition[];
     nextTriggersToStack?: any[];
+    isMulliganPutBack?: boolean;
 }
 
 export interface CommonResolutionFields {
@@ -382,6 +384,8 @@ export interface BaseActionData extends CommonResolutionFields, CommonChoiceFiel
     reveal?: boolean;
     isOptionalDiscard?: boolean;
     isResolutionX?: boolean;
+    isMulliganPutBack?: boolean;
+    mCount?: number;
     discardAmount?: number | string;
     metadata?: InteractionMetadata;
 
@@ -475,6 +479,15 @@ export interface PendingAction {
     type: string;
 }
 
+export interface MulliganState {
+    mulliganCounts: Record<PlayerId, number>;
+    decisions: Record<PlayerId, 'keep' | 'mulligan' | 'none'>;
+    discardsComplete: Record<PlayerId, boolean>;
+    startingPlayerId?: PlayerId;
+    isStartingPlayerSelected?: boolean;
+    isComplete?: boolean;
+}
+
 import type { Mutation } from './mutations';
 
 export interface GameState {
@@ -514,6 +527,7 @@ export interface GameState {
     limbo: GameObject[];
     lki: Record<string, Partial<Record<Zone, GameObject | StackObject>>>;
     logs: string[];
+    mulliganState?: MulliganState;
     mutationStack?: Mutation[];
     paradigmCopies?: Record<string, GameObject>;
     pendingAction?: PendingAction;

@@ -1,14 +1,14 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Skull, LogOut } from 'lucide-react';
 
-interface GameOverModalProps {
+interface GameOverProps {
   winnerId: string | undefined;
   playerId: string;
   winnerName: string;
   onLeave: () => void;
 }
 
-export const GameOverModal = ({ winnerId, playerId, winnerName, onLeave }: GameOverModalProps) => {
+export const GameOver = ({ winnerId, playerId, winnerName, onLeave }: GameOverProps) => {
   const isWinner = winnerId === playerId;
   
   return (

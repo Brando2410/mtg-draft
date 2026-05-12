@@ -89,7 +89,10 @@ export const DraftPausedOverlay: React.FC<DraftPausedOverlayProps> = ({
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <button 
-              onClick={onOpenReview}
+              onClick={() => {
+                console.log("[DraftPaused] Opening Review");
+                onOpenReview();
+              }}
               className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 transition-all border border-white/5 shadow-xl active:scale-95 group"
             >
               VEDI MAZZO <LayoutPanelLeft className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />

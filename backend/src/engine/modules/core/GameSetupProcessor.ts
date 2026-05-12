@@ -9,14 +9,16 @@ export class GameSetupProcessor {
     playerIds: PlayerId[],
     names: Record<string, string>,
     decks: Record<string, Card[]>,
-    avatars: Record<string, string> = {}
-  ) {
+    avatars: Record<string, string> = {},
+    bots: Record<string, boolean> = {}
+  ): void {
     for (const id of playerIds) {
       state.players[id] = {
         id,
         playerId: id,
         controllerId: id,
         ownerId: id,
+        isBot: bots[id] || false,
         name: names[id] || `Player ${id.slice(0, 4)}`,
         avatar: avatars[id],
         life: 20,
@@ -83,14 +85,14 @@ export class GameSetupProcessor {
         subtypes: subtypes.length > 0 ? subtypes : (logicData?.subtypes || []),
         oracleText: cardRef.oracleText || logicData?.oracleText || '',
         type_line: typeLine,
-        image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large || logicData?.image_url,
+        image_url: cardRef.image_url || (cardRef as any).image_uris?.normal || (cardRef as any).image_uris?.large || logicData?.image_url,
         scryfall_id: cardRef.scryfall_id || cardRef.id || logicData?.scryfall_id,
         power: cardRef.power || logicData?.power,
         toughness: cardRef.toughness || logicData?.toughness,
         loyalty: cardRef.loyalty || logicData?.loyalty,
         keywords: baseKeywords,
         abilities: logicData?.abilities || [],
-        flashbackCost: logicData?.flashbackCost || cardRef.flashbackCost || cardRef.flashback_cost,
+        flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost || (cardRef as any).flashback_cost,
         entersWithXCounters: logicData?.entersWithXCounters,
         entersTapped: logicData?.entersTapped,
         entersTappedCondition: logicData?.entersTappedCondition,

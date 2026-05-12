@@ -115,7 +115,9 @@ export const EscMenu = ({
                   <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
                     <X className="w-5 h-5 text-white group-hover/btn:rotate-90 transition-transform" />
                   </div>
-                  <span className="text-lg font-black uppercase italic tracking-tight text-white">Leave / Spectate</span>
+                  <span className="text-lg font-black uppercase italic tracking-tight text-white">
+                    {isSpectator ? 'Stop Spectating' : 'Exit to Lobby'}
+                  </span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
               </button>

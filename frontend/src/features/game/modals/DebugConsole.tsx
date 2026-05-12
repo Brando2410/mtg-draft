@@ -4,7 +4,7 @@ import {
   Activity, Cpu, Database
 } from 'lucide-react';
 import { type GameState } from '@shared/types';
-import { socket } from '../../services/socket';
+import { socket } from '../../../services/socket';
 import { useEffect, useRef, useState } from 'react';
 
 interface DebugConsoleProps {

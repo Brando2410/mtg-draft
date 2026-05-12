@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
-import { GameCard } from '../GameCard';
+import { GameCard } from '../arena/objects/GameCard';
 import { type GameObject, type PlayerState, ActionType } from '@shared/engine_types';
 
-interface OrderingModalProps {
+interface OrderingProps {
   pendingAction: any;
   me: PlayerState | undefined;
   battlefield: GameObject[];
   onOrderClick: (id: string, fullOrder?: string[]) => void;
 }
 
-export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: OrderingModalProps) => {
+export const Ordering = ({ pendingAction, me, battlefield, onOrderClick }: OrderingProps) => {
   const [minimized, setMinimized] = useState(false);
   const [items, setItems] = useState<string[]>([]);
   

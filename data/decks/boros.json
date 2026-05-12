@@ -2,25 +2,6 @@
   "name": "Boros",
   "cards": [
     {
-      "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
-      "name": "Elite Interceptor",
-      "rarity": "common",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992",
-      "cmc": 1,
-      "type_line": "Creature",
-      "mana_cost": "{W}",
-      "keywords": [
-        "Prepared"
-      ],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
       "scryfall_id": "1ebaafe0-3a9a-424c-8698-d26e7be45343",
       "name": "Joined Researchers // Secret Rendezvous",
       "rarity": "common",
@@ -267,23 +248,6 @@
       "supertypes": []
     },
     {
-      "scryfall_id": "local-Seize the Spoils",
-      "name": "Seize the Spoils",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/large/front/a/1/a1d9b4c2-9e19-4c8d-8153-97aeab6c55cc.jpg",
-      "cmc": 3,
-      "type_line": "Sorcery",
-      "mana_cost": "{2}{R}",
-      "keywords": [],
-      "types": [
-        "Sorcery"
-      ],
-      "supertypes": []
-    },
-    {
       "scryfall_id": "2b7cb1a3-761e-470e-a164-6e29dd9448cd",
       "name": "Unsubtle Mockery",
       "rarity": "common",
@@ -372,293 +336,405 @@
       "supertypes": []
     },
     {
-      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
-      "name": "Fields of Strife",
+      "id": "4ddf4e34-a1f9-4636-942d-0a08e9f94320",
+      "scryfall_id": "4ddf4e34-a1f9-4636-942d-0a08e9f94320",
+      "name": "Seize the Spoils",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+      "colors": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/d/4ddf4e34-a1f9-4636-942d-0a08e9f94320.jpg?1775937868",
+      "cmc": 3,
+      "typeLine": "Sorcery",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "name": "Elite Interceptor",
+      "rarity": "common",
+      "colors": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
+      "cmc": 1,
+      "typeLine": "Creature — Human Wizard",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{W}",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "name": "Elite Interceptor",
+      "rarity": "common",
+      "colors": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
+      "cmc": 1,
+      "typeLine": "Creature — Human Wizard",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{W}",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "id": "9869a753-5e41-4098-ab41-e75b4396ec50",
+      "scryfall_id": "9869a753-5e41-4098-ab41-e75b4396ec50",
+      "name": "Emeritus of Truce // Swords to Plowshares",
+      "rarity": "mythic",
+      "colors": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
+      "cmc": 3,
+      "typeLine": "Creature — Cat Cleric",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{1}{W}{W}",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "id": "32e670da-7563-4f6a-a7db-4c126a440eb8",
+      "scryfall_id": "32e670da-7563-4f6a-a7db-4c126a440eb8",
+      "name": "Erode",
+      "rarity": "rare",
+      "colors": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013",
+      "cmc": 1,
+      "typeLine": "Instant",
+      "types": [
+        "Instant"
+      ],
+      "supertypes": [],
+      "manaCost": "{W}",
+      "keywords": []
+    },
+    {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Land",
-      "mana_cost": "{2}{R}{W}",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
         "Land"
       ],
-      "supertypes": []
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
       "name": "Plains",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Plains",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
       ],
-      "supertypes": [
-        "Basic"
-      ]
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
+      "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
-      "color": [],
+      "colors": [],
       "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Basic Land — Mountain",
       "types": [
-        "Basic"
+        "Land"
       ],
       "supertypes": [
         "Basic"
-      ]
+      ],
+      "manaCost": "",
+      "keywords": []
     },
     {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
+      "id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "name": "Fields of Strife",
       "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
       "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
+      "typeLine": "Land",
       "types": [
-        "Basic"
+        "Land"
       ],
-      "supertypes": [
-        "Basic"
-      ]
+      "supertypes": [],
+      "manaCost": "",
+      "keywords": []
+    },
+    {
+      "id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "name": "Fields of Strife",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+      "cmc": 0,
+      "typeLine": "Land",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [],
+      "manaCost": "",
+      "keywords": []
     }
   ],
-  "cardCount": 37,
-  "lastUpdated": "2026-04-23T19:02:43.169Z"
+  "sideboard": [],
+  "cardCount": 40,
+  "lastUpdated": "2026-05-12T22:45:33.803Z"
 }

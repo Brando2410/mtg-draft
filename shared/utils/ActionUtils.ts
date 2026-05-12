@@ -14,7 +14,7 @@ export const TRANSIENT_FIELDS: (keyof InteractionMetadata)[] = [
     'effects', 'isManaChoiceToggle', 'hybridGroups', 'triggers',
     'nextPlayerIds', 'onFailureEffects', 'isOptionalDiscard', 'effectIndex', 'isResumption',
     'involvedIds', 'choiceEffects', 'declaredTargets', 'controllerId', 'exiledIds', 'chosenName', 'nextTriggersToStack',
-    'maxChoices', 'minChoices', 'parentStackId', 'parentSourceId'
+    'maxChoices', 'minChoices', 'parentStackId', 'parentSourceId', 'isMulliganPutBack'
 ];
 
 /**

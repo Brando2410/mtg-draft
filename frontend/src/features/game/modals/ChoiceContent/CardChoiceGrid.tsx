@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { GameCard } from '../../GameCard';
+import { GameCard } from '../../arena/objects/GameCard';
 import { type PlayerState, type GameObject } from '@shared/engine_types';
 
 interface CardChoiceGridProps {

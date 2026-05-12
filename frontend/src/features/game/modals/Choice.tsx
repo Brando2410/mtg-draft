@@ -4,15 +4,15 @@ import { EyeOff } from 'lucide-react';
 import { type GameObject, type PlayerState, ActionType, type StackObject, type PendingAction, type ChoiceOption } from '@shared/engine_types';
 
 // Modular Components
-import { SourceObjectPreview } from './choice/SourceObjectPreview';
-import { ScrySurveilView } from './choice/ScrySurveilView';
-import { TriggerOrderView } from './choice/TriggerOrderView';
-import { CardChoiceGrid } from './choice/CardChoiceGrid';
-import { ButtonChoiceList } from './choice/ButtonChoiceList';
-import { ManaChoiceToggleView, type HybridGroup } from './choice/ManaChoiceToggleView';
+import { SourceObjectPreview } from './ChoiceContent/SourceObjectPreview';
+import { ScrySurveilView } from './ChoiceContent/ScrySurveil';
+import { TriggerOrderView } from './ChoiceContent/TriggerOrder';
+import { CardChoiceGrid } from './ChoiceContent/CardChoiceGrid';
+import { ButtonChoiceList } from './ChoiceContent/ButtonChoiceList';
+import { ManaChoiceToggleView, type HybridGroup } from './ChoiceContent/ManaChoiceToggle';
 import { useChoiceModalLogic } from '../../../hooks/game/useChoiceModalLogic';
 
-interface ChoiceModalProps {
+interface ChoiceProps {
   pendingAction: PendingAction | null;
   me: PlayerState | undefined;
   opponent: PlayerState | null | undefined;
@@ -24,7 +24,7 @@ interface ChoiceModalProps {
   onHoverEnd?: (id: string) => void;
 }
 
-export const ChoiceModal = memo(({ 
+export const Choice = memo(({ 
     pendingAction, 
     me, 
     opponent,
@@ -34,7 +34,7 @@ export const ChoiceModal = memo(({
     onTapCard, 
     onHoverStart, 
     onHoverEnd 
-}: ChoiceModalProps) => {
+}: ChoiceProps) => {
   const {
       selectedIndices, setSelectedIndices,
       minimized, setMinimized,
@@ -76,7 +76,8 @@ export const ChoiceModal = memo(({
     ActionType.Scry,
     ActionType.Surveil,
     ActionType.LegendRule,
-    ActionType.OrderTriggers
+    ActionType.OrderTriggers,
+    ActionType.StartingPlayerSelection
   ] as string[]).includes(pendingAction.type);
 
   const isCostChoice = pendingAction?.data?.isCostChoice;
@@ -192,33 +193,35 @@ export const ChoiceModal = memo(({
                       )}
                   </div>
 
-                  <div className="flex flex-row items-center justify-center gap-[var(--sp-6)] w-full max-w-[calc(var(--u)*100)] mt-[var(--sp-6)] relative z-20">
-                    {(!isOrderTriggers && !isScrySurveil && !isManaToggle && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
+                  {pendingAction?.type !== ActionType.StartingPlayerSelection && (
+                    <div className="flex flex-row items-center justify-center gap-[var(--sp-6)] w-full max-w-[calc(var(--u)*100)] mt-[var(--sp-6)] relative z-20">
+                      {(!isOrderTriggers && !isScrySurveil && !isManaToggle && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
+                        <button 
+                          onClick={() => onTapCard?.(`CHOICE_undo`)} 
+                          className="max-w-[calc(var(--u)*24)] btn-premium-danger"
+                        >
+                          CANCEL
+                        </button>
+                      )}
+                      {noneChoice && !isOrderTriggers && !isManaToggle && (
+                        <button 
+                          onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)} 
+                          className="max-w-[calc(var(--u)*24)] btn-premium-secondary"
+                        >
+                          SKIP
+                        </button>
+                      )}
                       <button 
-                        onClick={() => onTapCard?.(`CHOICE_undo`)} 
-                        className="max-w-[calc(var(--u)*24)] btn-premium-danger"
+                        disabled={!isOrderTriggers && !isScrySurveil && !isManaToggle && selectedIndices.length < minChoices} 
+                        onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else if (isManaToggle) confirmManaToggle(); else confirmSelection(); }} 
+                        className={`max-w-[calc(var(--u)*45)] ${(isOrderTriggers || isScrySurveil || isManaToggle || selectedIndices.length >= minChoices) ? 'btn-premium-primary' : 'btn-premium-empty'}`}
                       >
-                        CANCEL
+                        <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                          {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : isManaToggle ? "Confirm" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
+                        </span>
                       </button>
-                    )}
-                    {noneChoice && !isOrderTriggers && !isManaToggle && (
-                      <button 
-                        onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)} 
-                        className="max-w-[calc(var(--u)*24)] btn-premium-secondary"
-                      >
-                        SKIP
-                      </button>
-                    )}
-                    <button 
-                      disabled={!isOrderTriggers && !isScrySurveil && !isManaToggle && selectedIndices.length < minChoices} 
-                      onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else if (isManaToggle) confirmManaToggle(); else confirmSelection(); }} 
-                      className={`max-w-[calc(var(--u)*45)] ${(isOrderTriggers || isScrySurveil || isManaToggle || selectedIndices.length >= minChoices) ? 'btn-premium-primary' : 'btn-premium-empty'}`}
-                    >
-                      <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                        {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : isManaToggle ? "Confirm" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
-                      </span>
-                    </button>
-                  </div>
+                    </div>
+                  )}
               </div>
             </motion.div>
           </motion.div>

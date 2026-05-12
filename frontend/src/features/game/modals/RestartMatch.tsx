@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Check, X, AlertTriangle } from 'lucide-react';
 
-interface RestartMatchModalProps {
+interface RestartMatchProps {
   isOpen: boolean;
   isRequesting: boolean; // True if I am the one who requested it
   requesterName?: string;
@@ -10,7 +10,7 @@ interface RestartMatchModalProps {
   onDecline: () => void;
 }
 
-export const RestartMatchModal: React.FC<RestartMatchModalProps> = ({ 
+export const RestartMatch: React.FC<RestartMatchProps> = ({ 
   isOpen, 
   isRequesting, 
   requesterName, 
