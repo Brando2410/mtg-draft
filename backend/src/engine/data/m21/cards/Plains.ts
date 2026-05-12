@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engin
 export const Plains: CardDefinition = {
     name: "Plains",
     manaCost: "",
-
     oracleText: "({T}: Add {W}.)",
     colors: [],
     supertypes: ["Basic"],

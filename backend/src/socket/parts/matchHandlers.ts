@@ -20,6 +20,13 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const room = rooms.get(roomId);
       if (!room) return;
 
+      // SECURITY: Verify that the socket belongs to the player making the action
+      const playerRecord = room.players.find(p => p.playerId === playerId);
+      if (!playerRecord || playerRecord.id !== socket.id) {
+        LoggerService.warn('SECURITY', `Unauthorized action attempt by socket ${socket.id} claiming to be player ${playerId}`);
+        return;
+      }
+
       let gameState: GameState | undefined;
       let matchIndex: number | undefined;
 
@@ -64,33 +71,34 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       if (lostPlayer && matchIndex !== undefined && room.matches?.[matchIndex]) {
         const match = room.matches![matchIndex];
-        if (match.status === 'active') {
-          // Use both id and playerId to find the lost player in the match list
-          const lostId = lostPlayer.playerId || lostPlayer.id;
-          const winnerId = match.players.find(id => id !== lostId);
+        
+        // Log for debugging
+        const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
+        LoggerService.info('MATCH', `Win Detection: Found lost player ${lostId} in match ${matchIndex}. Match Status: ${match.status}`);
+
+        if (match.status === 'active' || match.status === 'pending') {
+          const winnerId = match.players.find(id => id.toString() !== lostId);
           
           if (winnerId) {
             match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
             
-            LoggerService.info('MATCH', `Game won by ${winnerId}. Score: ${match.wins[match.players[0]]} - ${match.wins[match.players[1]]}`);
+            LoggerService.info('MATCH', `Score Updated: ${winnerId} won. New Score: ${match.wins[match.players[0]]} - ${match.wins[match.players[1]]}`);
 
             // Best of 3: Check if someone reached 2 wins
             if (match.wins[winnerId] >= 2) {
               match.status = 'completed';
-              LoggerService.info('TOURNAMENT', `Match ${matchIndex} resolved. Final Winner: ${winnerId}`);
+              LoggerService.info('TOURNAMENT', `Match ${matchIndex} COMPLETED. Winner: ${winnerId}`);
               if (room.status === 'tournament') {
                 advanceTournament(room);
               }
             } else {
-              // RETURN TO LOBBY FOR SIDEBOARDING
-              LoggerService.info('MATCH', `Returning players to lobby for sideboarding (1-1 or 1-0 in Bo3)`);
+              LoggerService.info('MATCH', `Game Resolved. Match continues (Bo3).`);
               match.status = 'pending';
               match.joinedPlayers = [];
-              match.engineState = undefined;
               match.restartRequestedBy = undefined;
             }
           } else {
-            LoggerService.warn('MATCH', `Found lost player ${lostId} but could not determine winner in match ${matchIndex}`);
+            LoggerService.warn('MATCH', `Found lost player ${lostId} but could not determine winner in match ${matchIndex}. Players: ${JSON.stringify(match.players)}`);
           }
         }
       }
@@ -251,6 +259,17 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         io.to(roomId).emit('room_update', room);
         await PersistenceService.saveRooms(rooms);
       }
+    }
+  });
+
+  socket.on('update_watching_match', async ({ roomId, playerId, matchIndex }: { roomId: string, playerId: string, matchIndex: number | null }) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const player = room.players.find(p => p.playerId === playerId);
+    if (player) {
+      player.watchingMatchIndex = matchIndex === null ? undefined : matchIndex;
+      io.to(roomId).emit('room_update', room);
     }
   });
 
@@ -541,15 +560,65 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
   });
 
   socket.on('concede', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
-    withMatch(roomId, playerId, (engine) => {
-      const state = engine.getState();
-      const player = state.players[playerId];
-      if (player && !player.hasLost) {
-        player.hasLost = true;
-        engine.log(`${player.name} conceded the game.`);
-        engine.checkStateBasedActions();
-      }
-    });
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    // SECURITY: Verify that the socket belongs to the player making the action
+    const playerRecord = room.players.find(p => p.playerId === playerId);
+    if (!playerRecord || playerRecord.id !== socket.id) {
+      LoggerService.warn('SECURITY', `Unauthorized concede attempt by socket ${socket.id} claiming to be player ${playerId}`);
+      return;
+    }
+
+    LoggerService.info('MATCH', `ATOMIC CONCEDE START: Player ${playerId} in room ${roomId}`);
+    
+    // Find the match this player is currently in
+    const matchIndex = room.matches?.findIndex(m => m.players.includes(playerId) && m.status !== 'completed');
+    if (matchIndex === -1 || matchIndex === undefined) {
+      LoggerService.warn('MATCH', `Concede failed: No active match found for player ${playerId}`);
+      return;
+    }
+    
+    const match = room.matches![matchIndex];
+    LoggerService.info('MATCH', `Processing concede for Match ${matchIndex}. Current Status: ${match.status}`);
+
+    // 1. Update engine state if it exists
+    if (match.engineState) {
+        const enginePlayer = match.engineState.players[playerId];
+        if (enginePlayer) {
+            enginePlayer.hasLost = true;
+            match.engineState.status = 'completed';
+            match.engineState.winner = match.players.find(id => id !== playerId);
+            LoggerService.info('MATCH', `Engine state updated: Winner set to ${match.engineState.winner}`);
+        }
+    }
+    
+    // 2. Update match score and status
+    const winnerId = match.players.find(id => id !== playerId);
+    if (winnerId) {
+        match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
+        LoggerService.info('MATCH', `Score updated: ${winnerId} now has ${match.wins[winnerId]} wins`);
+        
+        if (match.wins[winnerId] >= 2) {
+            match.status = 'completed';
+            LoggerService.info('MATCH', `Match ${matchIndex} completed! Advancing tournament...`);
+            if (room.status === 'tournament') {
+                advanceTournament(room);
+            }
+        } else {
+            LoggerService.info('MATCH', `Game won but match continues (Bo3). Setting match to pending.`);
+            match.status = 'pending';
+            match.joinedPlayers = [];
+            match.restartRequestedBy = undefined;
+        }
+    } else {
+        LoggerService.error('MATCH', `Critical error: Could not determine winner for concede of ${playerId}`);
+    }
+    
+    // 3. Emit FULL room update to ensure all clients sync correctly
+    io.to(roomId).emit('room_update', room);
+    await PersistenceService.saveRooms(rooms);
+    LoggerService.info('MATCH', `ATOMIC CONCEDE COMPLETE: Room ${roomId} updated.`);
   });
 
   socket.on('toggle_pass_turn', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {

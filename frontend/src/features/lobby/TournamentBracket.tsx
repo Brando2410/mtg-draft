@@ -84,15 +84,29 @@ const MatchBox: React.FC<MatchNodeProps> = ({ match, players, isMyMatch, canJoin
           {[p1, p2].map((p, i) => {
             const isWinner = (i === 0 ? winnerId === p1Id : winnerId === p2Id);
             const score = (i === 0 ? score1 : score2);
+            const currId = i === 0 ? p1Id : p2Id;
+            const isReady = !isCompleted && match?.joinedPlayers?.includes(currId);
+
             return (
-              <div key={i} className={`flex items-center w-full h-1/2 ${isFinal ? 'px-8' : 'px-3'}`}>
+              <div key={i} className={`flex items-center w-full h-1/2 ${isFinal ? 'px-8' : 'px-3'} relative group/row`}>
                 <div className="flex-1 flex items-center gap-4 min-w-0">
-                  <div className={`rounded bg-slate-800 border ${isWinner ? typeStyles[type as keyof TypeStyle].split(' ')[0] : 'border-white/5'} overflow-hidden shrink-0 ${isFinal ? 'w-20 h-20 border-2' : 'w-7 h-7'}`}>
+                  <div className={`rounded bg-slate-800 border ${isWinner ? typeStyles[type as keyof TypeStyle].split(' ')[0] : 'border-white/5'} overflow-hidden shrink-0 ${isFinal ? 'w-20 h-20 border-2' : 'w-7 h-7'} relative`}>
                     {p ? <img src={`/avatars/${p.avatar || 'ajani.png'}`} className="w-full h-full object-cover" alt={p.name} /> : <Shield className="w-full h-full p-2 text-slate-700" />}
+                    {isReady && (
+                      <div className="absolute inset-0 bg-green-500/20 animate-pulse border-2 border-green-500 rounded" />
+                    )}
                   </div>
-                  <span className={`font-black uppercase truncate ${isWinner ? typeStyles[type as keyof TypeStyle].split(' ')[1] : 'text-slate-400'} ${isFinal ? 'text-2xl' : 'text-[10px]'}`}>
-                    {p?.name || 'TBD'}
-                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className={`font-black uppercase truncate ${isWinner ? typeStyles[type as keyof TypeStyle].split(' ')[1] : 'text-slate-400'} ${isFinal ? 'text-2xl' : 'text-[10px]'}`}>
+                      {p?.name || 'TBD'}
+                    </span>
+                    {isReady && (
+                      <span className="text-[7px] font-black text-green-500 uppercase tracking-tighter -mt-1 flex items-center gap-1">
+                        <div className="w-1 h-1 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,1)]" />
+                        Ready
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className={`flex items-center justify-center font-black border-l border-white/5 ${isWinner ? typeStyles[type as keyof TypeStyle].split(' ')[2] + ' text-black' : 'bg-slate-900/30 text-slate-600'} ${isFinal ? 'w-32 text-5xl h-full' : 'w-9 text-xs h-full'}`}>
                   {p ? score : '--'}

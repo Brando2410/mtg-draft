@@ -44,6 +44,7 @@ export interface Player {
     matchWins?: number;
     deck?: Card[] | { name?: string; cards?: Card[]; mainEntry?: Card[] };
     isReady?: boolean;
+    watchingMatchIndex?: number;
 }
 
 export interface Rules {

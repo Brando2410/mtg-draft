@@ -5,14 +5,20 @@ interface EscMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onResetMatch: () => void;
-  onBack: () => void;
+  onConcede: () => void;
+  onLeave: () => void;
+  isSpectator?: boolean;
+  onSwapPOV?: () => void;
 }
 
 export const EscMenu = ({ 
   isOpen, 
   onClose, 
   onResetMatch, 
-  onBack, 
+  onConcede,
+  onLeave,
+  isSpectator = false,
+  onSwapPOV
 }: EscMenuProps) => {
   return (
     <AnimatePresence>
@@ -56,28 +62,60 @@ export const EscMenu = ({
                 <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
               </button>
 
-              <button 
-                onClick={onResetMatch} 
-                className="flex justify-between items-center bg-indigo-600 group/btn hover:bg-indigo-500 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(79,70,229,0.2)] active:scale-95"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <RefreshCw className="w-5 h-5 text-white group-hover/btn:rotate-180 transition-all duration-700" />
+              {!isSpectator && (
+                <>
+                  <button 
+                    onClick={onResetMatch} 
+                    className="flex justify-between items-center bg-indigo-600 group/btn hover:bg-indigo-500 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(79,70,229,0.2)] active:scale-95"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <RefreshCw className="w-5 h-5 text-white group-hover/btn:rotate-180 transition-all duration-700" />
+                      </div>
+                      <span className="text-lg font-black uppercase italic tracking-tight text-white">Restart Match</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
+
+                  <button 
+                    onClick={onConcede} 
+                    className="flex justify-between items-center bg-red-600 group/btn hover:bg-red-500 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] active:scale-95"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <Trash2 className="w-5 h-5 text-white group-hover/btn:scale-110 transition-transform" />
+                      </div>
+                      <span className="text-lg font-black uppercase italic tracking-tight text-white">Concede Game</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
+                </>
+              )}
+
+              {isSpectator && (
+                <button 
+                  onClick={onSwapPOV} 
+                  className="flex justify-between items-center bg-amber-600 group/btn hover:bg-amber-500 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(245,158,11,0.2)] active:scale-95"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                      <RefreshCw className="w-5 h-5 text-white group-hover/btn:rotate-180 transition-all duration-700" />
+                    </div>
+                    <span className="text-lg font-black uppercase italic tracking-tight text-white">Swap POV</span>
                   </div>
-                  <span className="text-lg font-black uppercase italic tracking-tight text-white">Restart Match</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
-              </button>
+                  <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              )}
 
               <button 
-                onClick={onBack} 
-                className="flex justify-between items-center bg-red-600 group/btn hover:bg-red-500 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] active:scale-95"
+                onClick={onLeave} 
+                className="flex justify-between items-center bg-slate-800 group/btn hover:bg-slate-700 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-95"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <Trash2 className="w-5 h-5 text-white group-hover/btn:scale-110 transition-transform" />
+                    <X className="w-5 h-5 text-white group-hover/btn:rotate-90 transition-transform" />
                   </div>
-                  <span className="text-lg font-black uppercase italic tracking-tight text-white">Concede</span>
+                  <span className="text-lg font-black uppercase italic tracking-tight text-white">Leave / Spectate</span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
               </button>

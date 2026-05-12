@@ -97,6 +97,7 @@ export const useGameActions = (roomId: string, playerId: string) => {
     concede,
     requestMatchRestart,
     acceptMatchRestart,
-    declineMatchRestart
+    declineMatchRestart,
+    socket
   };
 };

@@ -8,13 +8,14 @@ interface OpponentHandProps {
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: (id: string) => void;
   stateVersion?: number;
+  revealAll?: boolean;
 }
 
 /**
  * Opponent's Hand tucked at the top of the screen.
  * Cards are inverted and sit slightly below the top edge.
  */
-export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHandProps) => {
+export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd, revealAll }: OpponentHandProps) => {
   const cardCount = hand.length;
 
   const getCardRotation = (index: number) => {
@@ -47,7 +48,7 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
             const rotation = getCardRotation(index);
             const xBase = getCardX(index);
             const yBase = getCardY(index);
-            const isRevealed = card.isRevealed || card.isVirtual;
+            const isRevealed = revealAll || card.isRevealed || card.isVirtual;
             const cardWithFlags = {
               ...card,
               isVirtual: card.isVirtual || card.zone === 'Graveyard' || card.zone === 'Exile',
