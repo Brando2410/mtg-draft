@@ -50,7 +50,7 @@ export const ArtisticProcess: CardDefinition = {
         }
     ],
     scryfall_id: "bce9d933-be58-4301-beb4-07b04d0b69f0",
-    image_url: "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1775828255",
+    image_url: "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683",
     rarity: "uncommon"
 };
 

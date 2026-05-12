@@ -42,6 +42,9 @@ export class SealedService {
                 // Strictly cards from the specific set (Rule 2)
                 if (def.isMysticalArchive || def.set?.toLowerCase() === 'sta' || def.set?.toLowerCase() === 'soa') return;
                 
+                // Skip basic lands (Basic Lands are usually provided for free in deckbuilding)
+                if (def.supertypes?.includes('Basic') && (def.types?.includes('Land') || def.typeLine?.includes('Land'))) return;
+                
                 // If it's a "back face" entry that doesn't have the // in the name,
                 // and there's a // version of the same object, skip it
                 if (!name.includes(' // ') && Object.keys(cardDefs).some(k => k.startsWith(name + ' // '))) {

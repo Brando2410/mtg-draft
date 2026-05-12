@@ -75,7 +75,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
         }
     ],
     scryfall_id: "6877180c-22a1-4c4d-9178-316f4c34661b",
-    image_url: "https://cards.scryfall.io/normal/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901",
+    image_url: "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545",
     rarity: "rare"
 };
 

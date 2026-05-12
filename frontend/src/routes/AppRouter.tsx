@@ -199,14 +199,6 @@ export const AppRouter = ({
               onShowAssets={() => setIsAssetOpen(true)}
               onSelect={(view) => {
                 setSkipRestore(false);
-                if (view === 'draft_join') {
-                  const savedRoomId = localStorage.getItem('mtg_room_id');
-                  const savedPlayerName = localStorage.getItem('mtg_player_name');
-                  if (savedRoomId && savedPlayerName) {
-                    joinRoom(savedRoomId, savedPlayerName);
-                    return;
-                  }
-                }
                 const viewPaths: any = { builder: '/cube-builder', draft_setup: '/play', draft_join: '/join', collection: '/collection', history: '/history' };
                 navigate(viewPaths[view] || '/');
               }}
@@ -509,7 +501,19 @@ const EventWrapper = ({ rooms, playerId, isEditingDeck, setIsEditingDeck, specta
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [showBracket, setShowBracket] = useState(false);
+  const [joiningMatchIndex, setJoiningMatchIndex] = useState<number | null>(null);
   const room = roomId ? rooms[roomId?.toUpperCase()] : null;
+  const currentPlayer = room?.players?.find((p: any) => p.playerId === playerId);
+  const isReady = !!currentPlayer?.isReady;
+
+  // Auto-transition to game if the match we are joining becomes active
+  // MOVED TO TOP to avoid Hook Violation during early returns
+  useEffect(() => {
+    if (joiningMatchIndex !== null && room?.matches?.[joiningMatchIndex]?.status === 'active') {
+      setSpectatedMatchIndex(joiningMatchIndex);
+      setJoiningMatchIndex(null);
+    }
+  }, [room?.matches, joiningMatchIndex, setSpectatedMatchIndex]);
 
   // If we are on an event path but the room is missing from our collection, go home
   if (roomId && !room) {
@@ -542,20 +546,20 @@ const EventWrapper = ({ rooms, playerId, isEditingDeck, setIsEditingDeck, specta
 
   return (
     <div className="animate-in fade-in slide-in-from-top-4 duration-700 h-full">
-      {room.status === 'deckbuilding' || (room.rules.isSealed && room.status === 'drafting') || isEditingDeck ? (
+      {(room.status === 'deckbuilding' || (room.rules.isSealed && room.status === 'drafting') || isEditingDeck) && (!isReady || isEditingDeck) ? (
         <DeckBuilder
           onBack={() => {
             if (isEditingDeck) setIsEditingDeck(false);
             else navigate('/');
           }}
-          pool={room.players.find((p: any) => p.playerId === playerId || '')?.pool}
-          initialDeck={room.players.find((p: any) => p.playerId === playerId || '')?.deck}
+          pool={currentPlayer?.pool}
+          initialDeck={currentPlayer?.deck}
           onConfirm={(deckData) => {
             socket?.emit('ready_with_deck', { roomId: room.id, playerId, deck: deckData });
             setIsEditingDeck(false);
           }}
         />
-      ) : (room.status === 'tournament' || showBracket) ? (
+      ) : (room.status === 'tournament' || room.status === 'deckbuilding' || showBracket) ? (
         spectatedMatchIndex !== null || (room.matches?.some((m: any) => m.players.includes(playerId)) && spectatedMatchIndex !== null) ? (
           <GameView
             room={room}
@@ -574,6 +578,7 @@ const EventWrapper = ({ rooms, playerId, isEditingDeck, setIsEditingDeck, specta
               const match = room.matches?.[idx];
               if (match?.status === 'pending') {
                 socket?.emit('join_tournament_match', { roomId: room.id, playerId, matchIndex: idx });
+                setJoiningMatchIndex(idx);
               } else if (match?.status === 'active') {
                 setSpectatedMatchIndex(idx);
               }
@@ -597,6 +602,89 @@ const EventWrapper = ({ rooms, playerId, isEditingDeck, setIsEditingDeck, specta
           onBack={() => setActiveView('menu')}
         />
       )}
+
+      {/* MATCH WAITING ROOM MODAL */}
+      <AnimatePresence>
+        {joiningMatchIndex !== null && room.matches?.[joiningMatchIndex] && (
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="relative w-full max-w-2xl bg-[#0a0a0c] border border-white/10 rounded-[3rem] p-12 shadow-[0_0_100px_rgba(0,0,0,1)] overflow-hidden"
+            >
+              {/* Background Decoration */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px]" />
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-600/10 rounded-full blur-[100px]" />
+
+              <div className="relative z-10 flex flex-col items-center text-center gap-10">
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Match Lobby</h3>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">Waiting for synchronization</p>
+                </div>
+
+                <div className="flex items-center justify-center gap-12 w-full">
+                  {/* PLAYER 1 */}
+                  {(() => {
+                    const pId = room.matches[joiningMatchIndex].players[0];
+                    const p = room.players.find((rp: any) => rp.playerId === pId);
+                    const isJoined = room.matches![joiningMatchIndex!].joinedPlayers?.includes(pId);
+                    return (
+                      <div className="flex flex-col items-center gap-6 w-32">
+                        <div className={`relative w-24 h-24 rounded-3xl overflow-hidden border-2 transition-all duration-500 ${isJoined ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]' : 'border-white/10'}`}>
+                          {p ? <img src={`/avatars/${p.avatar || 'ajani.png'}`} className="w-full h-full object-cover" alt={p?.name} /> : <div className="w-full h-full bg-slate-900 flex items-center justify-center"><Loader2 className="w-8 h-8 text-slate-700 animate-spin" /></div>}
+                          <AnimatePresence>{isJoined && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-green-500/20 flex items-center justify-center"><div className="bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase">Ready</div></motion.div>}</AnimatePresence>
+                        </div>
+                        <span className={`text-sm font-black uppercase italic truncate w-full ${isJoined ? 'text-white' : 'text-slate-600'}`}>{p?.name || 'TBD'}</span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* VERSUS DIVIDER */}
+                  <div className="flex flex-col items-center gap-2 shrink-0">
+                    <div className="w-px h-12 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                    <span className="text-xl font-black italic text-indigo-500">VS</span>
+                    <div className="w-px h-12 bg-gradient-to-t from-transparent via-white/10 to-transparent" />
+                  </div>
+
+                  {/* PLAYER 2 */}
+                  {(() => {
+                    const pId = room.matches[joiningMatchIndex].players[1];
+                    const p = room.players.find((rp: any) => rp.playerId === pId);
+                    const isJoined = room.matches![joiningMatchIndex!].joinedPlayers?.includes(pId);
+                    return (
+                      <div className="flex flex-col items-center gap-6 w-32">
+                        <div className={`relative w-24 h-24 rounded-3xl overflow-hidden border-2 transition-all duration-500 ${isJoined ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]' : 'border-white/10'}`}>
+                          {p ? <img src={`/avatars/${p.avatar || 'ajani.png'}`} className="w-full h-full object-cover" alt={p?.name} /> : <div className="w-full h-full bg-slate-900 flex items-center justify-center"><Loader2 className="w-8 h-8 text-slate-700 animate-spin" /></div>}
+                          <AnimatePresence>{isJoined && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-green-500/20 flex items-center justify-center"><div className="bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase">Ready</div></motion.div>}</AnimatePresence>
+                        </div>
+                        <span className={`text-sm font-black uppercase italic truncate w-full ${isJoined ? 'text-white' : 'text-slate-600'}`}>{p?.name || 'TBD'}</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div className="w-full space-y-6">
+                  <div className="flex items-center justify-center gap-3">
+                    <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+                    <span className="text-[10px] font-black text-indigo-400 tracking-widest animate-pulse">
+                      Waiting for Opponent...
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => setJoiningMatchIndex(null)}
+                    className="w-full py-4 bg-slate-900/50 hover:bg-slate-800 text-slate-500 hover:text-white border border-white/5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

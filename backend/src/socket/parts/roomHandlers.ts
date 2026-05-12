@@ -60,6 +60,33 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     socket.emit('room_created', newRoom);
   });
 
+  socket.on('sync_player_session', async ({ playerId }) => {
+    if (!playerId) return;
+    LoggerService.info('SOCKET', `Syncing session for player: ${playerId}`);
+
+    const activeRooms: Room[] = [];
+    for (const [roomId, room] of rooms.entries()) {
+      const existingPlayer = room.players.find((p: Player) => p.playerId === playerId);
+      if (existingPlayer) {
+        // Re-establish socket connection in this room
+        existingPlayer.id = socket.id;
+        existingPlayer.online = true;
+        existingPlayer.lastSeen = Date.now();
+        if (room.hostPlayerId === playerId) room.host = socket.id;
+
+        socket.join(roomId);
+        // We emit joined_successfully for each room found so the client can populate its store
+        socket.emit('joined_successfully', room);
+        activeRooms.push(room);
+      }
+    }
+
+    if (activeRooms.length > 0) {
+      LoggerService.info('SOCKET', `Player ${playerId} synced to ${activeRooms.length} rooms`);
+      await PersistenceService.saveRooms(rooms);
+    }
+  });
+
   socket.on('join_room', async ({ roomId, playerName, playerId }) => {
     const room = rooms.get(roomId);
     if (!room) {

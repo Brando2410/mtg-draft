@@ -24,15 +24,22 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       let matchIndex: number | undefined;
 
       if (room.status === 'tournament' && room.matches) {
-        matchIndex = room.matches.findIndex(m => m.players.includes(playerId));
+        // Only look for matches that are currently in progress or waiting
+        matchIndex = room.matches.findIndex(m => m.players.includes(playerId) && m.status !== 'completed');
         if (matchIndex === -1) return;
-        gameState = room.matches[matchIndex].engineState;
+        const match = room.matches[matchIndex];
+        // If match is pending (players in waiting room), it's normal not to have a state yet
+        if (match.status === 'pending') return;
+        gameState = match.engineState;
       } else {
         gameState = room.gameState;
       }
 
       if (!gameState) {
-        LoggerService.warn('MATCH', `No GameState found for room ${roomId}`, { roomId, status: room.status });
+        // Only warn if we really expected a state (e.g. room active but no state)
+        if (room.status === 'active' || (room.status === 'tournament' && matchIndex !== undefined)) {
+          LoggerService.warn('MATCH', `No GameState found for room ${roomId}`, { roomId, status: room.status, matchIndex });
+        }
         return;
       }
 
@@ -55,28 +62,35 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const players = Object.values(newState.players);
       const lostPlayer = players.find(p => p.hasLost);
 
-      if (lostPlayer && room.status === 'tournament' && matchIndex !== undefined) {
+      if (lostPlayer && matchIndex !== undefined && room.matches?.[matchIndex]) {
         const match = room.matches![matchIndex];
         if (match.status === 'active') {
-          const winnerId = match.players.find(id => id !== lostPlayer.id);
+          // Use both id and playerId to find the lost player in the match list
+          const lostId = lostPlayer.playerId || lostPlayer.id;
+          const winnerId = match.players.find(id => id !== lostId);
+          
           if (winnerId) {
             match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
-            // Best of 1 for now or check for 2 wins? 
-            // The UI says Best of 3, let's stick to 2 wins if we want.
-            // But usually simple tournaments here are 1 match = 1 win.
-            // Let's check if they reached 2 wins for Bo3.
+            
+            LoggerService.info('MATCH', `Game won by ${winnerId}. Score: ${match.wins[match.players[0]]} - ${match.wins[match.players[1]]}`);
+
+            // Best of 3: Check if someone reached 2 wins
             if (match.wins[winnerId] >= 2) {
               match.status = 'completed';
-              LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
-              advanceTournament(room);
+              LoggerService.info('TOURNAMENT', `Match ${matchIndex} resolved. Final Winner: ${winnerId}`);
+              if (room.status === 'tournament') {
+                advanceTournament(room);
+              }
             } else {
-              // Reset for next game in Bo3?
-              // For now, let's just make 1 win = completed to keep it simple unless Bo3 is strictly required.
-              // Actually, let's make it 1 win for now to ensure advancement works.
-              match.status = 'completed';
-              LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
-              advanceTournament(room);
+              // RETURN TO LOBBY FOR SIDEBOARDING
+              LoggerService.info('MATCH', `Returning players to lobby for sideboarding (1-1 or 1-0 in Bo3)`);
+              match.status = 'pending';
+              match.joinedPlayers = [];
+              match.engineState = undefined;
+              match.restartRequestedBy = undefined;
             }
+          } else {
+            LoggerService.warn('MATCH', `Found lost player ${lostId} but could not determine winner in match ${matchIndex}`);
           }
         }
       }
@@ -201,6 +215,55 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('request_match_restart', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.matches) return;
+    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (match) {
+      // If opponent is a bot, just restart immediately
+      const opponentId = match.players.find(id => id !== playerId);
+      const opponent = room.players.find(p => p.playerId === opponentId);
+      
+      if (opponent?.isBot) {
+        const nextGameMatch = createMatch(room, match.players[0], match.players[1]);
+        if (nextGameMatch) {
+          match.engineState = nextGameMatch.engineState;
+          match.restartRequestedBy = undefined;
+          io.to(roomId).emit('room_update', room);
+          await PersistenceService.saveRooms(rooms);
+        }
+      } else {
+        match.restartRequestedBy = playerId;
+        io.to(roomId).emit('room_update', room);
+      }
+    }
+  });
+
+  socket.on('accept_match_restart', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.matches) return;
+    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (match && match.restartRequestedBy && match.restartRequestedBy !== playerId) {
+      const nextGameMatch = createMatch(room, match.players[0], match.players[1]);
+      if (nextGameMatch) {
+        match.engineState = nextGameMatch.engineState;
+        match.restartRequestedBy = undefined;
+        io.to(roomId).emit('room_update', room);
+        await PersistenceService.saveRooms(rooms);
+      }
+    }
+  });
+
+  socket.on('decline_match_restart', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.matches) return;
+    const match = room.matches.find(m => m.players.includes(playerId) && m.status === 'active');
+    if (match) {
+      match.restartRequestedBy = undefined;
+      io.to(roomId).emit('room_update', room);
+    }
+  });
+
   const createMatch = (room: Room, player1Id: string, player2Id: string) => {
     const p1 = room.players.find(p => p.playerId === player1Id);
     const p2 = room.players.find(p => p.playerId === player2Id);
@@ -259,10 +322,9 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         LoggerService.info('TOURNAMENT', `Match ${idx} (Bot vs Bot) auto-resolved. Winner: ${winnerId}`);
         resolvedAny = true;
       }
-      // Rule: Human vs Bot = Human Always Wins
+      // Rule: Human vs Bot = Human Always Wins (since bots can't play)
       else if (p1.isBot || p2.isBot) {
         const human = p1.isBot ? p2 : p1;
-        const bot = p1.isBot ? p1 : p2;
         match.wins = { [p1.playerId]: 0, [p2.playerId]: 0 };
         match.wins[human.playerId] = 2; // Bo3 winner
         match.status = 'completed';

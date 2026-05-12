@@ -71,16 +71,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     get().cleanupSocketListeners();
 
     socket.on('connect', () => {
-      logger.info('Socket connected, attempting re-join...');
-      const savedRoomId = localStorage.getItem('mtg_room_id');
-      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Giocatore';
-      if (savedRoomId) {
-        socket.emit('join_room', {
-          roomId: savedRoomId,
-          playerName: savedPlayerName,
-          playerId: PLAYER_ID
-        });
-      }
+      logger.info('Socket connected, syncing session...');
+      socket.emit('sync_player_session', { playerId: PLAYER_ID });
     });
 
     socket.on('room_created', (newRoom: Room) => {
@@ -91,24 +83,27 @@ export const useDraftStore = create<DraftState>((set, get) => ({
         activeView: 'draft_lobby',
         isJoining: false
       }));
-      localStorage.setItem('mtg_room_id', newRoom.id);
     });
 
     socket.on('joined_successfully', (room: Room) => {
       logger.info('Joined room successfully', { roomId: room.id, status: room.status });
       const isInGame = ['drafting', 'deckbuilding', 'active', 'tournament'].includes(room.status);
 
-      set((state) => ({
-        rooms: { ...state.rooms, [room.id]: room },
-        room: room,
-        activeView: isInGame ? 'drafting' : 'draft_lobby',
-        isJoining: false,
-        joinError: null
-      }));
-      localStorage.setItem('mtg_room_id', room.id);
+      set((state) => {
+        // If we don't have a focused room yet, we can focus this one
+        // Otherwise, we just add it to the rooms list
+        const shouldFocus = !state.room;
+
+        return {
+          rooms: { ...state.rooms, [room.id]: room },
+          room: shouldFocus ? room : state.room,
+          activeView: shouldFocus ? (isInGame ? 'drafting' : 'draft_lobby') : state.activeView,
+          isJoining: false,
+          joinError: null
+        };
+      });
 
       if (room.status === 'completed') {
-        localStorage.removeItem('mtg_room_id');
         set({ activeView: 'history' });
       }
     });
@@ -182,22 +177,11 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.on('error_join', (message: string) => {
       logger.warn('Join error', { message });
       set({ joinError: message, isJoining: false });
-      if (message === "Room not found.") {
-        localStorage.removeItem('mtg_room_id');
-      }
     });
 
     // Handle initial connection if already connected
     if (socket.connected) {
-      const savedRoomId = localStorage.getItem('mtg_room_id');
-      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Player';
-      if (savedRoomId) {
-        socket.emit('join_room', {
-          roomId: savedRoomId,
-          playerName: savedPlayerName,
-          playerId: PLAYER_ID
-        });
-      }
+      socket.emit('sync_player_session', { playerId: PLAYER_ID });
     }
   },
 
@@ -256,10 +240,6 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     if (!idToLeave) return;
 
     socket.emit('leave_room', { roomId: idToLeave, playerId });
-
-    if (localStorage.getItem('mtg_room_id') === idToLeave) {
-      localStorage.removeItem('mtg_room_id');
-    }
 
     set((state) => {
       const newRooms = { ...state.rooms };

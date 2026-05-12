@@ -95,6 +95,7 @@ export interface Room {
         status: 'pending' | 'active' | 'completed';
         engineState?: any;
         joinedPlayers?: string[];
+        restartRequestedBy?: string;
     }[];
     checkpoint?: GameState; // DEBUG: Saved game state
     serverTime?: number;

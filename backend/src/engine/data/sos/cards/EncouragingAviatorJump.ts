@@ -2,23 +2,13 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const EncouragingAviatorJump: CardDefinition = {
     name: "Encouraging Aviator // Jump",
     manaCost: "{2}{U} // {U}",
-
-
-    colors: [
-        "U"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Bird",
-        "Wizard"
-    ],
+    colors: ["U"],
+    types: ["Creature"],
+    subtypes: ["Bird", "Wizard"],
     keywords: ["Flying", "Prepared"],
     oracleText: "Flying\nWhenever this creature attacks, it becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -33,7 +23,6 @@ export const EncouragingAviatorJump: CardDefinition = {
     ],
     preparedFace: {
         name: "Jump",
-
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
@@ -58,7 +47,7 @@ export const EncouragingAviatorJump: CardDefinition = {
 
     },
     scryfall_id: "72654b84-9902-41db-92ab-a3499c31221c",
-    image_url: "https://cards.scryfall.io/png/front/2/e/2edd7be9-9334-4684-b642-1aaf2000e054.png?1561975305",
+    image_url: "https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1778165006",
     rarity: "uncommon"
 };
 

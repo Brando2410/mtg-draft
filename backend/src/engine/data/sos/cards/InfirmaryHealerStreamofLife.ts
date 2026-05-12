@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const InfirmaryHealerStreamofLife: CardDefinition = {
     name: "Infirmary Healer // Stream of Life",
     manaCost: "{1}{G}",
-
-
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
@@ -15,7 +13,6 @@ export const InfirmaryHealerStreamofLife: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Stream of Life",
-
         manaCost: "{X}{G}",
         colors: ["G"],
         types: ["Sorcery"],
@@ -39,7 +36,7 @@ export const InfirmaryHealerStreamofLife: CardDefinition = {
 
     },
     scryfall_id: "911442e3-3003-4683-a766-e791e9553667",
-    image_url: "https://cards.scryfall.io/png/front/3/4/341aa1b2-e600-4580-b0cd-e1582b75dc81.png?1562733506",
+    image_url: "https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036",
     rarity: "uncommon"
 };
 

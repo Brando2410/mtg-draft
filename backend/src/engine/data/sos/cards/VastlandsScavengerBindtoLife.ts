@@ -14,7 +14,6 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
 
     preparedFace: {
         name: "Bind to Life",
-
         manaCost: "{4}{G}",
         colors: ["G"],
         types: ["Instant"],
@@ -41,7 +40,7 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
 
     },
     scryfall_id: "476b6a4d-cc05-4e98-8a45-a5c6582ec514",
-    image_url: "https://cards.scryfall.io/png/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.png?1775938136",
+    image_url: "https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1778165152",
     rarity: "rare"
 };
 

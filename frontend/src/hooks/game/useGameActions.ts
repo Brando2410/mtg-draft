@@ -68,6 +68,18 @@ export const useGameActions = (roomId: string, playerId: string) => {
     socket.emit('concede', { roomId, playerId });
   };
 
+  const requestMatchRestart = () => {
+    socket.emit('request_match_restart', { roomId, playerId });
+  };
+
+  const acceptMatchRestart = () => {
+    socket.emit('accept_match_restart', { roomId, playerId });
+  };
+
+  const declineMatchRestart = () => {
+    socket.emit('decline_match_restart', { roomId, playerId });
+  };
+
   return {
     passPriority,
     toggleFullControl,
@@ -82,6 +94,9 @@ export const useGameActions = (roomId: string, playerId: string) => {
     discardCard,
     togglePassTurn,
     allAttack,
-    concede
+    concede,
+    requestMatchRestart,
+    acceptMatchRestart,
+    declineMatchRestart
   };
 };

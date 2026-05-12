@@ -11,6 +11,85 @@ interface LimitedEventOverProps {
   onViewTournament?: () => void;
 }
 
+const ColumnContainer = ({ color, colorNames, items, onZoomStart, onZoomEnd }: { color: string, colorNames: any, items: any[], onZoomStart: (card: any) => void, onZoomEnd: () => void }) => {
+  const columnRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!columnRef.current) return;
+    setIsDragging(true);
+    setStartY(e.clientY);
+    setScrollTop(columnRef.current.scrollTop);
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    onZoomEnd();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !columnRef.current) return;
+    e.preventDefault();
+    const y = e.clientY;
+    const walk = (y - startY) * 1.5;
+    columnRef.current.scrollTop = scrollTop - walk;
+  };
+
+  return (
+    <div key={color} className="flex flex-col gap-6 w-48 sm:w-64 h-full shrink-0">
+      <div className="flex items-center justify-between px-4 bg-slate-900/80 rounded-2xl py-3 border border-white/10 shadow-xl backdrop-blur-md shrink-0">
+        <span className="text-white font-black text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+          {colorNames[color]}
+        </span>
+        <div className="px-3 py-1 bg-indigo-500/20 rounded-full border border-indigo-500/30">
+          <span className="text-indigo-400 font-black text-[10px]">
+            {items.reduce((acc, curr) => acc + curr.count, 0)}
+          </span>
+        </div>
+      </div>
+      
+      <div 
+        ref={columnRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={(e) => e.preventDefault()}
+        className={`flex-1 overflow-y-auto custom-scrollbar relative px-4 pb-20 flex flex-col gap-6 ${isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+      >
+        {items.map((item, i) => (
+          <motion.div 
+            key={`${color}-${item.card.name}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            onMouseEnter={() => onZoomStart(item.card)}
+            onMouseLeave={onZoomEnd}
+            className={`relative group shrink-0 ${isDragging ? 'pointer-events-none' : 'cursor-pointer'}`}
+          >
+            <div className="relative">
+              <img 
+                src={item.card.image_url} 
+                alt={item.card.name} 
+                draggable="false"
+                className="w-full rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/10 group-hover:scale-105 transition-transform duration-300 group-hover:shadow-[0_20px_60px_rgba(99,102,241,0.4)]"
+              />
+              {item.count > 1 && (
+                <div className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-black px-3 py-1.5 rounded-xl border-2 border-slate-950 shadow-2xl z-30 transform group-hover:scale-125 transition-transform">
+                  x{item.count}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const LimitedEventOver: React.FC<LimitedEventOverProps> = ({
   room,
   playerId,
@@ -20,10 +99,29 @@ export const LimitedEventOver: React.FC<LimitedEventOverProps> = ({
   const [selectedPlayerForPool, setSelectedPlayerForPool] = useState<any | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
+  // ZOOM LOGIC
+  const [zoomCard, setZoomCard] = useState<any | null>(null);
+  const zoomTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleZoomStart = (card: any) => {
+    if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
+    zoomTimerRef.current = setTimeout(() => {
+      setZoomCard(card);
+    }, 1000);
+  };
+
+  const handleZoomEnd = () => {
+    if (zoomTimerRef.current) {
+      clearTimeout(zoomTimerRef.current);
+      zoomTimerRef.current = null;
+    }
+    setZoomCard(null);
+  };
+
   const isSealed = room?.rules?.isSealed;
   const eventTitle = isSealed ? 'Evento Sealed' : 'Evento Draft';
-  const myPlayer = room?.players?.find((p: any) => p.playerId === playerId);
-
+   const myPlayer = room?.players?.find((p: any) => p.playerId === playerId);
+  
   React.useEffect(() => {
     if (!room || room.status !== 'completed') return;
     
@@ -159,9 +257,9 @@ export const LimitedEventOver: React.FC<LimitedEventOverProps> = ({
                   
                   <button 
                     onClick={() => setSelectedPlayerForPool(player)}
-                    className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 hover:text-white transition-all uppercase tracking-widest"
+                    className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 hover:text-white transition-all  tracking-widest"
                   >
-                    <Eye className="w-3 h-3" /> Vedi Pool
+                    <Eye className="w-3 h-3" /> Cards Pool
                   </button>
                 </div>
               </div>
@@ -174,19 +272,19 @@ export const LimitedEventOver: React.FC<LimitedEventOverProps> = ({
       {/* POOL PREVIEW MODAL */}
       <AnimatePresence>
         {selectedPlayerForPool && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-10 backdrop-blur-3xl bg-slate-950/80">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-6 backdrop-blur-3xl bg-slate-950/80">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-7xl h-full bg-slate-900 rounded-[3rem] border border-white/10 shadow-2xl flex flex-col overflow-hidden"
+              className="w-full max-w-[98vw] h-[95vh] bg-slate-900 rounded-[3rem] border border-white/10 shadow-2xl flex flex-col overflow-hidden"
             >
               <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
                  <div className="flex items-center gap-6">
                     <img src={`/avatars/${selectedPlayerForPool.avatar || 'ajani.png'}`} alt="" className="w-16 h-16 rounded-full border-2 border-indigo-500" />
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Pool di {selectedPlayerForPool.name}</h3>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">{selectedPlayerForPool.pool?.length} Carte Totali</p>
+                      <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">{selectedPlayerForPool.name}'s Pool</h3>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">{selectedPlayerForPool.pool?.length} Total Cards</p>
                     </div>
                  </div>
                  <button 
@@ -196,28 +294,85 @@ export const LimitedEventOver: React.FC<LimitedEventOverProps> = ({
                     <ArrowLeft className="w-6 h-6" />
                  </button>
               </div>
+              <div
+                className="flex-1 p-4 sm:p-8 overflow-x-auto overflow-y-hidden custom-scrollbar bg-slate-950/50"
+              >
+                {(() => {
+                  const pool = selectedPlayerForPool.pool || [];
+                  const getColorGroup = (card: any) => {
+                    const typeLine = card.typeLine || card.type_line || '';
+                    const types = card.types || [];
+                    if (typeLine.includes('Land') || types.includes('Land')) return 'L';
+                    const colors = card.colors || card.card_colors || [];
+                    if (colors.length > 1) return 'M';
+                    if (colors.length === 1) return colors[0].toUpperCase();
+                    return 'C';
+                  };
 
-              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-                  {selectedPlayerForPool.pool?.map((card: any, idx: number) => (
-                    <motion.div 
-                      key={`${card.id}-${idx}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.01 }}
-                      className="aspect-[2/3] relative group"
-                    >
-                      <img 
-                        src={card.image_url} 
-                        alt={card.name} 
-                        className="w-full h-full object-cover rounded-xl border border-white/5 transition-all group-hover:scale-105 group-hover:border-indigo-500/50 group-hover:shadow-xl group-hover:shadow-indigo-600/20" 
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                  const colorOrder = ['W', 'U', 'B', 'R', 'G', 'M', 'C', 'L'];
+                  const colorNames: Record<string, string> = {
+                    'W': 'White', 'U': 'Blue', 'B': 'Black', 'R': 'Red', 'G': 'Green',
+                    'M': 'Multicolor', 'C': 'Colorless', 'L': 'Lands'
+                  };
+
+                  const groups: Record<string, Map<string, { card: any, count: number }>> = {};
+                  colorOrder.forEach(c => { groups[c] = new Map(); });
+
+                  pool.forEach((card: any) => {
+                    const groupKey = getColorGroup(card);
+                    const existing = groups[groupKey].get(card.name);
+                    if (existing) {
+                      existing.count++;
+                    } else {
+                      groups[groupKey].set(card.name, { card, count: 1 });
+                    }
+                  });
+
+                  return (
+                    <div className="flex gap-8 sm:gap-12 min-w-max h-full items-start">
+                      {colorOrder.map(color => {
+                        const items = Array.from(groups[color].values());
+                        if (items.length === 0) return null;
+
+                        items.sort((a, b) => (a.card.cmc || 0) - (b.card.cmc || 0));
+
+                        // Usiamo un componente interno per gestire il ref di ogni colonna
+                        return <ColumnContainer 
+                          key={color} 
+                          color={color} 
+                          colorNames={colorNames} 
+                          items={items} 
+                          onZoomStart={handleZoomStart}
+                          onZoomEnd={handleZoomEnd}
+                        />;
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
+
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* ZOOM OVERLAY */}
+      <AnimatePresence>
+        {zoomCard && (
+          <motion.div 
+            initial={{ opacity: 0, x: -50, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -50, scale: 0.8 }}
+            className="fixed bottom-10 left-10 z-[2000] pointer-events-none"
+          >
+            <div className="relative w-96 sm:w-[28rem] aspect-[2/3] z-10">
+              <img 
+                src={zoomCard.image_url} 
+                alt={zoomCard.name} 
+                className="w-full h-full object-contain rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)]"
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

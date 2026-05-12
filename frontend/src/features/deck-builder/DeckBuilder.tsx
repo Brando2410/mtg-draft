@@ -123,7 +123,26 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
       }
       groups[key].total++;
     });
-    return Object.values(groups);
+
+    const getSortScore = (card: SimplifiedCard) => {
+      const isLand = (card.types || []).some(t => t.toLowerCase() === 'land') || card.typeLine?.toLowerCase().includes('land');
+      if (isLand) return 1000;
+      const colors = card.colors || [];
+      if (colors.length === 1) {
+        const colorOrder: Record<string, number> = { 'W': 100, 'U': 200, 'B': 300, 'R': 400, 'G': 500 };
+        return colorOrder[colors[0]] || 600;
+      }
+      if (colors.length === 0) return 700; // Non color
+      if (colors.length > 1) return 800; // Multicolor
+      return 900;
+    };
+
+    return Object.values(groups).sort((a, b) => {
+      const scoreA = getSortScore(a.card);
+      const scoreB = getSortScore(b.card);
+      if (scoreA !== scoreB) return scoreA - scoreB;
+      return (a.card.cmc || 0) - (b.card.cmc || 0) || a.card.name.localeCompare(b.card.name);
+    });
   }, [pool]);
 
   useEffect(() => {
@@ -139,7 +158,8 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
           return matchesName && matchesColor && matchesCmc && matchesLand;
         });
 
-        setApiSuggestions(filtered.map(f => f.card).slice(0, 75));
+        // Already sorted by useMemo
+        setApiSuggestions(filtered.map(f => f.card).slice(0, 100));
       } else {
         const results = await fetchRegistryCards(addQuery.length >= 2 ? addQuery : undefined);
         const filtered = results.filter(c => {
@@ -407,7 +427,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
                     : 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95'
                   }`}
               >
-                {(pool && deckCards.length < 40) ? 'Min 40' : 'Done'} <ArrowRight className="w-3 h-3" />
+                {(pool && deckCards.length < 40) ? `${deckCards.length} / 40` : 'Done'} <ArrowRight className="w-3 h-3" />
               </button>
             ) : (
               <button

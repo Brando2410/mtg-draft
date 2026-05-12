@@ -52,7 +52,7 @@ export const BertaWiseExtrapolator: CardDefinition = {
         }
     ],
     scryfall_id: "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
-    image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894",
+    image_url: "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201",
     rarity: "rare"
 };
 

@@ -15,6 +15,7 @@ import { ZoneInspector } from './modals/ZoneInspector';
 import { OrderingModal } from './modals/OrderingModal';
 import { EscMenu } from './modals/EscMenu';
 import { GameOverModal } from './modals/GameOverModal';
+import { RestartMatchModal } from './modals/RestartMatchModal';
 import { TurnTransitionOverlay } from './TurnTransitionOverlay';
 import { useCardZoom } from '../../hooks/game/useCardZoom';
 import { useGameActions } from '../../hooks/game/useGameActions';
@@ -34,9 +35,14 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
 
-  const { resetMatch, leaveRoom } = useDraftStore();
+  const { leaveRoom } = useDraftStore();
   const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
   const actions = useGameActions(room.id, effectivePlayerId);
+  
+  const currentMatch = room.matches?.find((m: any) => m.players.includes(effectivePlayerId) && m.status === 'active');
+  const restartRequestedBy = currentMatch?.restartRequestedBy;
+  const isRequestingRestart = restartRequestedBy === effectivePlayerId;
+  const requesterName = restartRequestedBy ? room.players.find(p => p.playerId === restartRequestedBy)?.name : undefined;
 
   useKeyboardControls({
     onToggleFullControl: actions.toggleFullControl,
@@ -267,7 +273,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
       <EscMenu
         isOpen={showEscMenu}
         onClose={() => setShowEscMenu(false)}
-        onResetMatch={resetMatch}
+        onResetMatch={actions.requestMatchRestart}
         onBack={onBack || (() => {
           if (gameState.players[effectivePlayerId]) {
             actions.concede();
@@ -299,6 +305,14 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         me={me}
         battlefield={gameState.battlefield}
         onOrderClick={handleOrderClick}
+      />
+
+      <RestartMatchModal
+        isOpen={!!restartRequestedBy}
+        isRequesting={isRequestingRestart}
+        requesterName={requesterName}
+        onAccept={actions.acceptMatchRestart}
+        onDecline={actions.declineMatchRestart}
       />
 
       <AnimatePresence>
