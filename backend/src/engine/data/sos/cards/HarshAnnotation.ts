@@ -38,7 +38,7 @@ export const HarshAnnotation: CardDefinition = {
         }
     ],
     scryfall_id: "e07a8fc7-c11c-4469-a31d-0abf40e57bbf",
-    image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898",
+    image_url: "https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033",
     rarity: "uncommon"
 };
 

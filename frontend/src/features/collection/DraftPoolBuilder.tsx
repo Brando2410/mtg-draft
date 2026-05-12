@@ -4,8 +4,8 @@ import { Search, Loader2, X, Database, Save, Download, Home, FileText, RefreshCw
 import { fetchCardsBatch } from '../../services/scryfall';
 import type { SimplifiedCard } from '../../services/scryfall';
 import { fetchRegistryCards, mapRegistryToSimplified } from '../../services/registry';
-import { StatsModal } from '../shared/StatsModal';
-import { CardGridItem } from '../shared/CardGridItem';
+import { StatsModal } from '../../components/shared/StatsModal';
+import { CardGridItem } from '../../components/shared/CardGridItem';
 
 interface DraftPoolBuilderProps {
   onBack?: () => void;
@@ -163,17 +163,17 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
 
   const getColorWeight = (card: SimplifiedCard) => {
     const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G'];
-    if (card.type_line?.toLowerCase().includes('land')) return 200;
-    if (card.color.length === 0) return 150;
-    if (card.color.length > 1) return 100;
-    return COLOR_ORDER.indexOf(card.color[0]);
+    if (card.typeLine?.toLowerCase().includes('land')) return 200;
+    if (card.colors.length === 0) return 150;
+    if (card.colors.length > 1) return 100;
+    return COLOR_ORDER.indexOf(card.colors[0]);
   };
 
   const groupedPool = useMemo(() => {
     const filtered = draftPool.filter(card => {
       const matchesName = card.name.toLowerCase().includes(filterQuery.toLowerCase());
       const matchesRarity = filterRarity === 'all' || card.rarity.toLowerCase() === filterRarity.toLowerCase();
-      const matchesColor = filterColor.length === 0 || filterColor.some(c => card.color.includes(c));
+      const matchesColor = filterColor.length === 0 || filterColor.some(c => card.colors.includes(c));
       const matchesCmc = filterCmc === null || (filterCmc === 6 ? card.cmc >= 6 : card.cmc === filterCmc);
       return matchesName && matchesRarity && matchesColor && matchesCmc;
     });

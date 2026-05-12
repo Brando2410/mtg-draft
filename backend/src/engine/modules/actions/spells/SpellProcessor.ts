@@ -687,7 +687,7 @@ export class SpellProcessor {
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
             } else if (cost.type === 'PayLife') {
-                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value || '0'));
+                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (typeof cost.value === 'number' ? cost.value : parseInt(String(cost.value || '0')));
                 player.life -= lifeVal;
                 TriggerProcessor.onEvent(state, { type: TriggerEvent.LifeLoss, playerId, payload: { amount: lifeVal, targetIds: [playerId] } });
                 logger.debug(state, LogCategory.ACTION, `Paid additional cost: ${lifeVal} life.`);

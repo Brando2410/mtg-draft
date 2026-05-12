@@ -47,7 +47,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
           >
             <motion.img 
               key={isFlipped ? 'back' : 'front'}
-              src={(isFlipped && selectedCard.back_image_url) ? selectedCard.back_image_url : (selectedCard.image_uris?.normal || (selectedCard as any).image_url)} 
+              src={(isFlipped && selectedCard.back_image_url) ? selectedCard.back_image_url : selectedCard.image_url} 
               alt={selectedCard.name} 
               className="w-full h-full object-cover" 
               initial={{ opacity: 0, rotateY: 90 }}

@@ -1,3 +1,4 @@
+import { Card, Player, Room } from '@shared/types';
 import { CardDefinition } from '@shared/engine_types';
 import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
@@ -23,6 +24,49 @@ export interface RegistryCard {
 export class CardRegistryService {
   private static allCards: RegistryCard[] = [];
 
+  /**
+   * Standardizes a card object from any source (engine data, scryfall, etc) 
+   * into the unified Card interface used by the frontend and persistence.
+   */
+  static standardizeCard(raw: any): Card {
+    const types = raw.types || [];
+    const subtypes = raw.subtypes || [];
+    const supertypes = raw.supertypes || [];
+
+    // Construct typeLine if missing
+    let typeLine = raw.typeLine || raw.type_line || '';
+    if (!typeLine && types.length > 0) {
+      const parts = [];
+      if (supertypes.length > 0) parts.push(supertypes.join(' '));
+      parts.push(types.join(' '));
+      if (subtypes.length > 0) {
+        parts.push('—');
+        parts.push(subtypes.join(' '));
+      }
+      typeLine = parts.join(' ');
+    }
+
+    return {
+      id: raw.id || `${raw.scryfall_id || 'c'}-${Math.random().toString(36).substring(2, 9)}`,
+      scryfall_id: raw.scryfall_id || '',
+      name: raw.name || 'Unknown Card',
+      image_url: raw.image_url || raw.image_uris?.normal || '',
+      back_image_url: raw.back_image_url || (raw as any).card_faces?.[1]?.image_uris?.normal,
+      rarity: raw.rarity || 'common',
+      manaCost: raw.manaCost || raw.mana_cost || '',
+      cmc: typeof raw.cmc === 'number' ? raw.cmc : (raw.manaCost ? ManaProcessor.getManaValue(raw.manaCost) : 0),
+      colors: raw.colors || raw.card_colors || [],
+      typeLine: typeLine,
+      oracleText: raw.oracleText || '',
+      power: raw.power?.toString(),
+      toughness: raw.toughness?.toString(),
+      loyalty: raw.loyalty?.toString(),
+      keywords: raw.keywords || [],
+      types: types,
+      supertypes: supertypes
+    };
+  }
+
   static initialize() {
     const combined: Record<string, { card: CardDefinition, set: string }> = {};
 
@@ -44,23 +88,12 @@ export class CardRegistryService {
     } catch (e) { console.error('[REGISTRY] Error loading STX', e); }
 
     this.allCards = Object.values(combined).map(({ card, set }) => {
+      const standardized = this.standardizeCard(card);
       return {
-        name: card.name,
+        ...standardized,
         set: set,
-        oracleText: card.oracleText,
-        manaCost: card.manaCost,
-        typeLine: card.type_line,
-        cmc: ManaProcessor.getManaValue(card.manaCost),
-        colors: card.colors,
-        keywords: card.keywords,
-        image_url: card.image_url,
-        back_image_url: (card as any).back_image_url,
-        scryfall_id: card.scryfall_id,
-        rarity: (card as any).rarity,
-        types: card.types,
-        supertypes: (card as any).supertypes,
         subtypes: (card as any).subtypes
-      };
+      } as RegistryCard;
     });
 
     // Deduplicate by name

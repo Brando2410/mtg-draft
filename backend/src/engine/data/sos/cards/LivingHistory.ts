@@ -49,7 +49,7 @@ export const LivingHistory: CardDefinition = {
         }
     ],
     scryfall_id: "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
-    image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773",
+    image_url: "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797",
     rarity: "uncommon"
 };
 

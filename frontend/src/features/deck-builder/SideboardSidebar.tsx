@@ -39,20 +39,23 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
       onDragOver={e => e.preventDefault()}
       onDrop={() => onDrop('side')}
     >
-      <button
+      <motion.button
+        layout
         onClick={onToggleCollapse}
-        className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-300 shadow-2xl z-[80] ${
+        className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center shadow-2xl z-[80] ${
           isSideboardCollapsed
             ? '-left-10 sm:-left-5'
             : '-left-5'
-        } w-10 sm:w-8 h-16 sm:h-12 bg-[#0a0a0c] border-l border-y border-white/10 rounded-l-2xl text-white hover:bg-slate-800 hover:text-cyan-400 group/side-btn`}
+        } w-10 sm:w-8 h-16 sm:h-12 bg-[#0a0a0c] border-l border-y border-white/10 rounded-l-2xl text-white hover:bg-slate-800 hover:text-cyan-400 group/side-btn transition-colors`}
       >
-        {isSideboardCollapsed ? (
-          <ChevronLeft className="w-6 h-6 sm:w-5 sm:h-5 ml-1 group-hover/side-btn:-translate-x-0.5 transition-transform" />
-        ) : (
-          <ChevronRight className="w-6 h-6 sm:w-5 sm:h-5 ml-1 group-hover/side-btn:translate-x-0.5 transition-transform" />
-        )}
-      </button>
+        <motion.div layout className="flex flex-col items-center justify-center">
+          {isSideboardCollapsed ? (
+            <ChevronLeft className="w-6 h-6 sm:w-5 sm:h-5 ml-1 group-hover/side-btn:-translate-x-0.5 transition-transform" />
+          ) : (
+            <ChevronRight className="w-6 h-6 sm:w-5 sm:h-5 ml-1 group-hover/side-btn:translate-x-0.5 transition-transform" />
+          )}
+        </motion.div>
+      </motion.button>
 
       <AnimatePresence>
         {!isSideboardCollapsed && (
@@ -73,7 +76,7 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2.5">
               {sideboard.map((card, i) => {
-                const cardId = (card as any).id || card.scryfall_id;
+                const cardId = card.id;
                 const isFlipped = flippedIds.has(cardId);
                 const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
@@ -107,7 +110,7 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
                             <RefreshCw className={`w-2.5 h-2.5 ${isFlipped ? 'rotate-180' : ''} transition-transform`} />
                           </button>
                         )}
-                        {renderManaSymbols(card.mana_cost)}
+                        {renderManaSymbols(card.manaCost)}
                       </div>
                     </div>
                   </motion.div>
@@ -125,10 +128,17 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
       </AnimatePresence>
 
       {isSideboardCollapsed && (
-        <div className="absolute inset-y-0 left-0 w-14 flex flex-col items-center justify-center py-8 gap-6 opacity-20 pointer-events-none">
-           <div className="w-px h-20 bg-gradient-to-b from-transparent via-white/20 to-transparent rounded-full" />
-           <span className="[writing-mode:vertical-lr] text-[8px] font-black uppercase tracking-[0.6em] text-white rotate-180">Sideboard</span>
-           <div className="w-px h-20 bg-gradient-to-t from-transparent via-white/20 to-transparent rounded-full" />
+        <div className="absolute inset-0 flex flex-col items-center py-8 gap-4 pointer-events-none">
+           {sideboard.length > 0 && (
+             <div className="w-5 h-5 rounded-full bg-indigo-600/40 border border-white/10 flex items-center justify-center text-[9px] font-black text-indigo-200">
+               {sideboard.length}
+             </div>
+           )}
+           <div className="flex-1 flex flex-col items-center justify-center gap-6 opacity-10">
+             <div className="w-px h-20 bg-gradient-to-b from-transparent via-white/20 to-transparent rounded-full" />
+             <span className="[writing-mode:vertical-lr] text-[8px] font-black uppercase tracking-[0.6em] text-white rotate-180">Sideboard</span>
+             <div className="w-px h-20 bg-gradient-to-t from-transparent via-white/20 to-transparent rounded-full" />
+           </div>
         </div>
       )}
     </motion.div>

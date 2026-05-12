@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../../services/socket';
-import { DeckReviewView } from '../deck/DeckReviewView';
+import { DeckReviewView } from '../deck-builder/DeckReviewView';
 import { DraftHeader } from './DraftHeader.tsx';
 import { PackGrid } from './PackGrid';
-import { SelectionSidebar } from './SelectionSidebar';
-import { TableViewModal } from './TableViewModal';
+import { SelectionSidebar } from '../collection/SelectionSidebar';
+import { TableViewModal } from '../collection/TableViewModal';
 import { DraftPausedOverlay } from './DraftPausedOverlay';
 import { DraftCompletedOverlay } from './DraftCompletedOverlay';
 import { BotPoolsModal } from './BotPoolsModal';
@@ -51,21 +51,21 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
     const urls = new Set<string>();
     room.draftState.queues?.forEach((q: Card[][]) => {
       q.forEach((pack: Card[]) => pack.forEach((c: Card) => {
-        const url = c.image_uris?.normal || (c as any).image_url;
+        const url = c.image_url;
         if (url) urls.add(url);
         if (c.back_image_url) urls.add(c.back_image_url);
       }));
     });
     room.draftState.unopenedPacks?.forEach((playerPacks: Card[][]) => {
       playerPacks.forEach((pack: Card[]) => pack.forEach((c: Card) => {
-        const url = c.image_uris?.normal || (c as any).image_url;
+        const url = c.image_url;
         if (url) urls.add(url);
         if (c.back_image_url) urls.add(c.back_image_url);
       }));
     });
     room.players?.forEach((p: Player) => {
       p.pool?.forEach((c: Card) => {
-        const url = c.image_uris?.normal || (c as any).image_url;
+        const url = c.image_url;
         if (url) urls.add(url);
         if (c.back_image_url) urls.add(c.back_image_url);
       });
@@ -151,8 +151,8 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
         cubeName: room.rules.cubeName || 'Cubo Senza Nome',
         playerPool: currentPlayer.pool.map((c: any) => ({
           ...c,
-          image_url: c.image_url || c.image_uris?.normal || '',
-          scryfall_id: c.scryfall_id || c.id || ''
+          image_url: c.image_url,
+          scryfall_id: c.scryfall_id || c.id
         })),
         playerCount: room.players.length,
         stats: {}
@@ -364,8 +364,8 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
                 <DeckReviewView
                   pool={pool.map((c: any) => ({
                     ...c,
-                    image_url: c.image_url || c.image_uris?.normal || '',
-                    scryfall_id: c.scryfall_id || c.id || ''
+                    image_url: c.image_url,
+                    scryfall_id: c.scryfall_id || c.id
                   }))}
                   onClose={() => setIsReviewOpen(false)}
                   onUpdatePool={() => { }}
@@ -410,7 +410,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
 
                   <div className="relative flex flex-col items-center gap-6">
                     <img
-                      src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : (zoomCard.image_uris?.normal || (zoomCard as any).image_url)}
+                      src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : zoomCard.image_url}
                       alt={zoomCard.name}
                       className="max-h-[75vh] sm:max-h-[85vh] w-auto object-contain rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_150px_rgba(99,102,241,0.3)] border-[4px] sm:border-[6px] border-white/10 animate-in zoom-in-95 duration-500 relative z-10"
                       onClick={(e) => e.stopPropagation()}

@@ -46,7 +46,7 @@ export const VisionarysDance: CardDefinition = {
         }
     ],
     scryfall_id: "846a0e79-a530-429e-8f7f-4b87f1b0156e",
-    image_url: "https://cards.scryfall.io/normal/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.jpg?1682693891",
+    image_url: "https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377",
     rarity: "uncommon"
 };
 

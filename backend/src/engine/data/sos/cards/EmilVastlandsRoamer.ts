@@ -49,7 +49,7 @@ export const EmilVastlandsRoamer: CardDefinition = {
         }
     ],
     scryfall_id: "3654416d-8558-4af2-9e10-18dbc8f2b376",
-    image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894",
+    image_url: "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993",
     rarity: "uncommon"
 };
 

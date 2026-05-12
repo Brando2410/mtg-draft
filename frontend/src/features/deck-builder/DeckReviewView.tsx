@@ -3,7 +3,7 @@ import type { SimplifiedCard } from '../../services/scryfall';
 import { DeckHeader } from './DeckHeader';
 import { MainboardGrid } from './MainboardGrid';
 import { SideboardSidebar } from './SideboardSidebar';
-import { StatsModal } from '../shared/StatsModal';
+import { StatsModal } from '../../components/shared/StatsModal';
 import { Search, X, RefreshCw } from 'lucide-react';
 
 interface DeckReviewProps {
@@ -61,7 +61,7 @@ export const DeckReviewView = ({
   const filteredPool = useMemo(() => {
     return pool.filter(card => {
         const matchesQuery = card.name.toLowerCase().includes(filterQuery.toLowerCase());
-        const matchesColor = filterColors.length === 0 || filterColors.some(col => (card as any).color?.includes(col) || (card as any).colors?.includes(col));
+        const matchesColor = filterColors.length === 0 || filterColors.some(col => card.colors?.includes(col));
         const matchesRarity = !filterRarity || (card.rarity || '').toLowerCase() === filterRarity.toLowerCase();
         const matchesCmc = filterCmc === null || (filterCmc === 6 ? card.cmc >= 6 : card.cmc === filterCmc);
         return matchesQuery && matchesColor && matchesRarity && matchesCmc;
@@ -73,18 +73,18 @@ export const DeckReviewView = ({
   
   useEffect(() => {
       setMainboard(() => {
-          const sideIds = new Set(sideboard.map(c => c.scryfall_id + (c as any).id));
-          const newMain = pool.filter(c => !sideIds.has(c.scryfall_id + (c as any).id));
+          const sideIds = new Set(sideboard.map(c => c.id));
+          const newMain = pool.filter(c => !sideIds.has(c.id));
           return newMain;
       });
   }, [pool]);
 
   const displayedMain = useMemo(() => {
-      return mainboard.filter(c => filteredPool.some(f => (f.scryfall_id + (f as any).id) === (c.scryfall_id + (c as any).id)));
+      return mainboard.filter(c => filteredPool.some(f => f.id === c.id));
   }, [mainboard, filteredPool]);
 
   const displayedSide = useMemo(() => {
-      return sideboard.filter(c => filteredPool.some(f => (f.scryfall_id + (f as any).id) === (c.scryfall_id + (c as any).id)));
+      return sideboard.filter(c => filteredPool.some(f => f.id === c.id));
   }, [sideboard, filteredPool]);
 
   const columns = useMemo(() => {
@@ -93,7 +93,7 @@ export const DeckReviewView = ({
 
     displayedMain.forEach(card => {
       const cmc = Math.min(card.cmc, 6);
-      const isCreature = card.type_line?.toLowerCase().includes('creature');
+      const isCreature = card.typeLine?.toLowerCase().includes('creature');
       if (isCreature) cols[cmc].creatures.push(card);
       else cols[cmc].others.push(card);
       cols[cmc].all.push(card);
@@ -111,7 +111,7 @@ export const DeckReviewView = ({
   }, [onUpdatePool, onPoolUpdate]);
 
   const moveToSideboard = useCallback((card: SimplifiedCard) => {
-    const newMain = mainboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
+    const newMain = mainboard.filter(c => c.id !== card.id);
     const newSide = [...sideboard, card];
     setMainboard(newMain);
     setSideboard(newSide);
@@ -119,7 +119,7 @@ export const DeckReviewView = ({
   }, [mainboard, sideboard, syncPool]);
 
   const moveToMainboard = useCallback((card: SimplifiedCard) => {
-    const newSide = sideboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
+    const newSide = sideboard.filter(c => c.id !== card.id);
     const newMain = [...mainboard, card];
     setSideboard(newSide);
     setMainboard(newMain);
@@ -127,7 +127,7 @@ export const DeckReviewView = ({
   }, [mainboard, sideboard, syncPool]);
 
   const removeCardFromSideboard = useCallback((card: SimplifiedCard) => {
-    const newSide = sideboard.filter(c => (c.scryfall_id + (c as any).id) !== (card.scryfall_id + (card as any).id));
+    const newSide = sideboard.filter(c => c.id !== card.id);
     setSideboard(newSide);
     syncPool(mainboard, newSide);
   }, [mainboard, sideboard, syncPool]);

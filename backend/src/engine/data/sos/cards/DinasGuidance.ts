@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
 export const DinasGuidance: CardDefinition = {
     name: "Dina's Guidance",
     manaCost: "{1}{B}{G}",
-
-
     colors: ["B", "G"],
     types: ["Instant"],
     subtypes: [],

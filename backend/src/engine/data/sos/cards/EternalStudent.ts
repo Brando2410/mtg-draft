@@ -37,7 +37,7 @@ export const EternalStudent: CardDefinition = {
         }
     ],
     scryfall_id: "f97fac69-3e77-4150-9702-cc726daa6d21",
-    image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483",
     rarity: "uncommon"
 };
 

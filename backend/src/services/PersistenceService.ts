@@ -119,7 +119,6 @@ export class PersistenceService {
   static async listDecks() {
     if (!existsSync(this.DECKS_DIR)) return [];
     const files = await fs.readdir(this.DECKS_DIR);
-    console.log(`[PERSISTENCE] Found ${files.length} deck files`);
     const decks = await Promise.all(
       files
         .filter(f => f.endsWith('.json'))
@@ -166,7 +165,14 @@ export class PersistenceService {
           playerId: p.playerId,
           name: p.name,
           poolCount: p.pool.length,
-          pool: p.pool.map(c => ({ name: c.name, scryfall_id: c.scryfall_id, cmc: c.cmc, color: c.card_colors || c.color }))
+          pool: p.pool.map(c => ({ 
+            name: c.name, 
+            scryfall_id: c.scryfall_id, 
+            cmc: c.cmc, 
+            colors: c.colors,
+            typeLine: c.typeLine,
+            manaCost: c.manaCost
+          }))
         }))
       };
 

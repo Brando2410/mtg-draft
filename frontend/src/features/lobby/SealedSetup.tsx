@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Home, Users, Package, Loader2, ArrowRight, Minus, Plus, Database, Edit3 } from 'lucide-react';
-import { useDraftStore } from '../../store/useDraftStore';
+import { PageLayout } from '../../components/shared/PageLayout';
 
 interface SealedSetupProps {
   onBack: () => void;
@@ -8,36 +8,11 @@ interface SealedSetupProps {
 }
 
 export const SealedSetup = ({ onBack, onCreateRoom }: SealedSetupProps) => {
-  const { wallpaperList, fetchAssets } = useDraftStore();
   const [loading, setLoading] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [wallpaper, setWallpaper] = useState<string>('');
-  
   const [playerCount, setPlayerCount] = useState(8);
   const [hostName, setHostName] = useState(localStorage.getItem('mtg_player_name') || 'Giocatore');
 
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const init = async () => {
-      if (wallpaperList.length === 0) {
-        await fetchAssets();
-      }
-    };
-    init();
-  }, []);
-
-  useEffect(() => {
-    if (wallpaperList.length > 0 && !wallpaper) {
-      const randomWallpaper = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
-      const wpUrl = `/wallpapers/${randomWallpaper}`;
-      setWallpaper(wpUrl);
-      
-      const img = new Image();
-      img.src = wpUrl;
-      img.onload = () => setIsLoaded(true);
-    }
-  }, [wallpaperList, wallpaper]);
 
   const handleCreate = () => {
     if (!hostName.trim()) return;
@@ -90,20 +65,7 @@ export const SealedSetup = ({ onBack, onCreateRoom }: SealedSetupProps) => {
   };
 
   return (
-    <div className="full-h w-screen overflow-hidden bg-slate-950 flex flex-col items-center justify-center p-6 lg:p-12 relative text-slate-200">
-      
-      {/* Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
-        {wallpaper && (
-          <div 
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-105 blur-lg'} z-[2]`}
-            style={{ backgroundImage: `url(${wallpaper})` }}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/80 to-slate-950 z-[3]" />
-      </div>
-
+    <PageLayout variant="purple" className="flex items-center justify-center p-6 lg:p-12">
       <div className="relative z-10 w-full max-w-2xl flex flex-col gap-10 lg:gap-14 animate-in fade-in slide-in-from-bottom-8 duration-700">
         
         {/* HEADER */}
@@ -182,10 +144,8 @@ export const SealedSetup = ({ onBack, onCreateRoom }: SealedSetupProps) => {
               </>
             )}
           </button>
-
         </div>
-
       </div>
-    </div>
+    </PageLayout>
   );
 };

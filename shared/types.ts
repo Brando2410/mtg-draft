@@ -1,30 +1,35 @@
 export interface Card {
-    id: string; // Unique instance ID generated on draft start
-    scryfall_id?: string;
+    // --- Identity ---
+    id: string;           // Unique instance ID (GUID) generated for each card in a draft/game
+    scryfall_id: string;  // External reference ID (usually Scryfall UUID)
     name: string;
-    rarity?: string;
-    cmc?: number;
-    card_colors?: string[];
-    color?: string;
-    image_url?: string;
-    image_uris?: {
-        normal: string;
-        small: string;
-        large?: string;
-    };
+    
+    // --- Visuals ---
+    image_url: string;
     back_image_url?: string;
-    type_line?: string;
-    oracleText?: string; // Standard used by the engine
-    manaCost?: string;   // Standard used by the engine
+    rarity: string;
+
+    // --- Core Stats ---
+    manaCost: string;
+    cmc: number;
+    colors: string[];
+    typeLine: string;
+    
+    // --- Details ---
+    oracleText?: string;
     power?: string;
     toughness?: string;
-    keywords?: string[];
-    typeLine?: string;
-    colors?: string[];
     loyalty?: string | number;
+    keywords: string[];
+
+    // --- UI/Logic Helpers ---
+    types: string[];
+    supertypes: string[];
+    
+    // --- Legacy / Deprecated (To be removed after migration) ---
     mana_cost?: string;
-    flashback_cost?: string;
-    flashbackCost?: string;
+    type_line?: string;
+    card_colors?: string[];
 }
 
 export interface Player {

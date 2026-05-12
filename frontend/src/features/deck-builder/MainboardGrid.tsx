@@ -62,7 +62,7 @@ export const MainboardGrid: React.FC<MainboardGridProps> = ({
               }}
             >
               {(separateByType ? columns[cmc].creatures : columns[cmc].all).map((card, i) => {
-                const cardId = (card as any).id || card.scryfall_id;
+                const cardId = card.id;
                 const isFlipped = flippedIds.has(cardId);
                 const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
@@ -102,7 +102,7 @@ export const MainboardGrid: React.FC<MainboardGridProps> = ({
               >
 
                 {columns[cmc].others.map((card, i) => {
-                  const cardId = (card as any).id || card.scryfall_id;
+                  const cardId = card.id;
                   const isFlipped = flippedIds.has(cardId);
                   const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 

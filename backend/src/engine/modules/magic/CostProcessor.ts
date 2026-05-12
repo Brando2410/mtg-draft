@@ -122,7 +122,7 @@ export class CostProcessor {
       case CostType.PayLife: {
         const lifeCost = cost as LifeCost;
         const xValue = source.xValue ?? (stackObject?.xValue || 0);
-        const lifeVal = lifeCost.value === 'X' ? xValue : (parseInt(lifeCost.value) || 0);
+        const lifeVal = lifeCost.value === 'X' ? xValue : (typeof lifeCost.value === 'number' ? lifeCost.value : (parseInt(String(lifeCost.value)) || 0));
         return player.life >= lifeVal; // Rule 119.4: A player can't pay more life than they have.
       }
 
@@ -278,7 +278,7 @@ export class CostProcessor {
       case CostType.PayLife: {
         const lifeCost = cost as LifeCost;
         const xValue = source.xValue ?? 0;
-        const lifeVal = lifeCost.value === 'X' ? xValue : (parseInt(lifeCost.value) || 0);
+        const lifeVal = lifeCost.value === 'X' ? xValue : (typeof lifeCost.value === 'number' ? lifeCost.value : (parseInt(String(lifeCost.value)) || 0));
         player.life -= lifeVal;
         const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, payload: { amount: lifeVal, targetIds: [playerId], sourceId: source.id } });
@@ -377,7 +377,7 @@ export class CostProcessor {
         break;
       }
       case CostType.PayLife:
-        costStr = (cost as LifeCost).value;
+        costStr = String((cost as LifeCost).value);
         break;
       case CostType.Loyalty:
         costStr = String((cost as LoyaltyCost).value);

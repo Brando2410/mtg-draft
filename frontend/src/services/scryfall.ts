@@ -1,3 +1,5 @@
+import type { Card } from '../../../shared/types';
+
 export interface ScryfallCard {
   id: string;
   name: string;
@@ -8,9 +10,10 @@ export interface ScryfallCard {
   image_uris?: {
     normal: string;
     small?: string;
+    bottom?: string;
   };
   mana_cost?: string;
-  card_faces?: { // Per carte bifronte (Modal Double Faced Layout)
+  card_faces?: {
     image_uris?: {
       normal: string;
     };
@@ -20,22 +23,7 @@ export interface ScryfallCard {
   }[];
 }
 
-export interface SimplifiedCard {
-  scryfall_id: string;
-  name: string;
-  rarity: string;
-  color: string[];
-  image_url: string;
-  back_image_url?: string; // Nuova proprietà per le carte bifronte
-  cmc: number;
-  type_line: string;
-  mana_cost: string;
-  power?: string;
-  toughness?: string;
-  types: string[];
-  supertypes: string[];
-  keywords: string[];
-}
+export type SimplifiedCard = Card;
 
 // 1. Usa la search di Scryfall per ottenere metadati (rarità, costo) già nel dropdown
 // Ora rispetta rigorosamente la lingua selezionata (EN o IT) senza forzare conversioni
@@ -77,17 +65,18 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
     const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
 
     return {
+      id: card.id, // For UI previews, use scryfall_id as instance id
       scryfall_id: card.id,
       name: card.name,
       rarity: card.rarity,
-      color: colors,
+      colors: colors,
       image_url: imageUrl,
       back_image_url: backImageUrl,
       cmc: card.cmc,
-      type_line: typeLine,
+      typeLine: typeLine,
       types: typeLine.split(' — ')[0].split(' '),
       supertypes: [],
-      mana_cost: manaCost,
+      manaCost: manaCost,
       power: card.power || card.card_faces?.[0]?.power,
       toughness: card.toughness || card.card_faces?.[0]?.toughness,
       keywords: card.keywords || []
@@ -158,18 +147,19 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
             const typeLine = card.type_line || card.card_faces?.[0]?.type_line || '';
             const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
 
-            const simplified = {
+            const simplified: SimplifiedCard = {
+              id: card.id,
               scryfall_id: card.id,
               name: card.name,
               rarity: card.rarity,
-              color: colors,
+              colors: colors,
               image_url: imageUrl,
               back_image_url: backImageUrl,
               cmc: card.cmc,
-              type_line: typeLine,
+              typeLine: typeLine,
               types: typeLine.split(' — ')[0].split(' '),
               supertypes: [],
-              mana_cost: manaCost,
+              manaCost: manaCost,
               power: card.power || card.card_faces?.[0]?.power,
               toughness: card.toughness || card.card_faces?.[0]?.toughness,
               keywords: card.keywords || []

@@ -4,11 +4,12 @@ import type { Room } from '@shared/types';
 import { logger } from '../services/clientLogger';
 import { applyPatch } from 'fast-json-patch';
 
-interface DraftState {
+export interface DraftState {
   // State
-  room: Room | null;
+  rooms: Record<string, Room>;
+  room: Room | null; // Currently focused room
   playerId: string;
-  activeView: 'menu' | 'builder' | 'draft_setup' | 'draft_join' | 'draft_lobby' | 'drafting' | 'collection' | 'history' | 'deck_builder';
+  activeView: 'menu' | 'builder' | 'draft_setup' | 'draft_join' | 'draft_lobby' | 'drafting' | 'collection' | 'history' | 'deck_builder' | 'draft_config' | 'sealed_config';
   joinError: string | null;
   isJoining: boolean;
   selectedDeck: any | null;
@@ -25,7 +26,7 @@ interface DraftState {
   joinRoom: (roomId: string, playerName: string) => void;
   createRoom: (setupData: any) => void;
   startDraft: () => void;
-  leaveRoom: () => void;
+  leaveRoom: (roomId?: string) => void;
   kickPlayer: (playerIdToKick: string) => void;
   changeAvatar: (avatar: string) => void;
   closeRoom: () => void;
@@ -52,6 +53,7 @@ if (!currentId) {
 export const PLAYER_ID = currentId;
 
 export const useDraftStore = create<DraftState>((set, get) => ({
+  rooms: {},
   room: null,
   playerId: PLAYER_ID,
   activeView: 'menu',
@@ -83,25 +85,26 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
     socket.on('room_created', (newRoom: Room) => {
       logger.info('Room created successfully', { roomId: newRoom.id });
-      set({ 
+      set((state) => ({ 
+        rooms: { ...state.rooms, [newRoom.id]: newRoom },
         room: newRoom, 
         activeView: 'draft_lobby',
         isJoining: false 
-      });
+      }));
       localStorage.setItem('mtg_room_id', newRoom.id);
     });
 
     socket.on('joined_successfully', (room: Room) => {
       logger.info('Joined room successfully', { roomId: room.id, status: room.status });
-      
       const isInGame = ['drafting', 'deckbuilding', 'active', 'tournament'].includes(room.status);
       
-      set({ 
-        room, 
+      set((state) => ({ 
+        rooms: { ...state.rooms, [room.id]: room },
+        room: room, 
         activeView: isInGame ? 'drafting' : 'draft_lobby',
         isJoining: false,
         joinError: null
-      });
+      }));
       localStorage.setItem('mtg_room_id', room.id);
       
       if (room.status === 'completed') {
@@ -111,51 +114,68 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     });
 
     socket.on('room_update', (room: Room) => {
-      set({ room });
+      set((state) => ({ 
+        rooms: { ...state.rooms, [room.id]: room },
+        // Update focused room if it's the same one
+        room: state.room?.id === room.id ? room : state.room
+      }));
     });
     
     socket.on('room_patch', (patch: any) => {
+      // For patches, we need to know which room it's for. 
+      // Assuming patches are for the current focused room or we need a roomId in the patch?
+      // Usually patches are emitted to the room channel.
       const currentRoom = get().room;
       if (!currentRoom) return;
       
       try {
         const result = applyPatch(currentRoom, patch, false, false);
-        set({ room: result.newDocument as Room });
+        const updatedRoom = result.newDocument as Room;
+        set((state) => ({ 
+          rooms: { ...state.rooms, [updatedRoom.id]: updatedRoom },
+          room: state.room?.id === updatedRoom.id ? updatedRoom : state.room
+        }));
       } catch (err) {
         logger.error('PATCH', 'Failed to apply room patch', { err, patch });
-        // Fallback or request full state? 
-        // For now just log, full state usually arrives eventually or on manual refresh
       }
     });
 
     socket.on('draft_started', (room: Room) => {
       logger.info('Draft started!', { roomId: room.id });
-      set({ room, activeView: 'drafting' });
+      set((state) => ({ 
+        rooms: { ...state.rooms, [room.id]: room },
+        room: state.room?.id === room.id ? room : state.room,
+        activeView: state.room?.id === room.id ? 'drafting' : state.activeView
+      }));
     });
 
     socket.on('draft_update', (room: Room) => {
       if (!room) return;
-      set({ room });
-      if (room.status === 'drafting' || room.status === 'completed') {
-        set({ activeView: 'drafting' });
-      } else if (room.status === 'waiting') {
-        set({ activeView: 'draft_lobby' });
-      }
-      if (room.status === 'completed') {
-        localStorage.removeItem('mtg_room_id');
-      }
+      set((state) => ({ 
+        rooms: { ...state.rooms, [room.id]: room },
+        room: state.room?.id === room.id ? room : state.room
+      }));
     });
 
-    socket.on('kick_player', ({ playerId }: { playerId: string }) => {
+    socket.on('kick_player', ({ roomId, playerId }: { roomId: string, playerId: string }) => {
       if (playerId === PLAYER_ID) {
-        get().leaveRoom();
+        get().leaveRoom(roomId);
         set({ joinError: 'Sei stato rimosso dalla stanza.' });
       }
     });
 
-    socket.on('room_destroyed', () => {
-      logger.info('Room has been destroyed by the host');
-      get().leaveRoom();
+    socket.on('room_destroyed', ({ roomId }: { roomId: string }) => {
+      logger.info('Room has been destroyed by the host', { roomId });
+      // Remove from map
+      set((state) => {
+        const newRooms = { ...state.rooms };
+        delete newRooms[roomId];
+        return { 
+          rooms: newRooms,
+          room: state.room?.id === roomId ? null : state.room,
+          activeView: state.room?.id === roomId ? 'menu' : state.activeView
+        };
+      });
       set({ joinError: 'La stanza è stata chiusa dall\'host.' });
     });
 
@@ -230,11 +250,29 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     }
   },
 
-  leaveRoom: () => {
-    const { room, playerId } = get();
-    if (room) socket.emit('leave_room', { roomId: room.id, playerId });
-    localStorage.removeItem('mtg_room_id');
-    set({ room: null, activeView: 'menu' });
+  leaveRoom: (targetRoomId?: string) => {
+    const { room, rooms, playerId } = get();
+    const idToLeave = targetRoomId || room?.id;
+    if (!idToLeave) return;
+
+    socket.emit('leave_room', { roomId: idToLeave, playerId });
+    
+    // Se stavamo lasciando l'unica stanza salvata nel localStorage, puliamo
+    if (localStorage.getItem('mtg_room_id') === idToLeave) {
+      localStorage.removeItem('mtg_room_id');
+    }
+
+    set((state) => {
+      const newRooms = { ...state.rooms };
+      delete newRooms[idToLeave];
+      const isLeavingFocused = state.room?.id === idToLeave;
+      
+      return { 
+        rooms: newRooms, 
+        room: isLeavingFocused ? null : state.room,
+        activeView: isLeavingFocused ? 'menu' : state.activeView
+      };
+    });
   },
 
   kickPlayer: (playerIdToKick) => {

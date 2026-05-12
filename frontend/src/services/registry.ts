@@ -1,5 +1,18 @@
 import type { SimplifiedCard } from './scryfall';
 
+export const calculateCMC = (manaCost: string): number => {
+  const matches = manaCost.match(/\{([^}]+)\}/g) || [];
+  let total = 0;
+  matches.forEach(m => {
+    const sym = m.replace(/[{}]/g, '');
+    const num = parseInt(sym);
+    if (!isNaN(num)) total += num;
+    else if (['W', 'U', 'B', 'R', 'G', 'C', 'S'].includes(sym.toUpperCase())) total += 1;
+    else if (sym.includes('/')) total += 1; // Hybrid
+  });
+  return total;
+};
+
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 export interface RegistryCard {
@@ -34,17 +47,18 @@ export const fetchRegistryCards = async (query?: string): Promise<RegistryCard[]
 
 export const mapRegistryToSimplified = (card: RegistryCard): SimplifiedCard => {
   return {
+    id: card.scryfall_id || `local-${card.name}`,
     scryfall_id: card.scryfall_id || `local-${card.name}`,
     name: card.name,
     rarity: card.rarity || 'common',
-    color: card.colors || [],
+    colors: card.colors || [],
     image_url: card.image_url || '',
     back_image_url: card.back_image_url,
-    cmc: card.cmc || 0,
-    type_line: card.typeLine || '',
+    cmc: card.cmc ?? calculateCMC(card.manaCost || ''),
+    typeLine: card.typeLine || '',
     types: card.types || (card.typeLine ? card.typeLine.split(' — ')[0].split(' ') : []),
     supertypes: card.supertypes || [],
-    mana_cost: card.manaCost || '',
+    manaCost: card.manaCost || '',
     keywords: card.keywords || []
   };
 };

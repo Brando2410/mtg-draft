@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const LeechFanatic: CardDefinition = {
     name: 'Leech Fanatic',
     manaCost: '{1}{B}',
-
     colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
@@ -21,7 +20,7 @@ export const LeechFanatic: CardDefinition = {
                 optional: true,
                 choices: [{
                     label: "Pay 2 Life",
-                    costs: [{ type: CostType.PayLife, value: 2 }],
+                    costs: [{ type: CostType.PayLife, value: "2" }],
                     effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'] }]
                 }]
             }]

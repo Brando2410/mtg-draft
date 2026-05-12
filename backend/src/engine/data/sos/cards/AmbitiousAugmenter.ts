@@ -36,7 +36,7 @@ export const AmbitiousAugmenter: CardDefinition = {
         }
     ],
     scryfall_id: "85629088-2007-4db5-9397-bac12a3d7498",
-    image_url: "https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306",
+    image_url: "https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950",
     rarity: "rare"
 };
 

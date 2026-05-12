@@ -69,7 +69,6 @@
  * - Repel Calamity
  * - Reprieve
  * - Requisition Raid
- * - Return the Favor
  * - Return to the Ranks
  * - Royal Treatment
  * - Shamanic Revelation
@@ -79,7 +78,6 @@
  * - Stock Up
  * - Subterranean Tremors
  * - Veil of Summer
- * - Winds of Abandon
  */
 
 export * from './Abrade';

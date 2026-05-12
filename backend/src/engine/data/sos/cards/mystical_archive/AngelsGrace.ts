@@ -3,8 +3,6 @@ import { CardDefinition } from '@shared/engine_types';
 export const AngelsGrace: CardDefinition = {
     name: "Angel's Grace",
     manaCost: "{W}",
-
-
     colors: ["W"],
     types: ["Instant"],
     subtypes: [],

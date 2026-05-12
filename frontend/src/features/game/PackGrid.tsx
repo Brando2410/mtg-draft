@@ -123,7 +123,7 @@ export const PackGrid: React.FC<PackGridProps> = ({
           <AnimatePresence mode="popLayout">
             {currentPack.map((card: Card, index: number) => {
               const isFlipped = flippedIds.has(card.id);
-              const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : (card.image_uris?.normal || (card as any).image_url);
+              const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
               return (
                 <motion.div 

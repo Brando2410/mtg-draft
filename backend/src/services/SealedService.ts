@@ -3,6 +3,7 @@ import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
 import { LoggerService } from './LoggerService';
+import { CardRegistryService } from './CardRegistryService';
 
 export class SealedService {
     static startSealed(room: Room) {
@@ -127,26 +128,13 @@ export class SealedService {
             packDefs.push(this.pickRandom(pool));
         }
 
-        return packDefs.map(def => ({
-            id: `${def.scryfall_id || 'c'}-${Math.random().toString(36).substring(2, 9)}`,
-            scryfall_id: def.scryfall_id,
-            name: def.name,
-            rarity: def.rarity || 'common',
-            image_url: def.image_url,
-            image_uris: {
-                normal: def.image_url || '',
-                small: def.image_url || '',
-                large: def.image_url || ''
-            },
-            type_line: def.type_line || def.typeLine,
-            cmc: typeof def.cmc === 'number' ? def.cmc : 0, 
-            colors: def.colors || def.card_colors || [],
-            manaCost: def.manaCost,
-            oracleText: def.oracleText,
-            power: def.power?.toString(),
-            toughness: def.toughness?.toString(),
-            keywords: def.keywords || []
-        }));
+        return packDefs.map(def => {
+            const standardized = CardRegistryService.standardizeCard(def);
+            return {
+                ...standardized,
+                id: `${standardized.scryfall_id || 'c'}-${Math.random().toString(36).substring(2, 9)}`
+            };
+        });
     }
 
     private static pickRandom(array: any[]): any {

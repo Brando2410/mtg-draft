@@ -1,6 +1,7 @@
 import { Card, Player, Room } from '@shared/types';
 import { LoggerService } from './LoggerService';
 import { PersistenceService } from './PersistenceService';
+import { CardRegistryService } from './CardRegistryService';
 
 export class DraftService {
    static performPick(rooms: Map<string, Room>, roomId: string, playerId: string, cardId: string): boolean {
@@ -82,7 +83,7 @@ export class DraftService {
       room.draftState.totalPicksInRound = 0;
 
       if (room.draftState.round > room.rules.packsPerPlayer) {
-         room.status = 'completed';
+         room.status = 'deckbuilding';
          room.draftState.playerTimers = {};
          PersistenceService.logDraftResult(room);
 
@@ -105,11 +106,14 @@ export class DraftService {
    static startDraft(room: Room) {
       const { cardsPerPack, packsPerPlayer } = room.rules;
 
-      // Shuffle and inject IDs
-      const shuffled = room.cube.cards.map((card: Card, idx: number) => ({
-         ...card,
-         id: `${card.scryfall_id || 'c'}-${idx}-${Math.random().toString(36).substring(2, 7)}`
-      })).sort(() => Math.random() - 0.5);
+      // Standardize and inject IDs
+      const shuffled = room.cube.cards.map((card: Card, idx: number) => {
+         const standardized = CardRegistryService.standardizeCard(card);
+         return {
+            ...standardized,
+            id: `${standardized.scryfall_id || 'c'}-${idx}-${Math.random().toString(36).substring(2, 7)}`
+         };
+      }).sort(() => Math.random() - 0.5);
 
       const unopenedPacks: Card[][][] = []; // [playerIndex][packSlot]
 

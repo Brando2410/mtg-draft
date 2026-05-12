@@ -60,7 +60,7 @@ export const BotPoolsModal: React.FC<BotPoolsModalProps> = ({ room, onClose }) =
         <div className="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-8 bg-slate-950">
           {selectedBot && (() => {
             const getColorGroup = (card: Card) => {
-               const colors = card.card_colors || (card.color ? [card.color] : []);
+               const colors = card.colors || [];
                if (colors.length > 1) return 'M';
                if (colors.length === 1) return colors[0];
                return 'C';
@@ -101,7 +101,7 @@ export const BotPoolsModal: React.FC<BotPoolsModalProps> = ({ room, onClose }) =
                       </div>
                       <div className="flex flex-col gap-2 sm:gap-3">
                         {colCards.map((card, i) => {
-                          const url = card.image_uris?.normal || (card as any).image_url;
+                          const url = card.image_url;
                           return (
                             <motion.div 
                               initial={{ opacity: 0, y: 10 }}

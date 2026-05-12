@@ -9,6 +9,7 @@ import { GameSetupProcessor } from '../../engine/modules/core/GameSetupProcessor
 import { DraftService } from '../../services/DraftService';
 import { LoggerService } from '../../services/LoggerService';
 import { PersistenceService } from '../../services/PersistenceService';
+import { AssetService } from '../../services/AssetService';
 import { SealedService } from '../../services/SealedService';
 
 
@@ -114,8 +115,17 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       player.deck = deck as Card[];
       player.isReady = true;
 
-      const allReady = room.players.length >= (room.rules.playerCount || 2) &&
-        room.players.every(p => p.isReady || p.isBot);
+      // Ensure all bots have a deck too (simple random 40-card deck from pool)
+      room.players.forEach(p => {
+        if (p.isBot && (!p.deck || (Array.isArray(p.deck) && p.deck.length === 0))) {
+          const pool = p.pool || [];
+          // Pick 40 random cards (or all if less than 40)
+          p.deck = [...pool].sort(() => Math.random() - 0.5).slice(0, 40);
+          p.isReady = true;
+        }
+      });
+
+      const allReady = room.players.every(p => p.isReady);
 
       if (allReady && !room.isNormalMatch) {
         startTournamentMatches(io, room);
@@ -228,11 +238,53 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     return (match.wins[p1] || 0) > (match.wins[p2] || 0) ? p2 : p1;
   };
 
+  const resolveBotMatches = (room: Room) => {
+    if (!room.matches) return false;
+    
+    let resolvedAny = false;
+    room.matches.forEach((match, idx) => {
+      if (match.status !== 'pending') return;
+      
+      const p1 = room.players.find(p => p.playerId === match.players[0]);
+      const p2 = room.players.find(p => p.playerId === match.players[1]);
+      
+      if (!p1 || !p2) return;
+
+      // Rule: Bot vs Bot = Random Winner
+      if (p1.isBot && p2.isBot) {
+        const winnerId = Math.random() > 0.5 ? p1.playerId : p2.playerId;
+        match.wins = { [p1.playerId]: 0, [p2.playerId]: 0 };
+        match.wins[winnerId] = 2; // Bo3 winner
+        match.status = 'completed';
+        LoggerService.info('TOURNAMENT', `Match ${idx} (Bot vs Bot) auto-resolved. Winner: ${winnerId}`);
+        resolvedAny = true;
+      }
+      // Rule: Human vs Bot = Human Always Wins
+      else if (p1.isBot || p2.isBot) {
+        const human = p1.isBot ? p2 : p1;
+        const bot = p1.isBot ? p1 : p2;
+        match.wins = { [p1.playerId]: 0, [p2.playerId]: 0 };
+        match.wins[human.playerId] = 2; // Bo3 winner
+        match.status = 'completed';
+        LoggerService.info('TOURNAMENT', `Match ${idx} (Human vs Bot) auto-resolved. Winner: ${human.name} (Human)`);
+        resolvedAny = true;
+      }
+    });
+
+    if (resolvedAny) {
+      advanceTournament(room);
+      return true;
+    }
+    return false;
+  };
+
   const advanceTournament = (room: Room) => {
     const matches = room.matches || [];
     const playerCount = room.rules.playerCount || 8;
 
     LoggerService.info('TOURNAMENT', `Checking advancement for room ${room.id}. Current matches: ${matches.length}`);
+
+    let roundAdvanced = false;
 
     if (playerCount === 8) {
       // Round 1 -> Round 2 (Semis + Consolation Semis)
@@ -256,6 +308,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         matches.push({ players: [l2, l3], wins: { [l2]: 0, [l3]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 7
         
         LoggerService.info('TOURNAMENT', `Advanced to Semi-Finals & Consolation Semis`);
+        roundAdvanced = true;
       }
       // Round 2 -> Round 3 (Finals, 3rd, 5th, 7th place)
       else if (matches.length === 8 && matches.slice(4).every(m => m.status === 'completed')) {
@@ -279,6 +332,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         matches.push({ players: [l6, l7], wins: { [l6]: 0, [l7]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 11
         
         LoggerService.info('TOURNAMENT', `Advanced to All Finals (1st-8th)`);
+        roundAdvanced = true;
       }
       else if (matches.length === 12 && matches.slice(8).every(m => m.status === 'completed')) {
         room.status = 'completed';
@@ -297,16 +351,21 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         matches.push({ players: [l0, l1], wins: { [l0]: 0, [l1]: 0 }, status: 'pending' as const, joinedPlayers: [] }); // 3
 
         LoggerService.info('TOURNAMENT', `Advanced to Final & 3rd Place`);
+        roundAdvanced = true;
       } else if (matches.length === 4 && matches.slice(2).every(m => m.status === 'completed')) {
         room.status = 'completed';
       }
+    }
+
+    if (roundAdvanced) {
+      resolveBotMatches(room);
     }
   };
 
   const startTournamentMatches = (io: Server, room: Room) => {
     LoggerService.info('TOURNAMENT', `Starting matches for room ${room.id}`);
 
-    const players = room.players;
+    const players = [...room.players].sort(() => Math.random() - 0.5);
     const matches: any[] = [];
 
     for (let i = 0; i < players.length; i += 2) {
@@ -322,6 +381,8 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
     room.matches = matches;
     room.status = 'tournament';
+
+    resolveBotMatches(room);
 
     io.to(room.id).emit('room_update', room);
     io.to(room.id).emit('match_started', room);
@@ -363,8 +424,46 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       room.status = 'active';
       room.gameState = engine.getState();
     } else if (room.rules.isSealed) {
+      // Auto-fill with bots if missing players
+      const required = room.rules.playerCount || 8;
+      if (room.players.length < required) {
+        const avatars = await AssetService.listAvatars();
+        while (room.players.length < required) {
+          const botIndex = room.players.filter(p => p.isBot).length + 1;
+          const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
+          room.players.push({
+            id: botId,
+            playerId: botId,
+            name: `Bot_${botIndex}`,
+            avatar: avatars[Math.floor(Math.random() * avatars.length)] || 'ajani.png',
+            online: true,
+            isBot: true,
+            lastSeen: Date.now(),
+            pool: []
+          });
+        }
+      }
       SealedService.startSealed(room);
     } else {
+      // Auto-fill with bots if missing players
+      const required = room.rules.playerCount || 8;
+      if (room.players.length < required) {
+        const avatars = await AssetService.listAvatars();
+        while (room.players.length < required) {
+          const botIndex = room.players.filter(p => p.isBot).length + 1;
+          const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
+          room.players.push({
+            id: botId,
+            playerId: botId,
+            name: `Bot_${botIndex}`,
+            avatar: avatars[Math.floor(Math.random() * avatars.length)] || 'ajani.png',
+            online: true,
+            isBot: true,
+            lastSeen: Date.now(),
+            pool: []
+          });
+        }
+      }
       DraftService.startDraft(room);
       BotLogic.triggerBotPicks(rooms, roomId);
     }

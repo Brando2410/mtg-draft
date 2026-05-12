@@ -44,7 +44,7 @@ export const CardGridItem = ({
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2">Image Lost</span>
             <span className="text-sm font-black text-white italic leading-tight uppercase line-clamp-3">{card.name}</span>
             <div className="mt-auto pt-2 border-t border-white/5 w-full">
-               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{card.mana_cost || 'No Cost'}</span>
+               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{card.manaCost || 'No Cost'}</span>
             </div>
           </div>
         ) : (

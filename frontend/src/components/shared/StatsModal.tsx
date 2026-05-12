@@ -44,7 +44,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, cards, 
         }
 
         // Count color symbols in mana cost
-        const symbols = (card.mana_cost || '').match(/\{([^}]+)\}/g) || [];
+        const symbols = (card.manaCost || '').match(/\{([^}]+)\}/g) || [];
         symbols.forEach(s => {
           const sym = s.replace(/[{}]/g, '');
           if (colorSymbols[sym] !== undefined) {

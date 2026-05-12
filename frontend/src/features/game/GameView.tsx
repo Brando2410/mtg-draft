@@ -24,9 +24,11 @@ interface GameViewProps {
   room: Room;
   playerId: string;
   customGameState?: any;
+  onLeave?: () => void;
+  onBack?: () => void;
 }
 
-export const GameView = ({ room, playerId, customGameState }: GameViewProps) => {
+export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: GameViewProps) => {
   const [showDebug, setShowDebug] = useState(false);
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
   const [showEscMenu, setShowEscMenu] = useState(false);
@@ -266,12 +268,12 @@ export const GameView = ({ room, playerId, customGameState }: GameViewProps) => 
         isOpen={showEscMenu}
         onClose={() => setShowEscMenu(false)}
         onResetMatch={resetMatch}
-        onBack={() => {
+        onBack={onBack || (() => {
           if (gameState.players[effectivePlayerId]) {
             actions.concede();
           }
           leaveRoom();
-        }}
+        })}
       />
 
       <AnimatePresence>
@@ -305,7 +307,7 @@ export const GameView = ({ room, playerId, customGameState }: GameViewProps) => 
             winnerId={gameState.winner}
             playerId={effectivePlayerId}
             winnerName={gameState.winner ? (gameState.players[gameState.winner]?.name || 'Unknown') : 'Draw'}
-            onLeave={leaveRoom}
+            onLeave={onLeave || leaveRoom}
           />
         )}
       </AnimatePresence>

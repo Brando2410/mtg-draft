@@ -1,43 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { DraftPoolBuilder } from './components/draft/DraftPoolBuilder';
-import { DraftPackView } from './components/draft/DraftPackView';
-import { Collection } from './components/collection/Collection';
-import { MainMenu } from './components/menu/MainMenu';
-import { GameModeSelection } from './components/play/GameModeSelection';
-import { DraftSetup } from './components/lobby/DraftSetup';
-import { JoinRoom } from './components/lobby/JoinRoom';
-import { DraftLobby } from './components/lobby/DraftLobby';
-import { MatchLobby } from './components/lobby/MatchLobby';
-import { AdminPanel } from './components/admin/AdminPanel';
-import { AssetManager } from './components/admin/AssetManager';
-import { DraftHistory } from './components/history/DraftHistory';
-import { TournamentBracket } from './components/lobby/TournamentBracket';
-import { SealedSetup } from './components/lobby/SealedSetup';
-import { DeckBuilder } from './components/deck/DeckBuilder';
-import { GameView } from './components/game/GameView';
+import { AdminPanel } from './features/admin/AdminPanel';
+import { AssetManager } from './features/admin/AssetManager';
 import { X } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
-import { socket } from './services/socket';
+import { AppRouter } from './routes/AppRouter';
+import { useSocketInit } from './hooks/useSocketInit';
 
 function App() {
   const { 
-    room, 
     activeView, 
     joinError, 
-    isJoining, 
-    playerId,
-    setActiveView, 
     setJoinError,
-    initSocketListeners,
-    cleanupSocketListeners,
-    joinRoom,
-    createRoom,
-    startDraft,
-    kickPlayer,
-    changeAvatar,
-    closeRoom,
-    addBot
   } = useDraftStore();
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -47,30 +21,11 @@ function App() {
   const [_, setIsSealedMode] = useState(false);
   const [spectatedMatchIndex, setSpectatedMatchIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    initSocketListeners();
-    return () => cleanupSocketListeners();
-  }, [initSocketListeners, cleanupSocketListeners]);
-
-  const handleSelectCubeFromCollection = (cubeData: any) => {
-    localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
-    setSkipRestore(true);
-    setActiveView('builder');
-  };
-
-  const handleSelectDeckFromCollection = (deckData: any) => {
-    setSelectedDeck(deckData);
-    setActiveView('deck_builder');
-  };
-
-
+  // Custom Hooks for Side Effects
+  useSocketInit();
 
   return (
-    <div 
-      className="relative min-h-[100dvh] bg-slate-950 font-sans selection:bg-indigo-500/30 overflow-x-hidden text-slate-100"
-    >
-      
-
+    <div className="relative min-h-[100dvh] bg-slate-950 font-sans selection:bg-indigo-500/30 overflow-x-hidden text-slate-100">
       
       {/* NOTIFICA ERRORE GLOBALE */}
       {joinError && activeView === 'menu' && (
@@ -85,203 +40,24 @@ function App() {
         </div>
       )}
 
-      {/* Sfondo Astratto Ambientale (Sempre visibile) */}
+      {/* Sfondo Astratto Ambientale */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/40 rounded-full blur-[160px] mix-blend-screen" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/30 rounded-full blur-[160px] mix-blend-screen" />
       </div>
 
       <main className="relative z-10 w-full">
-        
-        {activeView === 'menu' && (
-          <MainMenu 
-            onShowAdmin={() => setIsAdminOpen(true)}
-            onShowAssets={() => setIsAssetOpen(true)}
-            onSelect={(view) => {
-              setSkipRestore(false);
-              if (view === 'draft_join') {
-                const savedRoomId = localStorage.getItem('mtg_room_id');
-                const savedPlayerName = localStorage.getItem('mtg_player_name');
-                if (savedRoomId && savedPlayerName) {
-                   joinRoom(savedRoomId, savedPlayerName);
-                   return;
-                }
-              }
-              setActiveView(view as any);
-            }} 
-          />
-        )}
-
-        {activeView === 'builder' && (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            <DraftPoolBuilder skipRestore={skipRestore} onBack={() => setActiveView('menu')} />
-          </div>
-        )}
-
-        {activeView === 'draft_setup' && (
-          <GameModeSelection
-            onBack={() => setActiveView('menu')}
-            onSelectMode={(mode) => {
-              if (mode === 'draft') {
-                setIsSealedMode(false);
-                setActiveView('draft_config' as any);
-              } else if (mode === 'sealed') {
-                setIsSealedMode(true);
-                setActiveView('sealed_config' as any);
-              } else {
-                // Normal Match: 2 players, no cube needed
-                createRoom({
-                  playerCount: 2,
-                  isNormalMatch: true,
-                  hostName: localStorage.getItem('mtg_player_name') || 'Giocatore'
-                });
-              }
-            }}
-          />
-        )}
-
-        {activeView === 'draft_config' as any && (
-          <DraftSetup 
-            onBack={() => setActiveView('draft_setup')} 
-            onCreateRoom={createRoom}
-            isSealed={false}
-          />
-        )}
-
-        {activeView === 'sealed_config' as any && (
-          <SealedSetup 
-            onBack={() => setActiveView('draft_setup')} 
-            onCreateRoom={createRoom}
-          />
-        )}
-
-        {activeView === 'draft_join' && (
-          <JoinRoom 
-            onBack={() => setActiveView('menu')} 
-            onJoin={joinRoom}
-            error={joinError}
-            loading={isJoining}
-          />
-        )}
-
-        {activeView === 'draft_lobby' && room && (
-          <>
-            {room.isNormalMatch ? (
-               <MatchLobby 
-                  roomCode={room.id}
-                  players={room.players}
-                  rules={room.rules}
-                  isHost={room.hostPlayerId === playerId}
-                  onStart={startDraft}
-                  onClose={closeRoom}
-                  onKick={kickPlayer}
-                  onChangeAvatar={changeAvatar}
-               />
-            ) : (
-               <DraftLobby 
-                  roomCode={room.id}
-                  players={room.players}
-                  rules={room.rules}
-                  isHost={room.hostPlayerId === playerId}
-                  onStart={startDraft}
-                  onClose={closeRoom}
-                  onKick={kickPlayer}
-                  onChangeAvatar={changeAvatar}
-                  onAddBot={addBot}
-               />
-            )}
-          </>
-        )}
-
-        {activeView === 'drafting' && room && (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            {/* 1. Deckbuilding / Sealed Drafting Phase */}
-            {room.status === 'deckbuilding' || (room.rules.isSealed && room.status === 'drafting') ? (
-               <DeckBuilder 
-                 onBack={() => setActiveView('menu')}
-                 pool={room.players.find(p => p.playerId === playerId || '')?.pool}
-                 onConfirm={(deck) => {
-                   socket?.emit('ready_with_deck', { roomId: room.id, playerId, deck });
-                 }}
-               />
-            ) : room.status === 'tournament' ? (
-               /* 2. Tournament Mode: Always show bracket unless a match is specifically selected */
-               spectatedMatchIndex !== null || (room.matches?.some(m => m.players.includes(playerId)) && spectatedMatchIndex !== null) ? (
-                 <GameView 
-                   room={room} 
-                   playerId={playerId} 
-                   customGameState={spectatedMatchIndex !== null ? room.matches?.[spectatedMatchIndex]?.engineState : room.matches?.find(m => m.players.includes(playerId))?.engineState}
-                 />
-               ) : (
-                 <TournamentBracket 
-                    room={room}
-                    playerId={playerId}
-                    onBack={() => setActiveView('menu')}
-                    onJoinMatch={(idx) => {
-                       const match = room.matches?.[idx];
-                       if (match?.status === 'pending') {
-                          socket?.emit('join_tournament_match', { roomId: room.id, playerId, matchIndex: idx });
-                       } else if (match?.status === 'active') {
-                          setSpectatedMatchIndex(idx);
-                       }
-                    }}
-                    onSpectate={(idx) => {
-                       socket?.emit('spectate_tournament_match', { roomId: room.id, playerId, matchIndex: idx });
-                       setSpectatedMatchIndex(idx);
-                    }}
-                 />
-               )
-            ) : (room.isNormalMatch || (room.status === 'active' && room.matches?.some(m => m.players.includes(playerId)))) ? (
-               /* 3. Normal Match / Direct Action */
-               <GameView 
-                 room={room} 
-                 playerId={playerId} 
-                 customGameState={room.matches?.find(m => m.players.includes(playerId))?.engineState || room.gameState}
-               />
-            ) : (
-               /* 4. Drafting Pack Phase */
-               <DraftPackView
-                  room={room}
-                  playerId={playerId}
-                  onBack={() => setActiveView('menu')}
-               />
-            )}
-          </div>
-        )}
-
-        {activeView === 'collection' && (
-          <div className="animate-in fade-in zoom-in-95 duration-700">
-             <Collection
-                onBack={() => setActiveView('menu')}
-                onSelectCube={handleSelectCubeFromCollection}
-                onSelectDeck={handleSelectDeckFromCollection}
-                onCreateNewCube={() => {
-                  setSkipRestore(true);
-                  setActiveView('builder');
-                }}
-                onCreateNewDeck={() => {
-                  setSelectedDeck(null);
-                  setActiveView('deck_builder');
-                }}
-             />
-          </div>
-        )}
-
-        {activeView === 'deck_builder' && (
-          <DeckBuilder 
-            onBack={() => setActiveView('collection')}
-            initialDeck={selectedDeck}
-          />
-        )}
-
-        {activeView === 'history' && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-700">
-             <DraftHistory
-                onBack={() => setActiveView('menu')}
-             />
-          </div>
-        )}
-
+        <AppRouter 
+          setIsAdminOpen={setIsAdminOpen}
+          setIsAssetOpen={setIsAssetOpen}
+          skipRestore={skipRestore}
+          setSkipRestore={setSkipRestore}
+          selectedDeck={selectedDeck}
+          setSelectedDeck={setSelectedDeck}
+          setIsSealedMode={setIsSealedMode}
+          spectatedMatchIndex={spectatedMatchIndex}
+          setSpectatedMatchIndex={setSpectatedMatchIndex}
+        />
       </main>
 
       {isAdminOpen && (
@@ -293,7 +69,6 @@ function App() {
           <AssetManager onClose={() => setIsAssetOpen(false)} />
         )}
       </AnimatePresence>
-
     </div>
   );
 }

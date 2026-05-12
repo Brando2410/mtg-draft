@@ -45,7 +45,7 @@ export const EssenceknitScholar: CardDefinition = {
         }
     ],
     scryfall_id: "2a3cba55-3fae-4d45-ae03-4d662ec13718",
-    image_url: "https://cards.scryfall.io/normal/front/4/0/40b22872-7b7b-4a6d-a343-4152e552b00a.jpg?1775828415",
+    image_url: "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295",
     rarity: "uncommon"
 };
 

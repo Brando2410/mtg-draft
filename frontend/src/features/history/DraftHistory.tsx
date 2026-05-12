@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Clock, Users, ChevronRight, X, LayoutPanelLeft, Trash2 } from 'lucide-react';
-import { DeckReviewView } from '../deck/DeckReviewView';
+import { DeckReviewView } from '../deck-builder/DeckReviewView';
+import { LimitedEventOver } from '../game/LimitedEventOver';
+import { TournamentBracket } from '../lobby/TournamentBracket';
+import { useDraftStore } from '../../store/useDraftStore';
 
 interface DraftRecord {
   id: string;
@@ -10,6 +13,8 @@ interface DraftRecord {
   playerPool: any[];
   playerCount: number;
   stats: any;
+  type?: 'draft' | 'tournament';
+  roomSnapshot?: any;
 }
 
 interface DraftHistoryProps {
@@ -19,6 +24,8 @@ interface DraftHistoryProps {
 export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
   const [history, setHistory] = useState<DraftRecord[]>([]);
   const [selectedDraft, setSelectedDraft] = useState<DraftRecord | null>(null);
+  const [showBracket, setShowBracket] = useState(false);
+  const { playerId } = useDraftStore();
 
   useEffect(() => {
     const saved = localStorage.getItem('mtg_draft_history');
@@ -42,6 +49,27 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
   };
 
   if (selectedDraft) {
+    if (selectedDraft.type === 'tournament' && selectedDraft.roomSnapshot) {
+      if (showBracket) {
+        return (
+          <TournamentBracket 
+            room={selectedDraft.roomSnapshot}
+            playerId={playerId || ''}
+            onBack={() => setShowBracket(false)}
+            onEditDeck={() => setShowBracket(false)}
+          />
+        );
+      }
+      return (
+        <LimitedEventOver 
+          room={selectedDraft.roomSnapshot}
+          playerId={playerId || ''}
+          onBack={() => setSelectedDraft(null)}
+          onViewTournament={() => setShowBracket(true)}
+        />
+      );
+    }
+
     return (
       <DeckReviewView
         pool={selectedDraft.playerPool}
@@ -100,8 +128,13 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
                   </div>
 
                   <div className="flex flex-col text-left">
-                    <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter truncate max-w-[200px] sm:max-w-xs">{record.cubeName}</h3>
-                    <div className="flex items-center gap-4 mt-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter truncate max-w-[200px] sm:max-w-xs">{record.cubeName}</h3>
+                      {record.type === 'tournament' && (
+                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-500 border border-amber-500/20 rounded text-[8px] font-black uppercase tracking-widest">Torneo</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5 opacity-60">
                         <LayoutPanelLeft className="w-3 h-3 text-slate-400" />
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{record.playerPool.length} Carte</span>
@@ -124,7 +157,7 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
                   </button>
                   <div className="flex-1 sm:flex-none">
                     <button className="w-full sm:w-auto px-6 py-3 bg-indigo-500/10 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all">
-                      Visualizza Mazzo
+                      {record.type === 'tournament' ? 'Visualizza Risultati' : 'Visualizza Mazzo'}
                       <ChevronRight className="w-4 h-4 translate-x-0 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>

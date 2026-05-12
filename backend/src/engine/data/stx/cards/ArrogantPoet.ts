@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const ArrogantPoet: CardDefinition = {
     name: 'Arrogant Poet',
     manaCost: '{1}{B}',
-
     colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
@@ -21,7 +20,7 @@ export const ArrogantPoet: CardDefinition = {
                 optional: true,
                 choices: [{
                     label: "Pay 2 Life",
-                    costs: [{ type: CostType.PayLife, value: 2 }],
+                    costs: [{ type: CostType.PayLife, value: "2" }],
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         targetMapping: TargetMapping.Self,

@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, Database, Save, ArrowRight } from 'lucide-react';
-import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified } from '../../services/registry';
+import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, Database, Save, ArrowRight, Clipboard } from 'lucide-react';
+import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified, calculateCMC } from '../../services/registry';
 import type { SimplifiedCard } from '../../services/scryfall';
-import { StatsModal } from '../shared/StatsModal';
+import { StatsModal } from '../../components/shared/StatsModal';
 import { SideboardSidebar } from './SideboardSidebar';
 
 interface DeckBuilderProps {
   onBack?: () => void;
-  initialDeck?: any;
+  initialDeck?: any; // Can be Card[] or { cards: Card[], sideboard: Card[] }
   pool?: any[];
-  onConfirm?: (deck: any[]) => void;
+  onConfirm?: (deck: { cards: any[], sideboard: any[] }) => void;
 }
 
 const PoolCardImage = ({ card }: { card: SimplifiedCard }) => {
@@ -29,7 +29,9 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
   // --- STATO ---
   const [deckName, setDeckName] = useState(initialDeck?.name || 'New Deck');
   const [isEditingName, setIsEditingName] = useState(false);
-  const [deckCards, setDeckCards] = useState<SimplifiedCard[]>(initialDeck?.cards || []);
+  const [deckCards, setDeckCards] = useState<SimplifiedCard[]>(
+    Array.isArray(initialDeck) ? initialDeck : (initialDeck?.cards || [])
+  );
   const [sideboardCards, setSideboardCards] = useState<SimplifiedCard[]>(initialDeck?.sideboard || []);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isSideboardCollapsed, setIsSideboardCollapsed] = useState(true);
@@ -77,15 +79,16 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
       if (!groups[key]) {
         groups[key] = { 
           card: {
+            id: c.id,
             scryfall_id: c.scryfall_id || c.id,
             name: c.name,
             rarity: c.rarity || 'common',
-            color: c.colors || [],
+            colors: c.colors || c.card_colors || [],
             image_url: c.image_url || c.image_uris?.normal || '',
             back_image_url: c.back_image_url,
-            cmc: c.cmc || 0,
-            type_line: c.type_line || '',
-            mana_cost: c.manaCost || c.mana_cost || '',
+            cmc: c.cmc ?? calculateCMC(c.manaCost || c.mana_cost || ''),
+            typeLine: c.typeLine || c.type_line || '',
+            manaCost: c.manaCost || c.mana_cost || '',
             types: c.types || [],
             supertypes: c.supertypes || [],
             keywords: c.keywords || []
@@ -105,7 +108,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
       if (pool) {
         const filtered = poolCards.filter(({ card: c }) => {
           const matchesName = !addQuery || c.name.toLowerCase().includes(addQuery.toLowerCase());
-          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => c.color.includes(col));
+          const matchesColor = poolFilterColors.length === 0 || poolFilterColors.every(col => c.colors.includes(col));
           const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
           const matchesLand = !poolFilterLand || (c.types || []).some(t => t.toLowerCase() === 'land');
           return matchesName && matchesColor && matchesCmc && matchesLand;
@@ -319,6 +322,20 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
         </div>
 
         <div className="flex items-center gap-1">
+          {pool && (
+            <button 
+              onClick={() => {
+                const text = poolCards.map(p => `${p.total} ${p.card.name}`).join('\n');
+                navigator.clipboard.writeText(text);
+                setSaveStatus('saved');
+                setTimeout(() => setSaveStatus('idle'), 2000);
+              }} 
+              className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" 
+              title="Copy Pool"
+            >
+              <Clipboard className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)]" />
+            </button>
+          )}
           <button onClick={() => setIsImportModalOpen(true)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Import"><FileText className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)]" /></button>
           <button onClick={() => setShowStats(true)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Stats"><BarChart2 className="w-[clamp(14px,1.2vw,18px)] h-[clamp(14px,1.2vw,18px)]" /></button>
         </div>
@@ -383,21 +400,21 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
               if (splitPercent !== 45) setSplitPercent(45);
               else setSplitPercent(15);
             }}
-            className={`transition-all p-0.5 ${splitPercent <= 20 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
+            className={`transition-all p-1 ${splitPercent <= 20 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
             title="Maximize Deck / Restore"
           >
-            <svg viewBox="0 0 10 6" className="w-3 h-3 fill-current"><polygon points="5,0 10,6 0,6" /></svg>
+            <svg viewBox="0 0 10 6" className="w-4 h-4 fill-current"><polygon points="5,0 10,6 0,6" /></svg>
           </button>
-          <div className="h-3 w-px bg-white/10" />
+          <div className="h-4 w-px bg-white/10" />
           <button
             onClick={() => {
               if (splitPercent !== 45) setSplitPercent(45);
               else setSplitPercent(80);
             }}
-            className={`transition-all p-0.5 ${splitPercent >= 75 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
+            className={`transition-all p-1 ${splitPercent >= 75 ? 'text-indigo-400 scale-110' : 'text-slate-400 hover:text-white'}`}
             title="Maximize Pool / Restore"
           >
-            <svg viewBox="0 0 10 6" className="w-3 h-3 fill-current"><polygon points="5,6 10,0 0,0" /></svg>
+            <svg viewBox="0 0 10 6" className="w-4 h-4 fill-current"><polygon points="5,6 10,0 0,0" /></svg>
           </button>
         </div>
       </div>
@@ -407,29 +424,47 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
 
         {/* DECK AREA (CMC Columns with stacked card strips) */}
         <motion.div layout className="flex-1 bg-[#0b0b0d] relative overflow-x-auto overflow-y-hidden flex gap-2 px-3 pt-3 custom-scrollbar-h">
-          {[0, 1, 2, 3, 4, 5, 6].map(cmc => {
-            const cards = cmcColumns[cmc];
-            return (
-              <div key={cmc} className="flex-1 min-w-[80px] sm:min-w-[100px] md:min-w-[120px] flex flex-col relative">
-                {/* Scrollable Column Content — uniform 30px fan */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-                  <div className="relative w-full" style={{ height: `${40 * (cards.length - 1) + 160}px` }}>
-                    {cards.map((card, cardIdx) => (
-                      <div
-                        key={cardIdx}
-                        className="absolute inset-x-0 aspect-[2.5/3.5] rounded-lg overflow-hidden border border-white/10 shadow-lg cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] hover:z-[100] transition-all"
-                        style={{ top: `${cardIdx * 40}px`, zIndex: cardIdx }}
-                        onClick={() => moveCardToSideboard(card)}
-                        onContextMenu={(e) => { e.preventDefault(); removeCardFromDeck(card); }}
-                      >
-                        <PoolCardImage card={card} />
-                      </div>
-                    ))}
+          {deckCards.length === 0 ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20">
+              <div className="flex flex-col items-center gap-6">
+                <div className="flex gap-16">
+                   <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">L</div>
+                      <span className="text-[9px] font-black uppercase tracking-widest">Aggiungi / Sideboard</span>
+                   </div>
+                   <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-[10px] font-black">R</div>
+                      <span className="text-[9px] font-black uppercase tracking-widest">Zoom / Rimuovi</span>
+                   </div>
+                </div>
+                <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.4em]">Il mazzo è vuoto</p>
+              </div>
+            </div>
+          ) : (
+            [0, 1, 2, 3, 4, 5, 6].map(cmc => {
+              const cards = cmcColumns[cmc];
+              return (
+                <div key={cmc} className="flex-1 min-w-[80px] sm:min-w-[100px] md:min-w-[120px] flex flex-col relative">
+                  {/* Scrollable Column Content — uniform 30px fan */}
+                  <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                    <div className="relative w-full" style={{ height: `${60 * (cards.length - 1) + 160}px` }}>
+                      {cards.map((card, cardIdx) => (
+                        <div
+                          key={cardIdx}
+                          className="absolute inset-x-0 aspect-[2.5/3.5] rounded-lg overflow-hidden border border-white/10 shadow-lg cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] hover:z-[100] transition-all"
+                          style={{ top: `${cardIdx * 60}px`, zIndex: cardIdx }}
+                          onClick={() => moveCardToSideboard(card)}
+                          onContextMenu={(e) => { e.preventDefault(); removeCardFromDeck(card); }}
+                        >
+                          <PoolCardImage card={card} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </motion.div>
 
         {/* SIDEBOARD (only in bottom half) */}
@@ -465,10 +500,12 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
               </h2>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-[clamp(8px,0.7vw,10px)] font-black text-indigo-400 uppercase tracking-widest">{deckCards.length} / 60 Cards</span>
+              <span className={`text-[clamp(8px,0.7vw,10px)] font-black uppercase tracking-widest ${pool && deckCards.length < 40 ? 'text-red-500' : 'text-indigo-400'}`}>
+                {deckCards.length} {pool ? '/ 40' : ''} Cards
+              </span>
               <div className="flex gap-0.5">
                 {['W', 'U', 'B', 'R', 'G'].map(c => {
-                  const count = deckCards.filter(card => card.color.includes(c)).length;
+                  const count = deckCards.filter(card => card.colors.includes(c)).length;
                   if (count === 0) return null;
                   return <img key={c} src={manaSymbols[c]} className="w-[clamp(8px,0.8vw,12px)] h-[clamp(8px,0.8vw,12px)]" alt={c} />;
                 })}
@@ -497,10 +534,47 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
         <div className="flex items-center gap-3">
           {onConfirm ? (
             <button
-              onClick={() => onConfirm?.(deckCards)}
-              className="px-[clamp(16px,2vw,32px)] py-[clamp(6px,1vh,12px)] bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-black uppercase text-[clamp(9px,0.8vw,11px)] tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
+              onClick={() => {
+                if (pool && deckCards.length < 40) return;
+                
+                let finalSideboard = sideboardCards;
+                if (pool) {
+                  // Limited Mode: Sideboard = Pool - Deck (minus basic lands)
+                  const remainingPool = [...pool];
+                  deckCards.forEach(deckCard => {
+                    const idx = remainingPool.findIndex(p => p.name === deckCard.name);
+                    if (idx !== -1) remainingPool.splice(idx, 1);
+                  });
+                  
+                  finalSideboard = remainingPool
+                    .filter(c => !basicLands.some(bl => bl.name === c.name))
+                    .map(c => ({
+                      id: c.id,
+                      scryfall_id: c.scryfall_id || c.id,
+                      name: c.name,
+                      rarity: c.rarity || 'common',
+                      colors: c.colors || c.card_colors || [],
+                      image_url: c.image_url || c.image_uris?.normal || '',
+                      back_image_url: c.back_image_url,
+                      cmc: c.cmc ?? calculateCMC(c.manaCost || c.mana_cost || ''),
+                      typeLine: c.typeLine || c.type_line || '',
+                      manaCost: c.manaCost || c.mana_cost || '',
+                      types: c.types || [],
+                      supertypes: c.supertypes || [],
+                      keywords: c.keywords || []
+                    }));
+                }
+                
+                onConfirm?.({ cards: deckCards, sideboard: finalSideboard });
+              }}
+              disabled={!!pool && deckCards.length < 40}
+              className={`px-[clamp(16px,2vw,32px)] py-[clamp(6px,1vh,12px)] rounded-full font-black uppercase text-[clamp(9px,0.8vw,11px)] tracking-widest flex items-center gap-2 shadow-lg transition-all
+                ${(pool && deckCards.length < 40) 
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50' 
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20 active:scale-95'
+                }`}
             >
-              Done <ArrowRight className="w-[clamp(10px,1vw,14px)] h-[clamp(10px,1vw,14px)]" />
+              {(pool && deckCards.length < 40) ? 'Min 40 Cards' : 'Done'} <ArrowRight className="w-[clamp(10px,1vw,14px)] h-[clamp(10px,1vw,14px)]" />
             </button>
           ) : (
             <button
@@ -556,7 +630,21 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
                     setImportErrors([]);
                     const lines = importText.split('\n').filter(l => l.trim());
                     try {
-                      const { found, notFound } = await fetchRegistryCardsBatch(lines);
+                      let { found, notFound } = await fetchRegistryCardsBatch(lines);
+                      
+                      // Filter if in limited mode
+                      if (pool) {
+                        const poolNames = new Set(poolCards.map(p => p.card.name.toLowerCase()));
+                        const allowedFound = found.filter(c => 
+                          poolNames.has(c.name.toLowerCase()) || 
+                          (c.types || []).some((t: string) => t.toLowerCase() === 'land' && basicLands.some(bl => bl.name.toLowerCase() === c.name.toLowerCase()))
+                        );
+                        
+                        const disallowed = found.filter(c => !allowedFound.includes(c));
+                        found = allowedFound;
+                        notFound = [...notFound, ...disallowed.map(c => `${c.name} (Not in Pool)`)];
+                      }
+
                       if (found.length > 0) setDeckCards(prev => [...prev, ...found]);
                       if (notFound.length > 0) setImportErrors(notFound);
                       else { setIsImportModalOpen(false); setImportText(''); }

@@ -39,7 +39,7 @@ export const MusesEncouragement: CardDefinition = {
         }
     ],
     scryfall_id: "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
-    image_url: "https://cards.scryfall.io/normal/front/5/7/57b98846-85e3-47c7-a903-29953d0b0e8a.jpg?1775828504",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336",
     rarity: "common"
 };
 

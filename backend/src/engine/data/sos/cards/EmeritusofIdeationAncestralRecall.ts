@@ -28,12 +28,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
                                 {
                                     type: CostType.Exile,
                                     amount: 8,
-                                    targetDefinitions: [{
-                                        type: TargetType.Card,
-                                        zone: Zone.Graveyard,
-                                        count: 8,
-                                        restrictions: [Restriction.YouOwn]
-                                    }]
+                                    restrictions: [Restriction.YouOwn, Restriction.Graveyard]
                                 }
                             ],
                             effects: [
