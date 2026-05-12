@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const PigmentWranglerStrikingPalette: CardDefinition = {
     name: "Pigment Wrangler // Striking Palette",
     manaCost: "{4}{R}",
-
-
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Orc", "Sorcerer"],
@@ -14,7 +12,6 @@ export const PigmentWranglerStrikingPalette: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Striking Palette",
-
         manaCost: "{R}",
         colors: ["R"],
         types: ["Sorcery"],

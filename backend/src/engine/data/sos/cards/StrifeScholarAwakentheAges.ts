@@ -1,8 +1,4 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-/**
-* SOS Prepared Card: Strife Scholar // Awaken the Ages
-* Using the new streamlined preparedFace schema.
-*/
 export const StrifeScholarAwakentheAges: CardDefinition = {
     name: "Strife Scholar // Awaken the Ages",
     manaCost: "{2}{R}",

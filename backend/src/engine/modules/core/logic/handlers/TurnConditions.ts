@@ -24,7 +24,10 @@ export const TurnConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const amount = state.turnState.lifeGainedThisTurn[context.controllerId] || 0;
             const threshold = params[0] ? parseInt(params[0]) : 1;
-            return amount >= threshold;
+            const result = amount >= threshold;
+            const { logger } = getProcessors(state);
+            logger.debug(state, LogCategory.ACTION, `[CONDITION-DEBUG] LIFE_GAINED_THIS_TURN for ${context.controllerId}: ${amount} life (Threshold: ${threshold}). Result: ${result}`);
+            return result;
         }
     },
     [ConditionType.GainedLifeThisTurn]: {
@@ -34,7 +37,11 @@ export const TurnConditions: Record<string, IConditionHandler> = {
     },
     "PLAYER_GAINED_LIFE_THIS_TURN": {
         matches(state, params, context) {
-            return (state.turnState.lifeGainedThisTurn[context.controllerId] || 0) > 0;
+            const gained = (state.turnState.lifeGainedThisTurn[context.controllerId] || 0);
+            const result = gained > 0;
+            const { logger } = getProcessors(state);
+            logger.debug(state, LogCategory.ACTION, `[CONDITION-DEBUG] PLAYER_GAINED_LIFE_THIS_TURN for ${context.controllerId}: ${gained} life. Result: ${result}`);
+            return result;
         }
     },
     [ConditionType.LifeGained2OrMoreThisTurn]: {

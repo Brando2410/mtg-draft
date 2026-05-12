@@ -3,21 +3,13 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const GraveResearcherReanimate: CardDefinition = {
     name: "Grave Researcher // Reanimate",
     manaCost: "{2}{B} // {B}",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Troll",
-        "Warlock"
-    ],
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Troll", "Warlock"],
     keywords: ["Prepared"],
     oracleText: "At the beginning of your upkeep, surveil 1. Then if there are three or more creature cards in your graveyard, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,

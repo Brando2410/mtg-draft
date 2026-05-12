@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const EmeritusofWoeDemonicTutor: CardDefinition = {
     name: "Emeritus of Woe // Demonic Tutor",
     manaCost: "{3}{B}",
-
-
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Vampire", "Warlock"],

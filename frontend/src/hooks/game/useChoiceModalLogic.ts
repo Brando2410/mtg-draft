@@ -30,11 +30,11 @@ export const useChoiceModalLogic = (
         const sourceId = pendingAction?.sourceId;
         const meta = getActionMeta(pendingAction);
         const involvedIds = (meta.involvedIds || []) as string[];
-        
+
         const ids = new Set<string>();
         if (sourceId) ids.add(sourceId);
         involvedIds.forEach(id => ids.add(id));
-        
+
         if (ids.size === 0) return [];
 
         return Array.from(ids).map(id => {
@@ -61,11 +61,13 @@ export const useChoiceModalLogic = (
 
     const isOrderTriggers = pendingAction?.type === ActionType.OrderTriggers;
     const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
-    
+
     const choices = pendingAction?.data?.choices || [];
-    const minChoices = pendingAction?.data?.minChoices || 1;
-    const maxChoices = pendingAction?.data?.maxChoices || 1;
+    const minChoices = meta.minChoices ?? pendingAction?.data?.minChoices ?? 1;
+    const maxChoices = meta.maxChoices ?? pendingAction?.data?.maxChoices ?? 1;
     const allowDuplicates = pendingAction?.data?.allowDuplicates;
+
+    console.log('[CHOICE-LOGIC] min:', minChoices, 'max:', maxChoices, 'meta:', meta);
 
     useEffect(() => {
         if (isOrderTriggers && (pendingAction?.data?.triggers || meta.triggers)) {

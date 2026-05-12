@@ -1,9 +1,7 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const HonorboundPageForumsFavor: CardDefinition = {
+export const HonorboundPageForumsFavor: CardDefinition = {
     name: "Honorbound Page // Forum's Favor",
     manaCost: "{3}{W}",
-
-
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
@@ -11,11 +9,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     oracleText: "First strike\nThis creature enters prepared.",
     power: "3",
     toughness: "3",
-
     entersPrepared: true,
     preparedFace: {
         name: "Forum's Favor",
-
         manaCost: "{W}",
         colors: ["W"],
         types: ["Sorcery"],

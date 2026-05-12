@@ -44,7 +44,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   const actions = useGameActions(room.id, effectivePlayerId);
   
   const currentMatch = room.matches?.find((m: TournamentMatch) => m.players.includes(effectivePlayerId) && m.status === 'active');
-  const restartRequestedBy = currentMatch?.restartRequestedBy;
+  const restartRequestedBy = currentMatch?.restartRequestedBy || room.restartRequestedBy;
   const isRequestingRestart = restartRequestedBy === effectivePlayerId;
   const requesterName = restartRequestedBy ? room.players.find(p => p.playerId === restartRequestedBy)?.name : undefined;
 

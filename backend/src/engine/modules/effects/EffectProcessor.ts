@@ -228,8 +228,8 @@ export class EffectProcessor {
 
         // Build metadata container for EngineFrame persistence
         const metadata: import('@shared/engine_types').InteractionMetadata = {
-          ...(existingData.metadata || {}),
           ...context,
+          ...(existingData.metadata || {}),
           effects: context.effects.map((e) => ({ ...e })),
           effectIndex: context.effectIndex,
           isResumption: true,

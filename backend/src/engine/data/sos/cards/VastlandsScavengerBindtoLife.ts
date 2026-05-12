@@ -9,9 +9,7 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
     oracleText: "Deathtouch\nThis creature enters prepared.",
     power: "4",
     toughness: "4",
-
     entersPrepared: true,
-
     preparedFace: {
         name: "Bind to Life",
         manaCost: "{4}{G}",

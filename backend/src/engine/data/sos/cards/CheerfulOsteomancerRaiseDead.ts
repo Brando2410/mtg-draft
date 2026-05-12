@@ -1,6 +1,6 @@
 import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetType, Zone } from '@shared/engine_types';
 export const CheerfulOsteomancerRaiseDead: CardDefinition = {
-    name: "Cheerful Osteomancer",
+    name: "Cheerful Osteomancer // Raise Dead",
     manaCost: "{3}{B}",
     colors: ["B"],
     types: ["Creature"],
@@ -9,11 +9,9 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     oracleText: "This creature enters prepared.",
     power: "4",
     toughness: "2",
-
     entersPrepared: true,
     preparedFace: {
         name: "Raise Dead",
-
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],
@@ -21,7 +19,6 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-
                 effects: [{
                     selectionType: SelectionType.Search,
                     label: "Select one creature card to return to your hand",

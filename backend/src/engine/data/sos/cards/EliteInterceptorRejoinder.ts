@@ -1,10 +1,8 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const EliteInterceptorRejoinder: CardDefinition = {
-    name: "Elite Interceptor",
+    name: "Elite Interceptor // Rejoinder",
     manaCost: "{W}",
-
-
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -15,7 +13,6 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     entersPrepared: true,
     preparedFace: {
         name: "Rejoinder",
-
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],

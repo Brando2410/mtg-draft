@@ -1,9 +1,7 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const LandscapePainterVibrantIdea: CardDefinition = {
-    name: "Landscape Painter",
+export const LandscapePainterVibrantIdea: CardDefinition = {
+    name: "Landscape Painter // Vibrant Idea",
     manaCost: "{1}{U}",
-
-
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Wizard"],
@@ -11,7 +9,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     oracleText: "This creature enters prepared.",
     power: "2",
     toughness: "1",
-
     entersPrepared: true,
     preparedFace: {
         name: "Vibrant Idea",

@@ -124,17 +124,24 @@ export class MulliganProcessor {
   public static finalizeMulligans(state: GameState, engine: EngineContext): void {
     if (!state.mulliganState) return;
 
-    // Check if anyone needs to put cards back (London Mulligan)
+    // Phase 1: Ensure all players who need to discard have their pendingDiscardCount set
+    // This helps the frontend identify the discard state even if it's not their turn to act yet
+    for (const playerId of state.playerOrder) {
+      const mCount = state.mulliganState.mulliganCounts[playerId];
+      const isDone = !!state.mulliganState.discardsComplete[playerId];
+      if (mCount > 0 && !isDone) {
+        state.players[playerId].pendingDiscardCount = mCount;
+      } else {
+        state.players[playerId].pendingDiscardCount = 0;
+      }
+    }
+
+    // Phase 2: Prompt the first player in order who isn't done
     for (const playerId of state.playerOrder) {
       const mCount = state.mulliganState.mulliganCounts[playerId];
       const isDone = !!state.mulliganState.discardsComplete[playerId];
 
-      EngineLogger.debug(state, LogCategory.ACTION, `[MULLIGAN-CHECK] Player: ${playerId}, mCount: ${mCount}, isDone: ${isDone}`);
-
       if (mCount > 0 && !isDone) {
-        const player = state.players[playerId];
-        
-        player.pendingDiscardCount = mCount;
         state.pendingAction = {
           type: ActionType.Discard,
           playerId,
@@ -145,14 +152,20 @@ export class MulliganProcessor {
           }
         };
         EngineLogger.info(state, LogCategory.ACTION, `${engine.getPlayerName(playerId)} must put ${mCount} cards on the bottom.`);
-        return; // Handle one at a time for simplicity
+        return; 
       }
     }
 
-    // All done
+    // Phase 3: All done - Cleanup
     EngineLogger.info(state, LogCategory.ACTION, `[MULLIGAN-CLEANUP] All mulligans resolved. Clearing pending action.`);
     state.mulliganState.isComplete = true;
     state.pendingAction = undefined;
+    
+    // Explicitly clear all pending discard counts to be safe
+    for (const playerId of state.playerOrder) {
+      state.players[playerId].pendingDiscardCount = 0;
+    }
+
     state.turnState.cardsDrawnThisTurn = {};
     engine.resetPriorityToActivePlayer();
     EngineLogger.info(state, LogCategory.ACTION, `Game started!`);

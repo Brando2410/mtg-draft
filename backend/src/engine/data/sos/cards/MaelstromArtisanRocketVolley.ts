@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
-
-
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Minotaur", "Sorcerer"],
@@ -11,11 +9,9 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
     oracleText: "Haste\nThis creature enters prepared.",
     power: "3",
     toughness: "2",
-
     entersPrepared: true,
     preparedFace: {
         name: "Rocket Volley",
-
         manaCost: "{1}{R}",
         colors: ["R"],
         types: ["Sorcery"],

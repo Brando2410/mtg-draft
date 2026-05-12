@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",
-
-
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Human", "Warlock"],

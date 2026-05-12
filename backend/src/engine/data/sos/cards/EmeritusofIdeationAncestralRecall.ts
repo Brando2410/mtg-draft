@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
 export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
-
-
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],

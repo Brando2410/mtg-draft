@@ -1,9 +1,7 @@
 import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 export const BlazingFiresingerSeethingSong: CardDefinition = {
-    name: "Blazing Firesinger",
+    name: "Blazing Firesinger // Seething Song",
     manaCost: "{2}{R}",
-
-
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Dwarf", "Bard"],

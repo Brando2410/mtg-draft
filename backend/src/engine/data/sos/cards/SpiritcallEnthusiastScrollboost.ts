@@ -1,15 +1,14 @@
 import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const SpiritcallEnthusiastScrollboost: CardDefinition = {
-    name: "Spiritcall Enthusiast",
-    manaCost: "{2}{W}",
+export const SpiritcallEnthusiastScrollboost: CardDefinition = {
+    name: "Spiritcall Enthusiast // Scrollboost",
+    manaCost: "{2}{W}}",
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
-    keywords: [],
+    keywords: ["Prepared"],
     oracleText: "Whenever one or more tokens you control enter, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -23,7 +22,6 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
             ]
         }
     ],
-    // SOS: Mechanic "Prepare" - the spell face accessible when prepared
     preparedFace: {
         name: "Scrollboost",
         manaCost: "{1}{W}",

@@ -9,11 +9,9 @@ export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
     oracleText: "Double strike\nThis creature enters prepared.",
     power: "1",
     toughness: "1",
-
     entersPrepared: true,
     preparedFace: {
         name: "Twofold Intent",
-
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],

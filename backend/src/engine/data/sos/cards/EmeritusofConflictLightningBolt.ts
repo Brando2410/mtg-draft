@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const EmeritusofConflictLightningBolt: CardDefinition = {
     name: "Emeritus of Conflict // Lightning Bolt",
     manaCost: "{1}{R}",
-
-
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Human", "Wizard"],
@@ -11,7 +9,6 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
     oracleText: "First strike\nWhenever you cast your third spell each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "2",
-
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -26,7 +23,6 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
     ],
     preparedFace: {
         name: "Lightning Bolt",
-
         manaCost: "{R}",
         colors: ["R"],
         types: ["Instant"],

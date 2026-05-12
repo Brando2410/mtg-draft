@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, Ta
 export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
-
-
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Elf", "Druid"],
