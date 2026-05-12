@@ -11,7 +11,7 @@ interface MainMenuProps {
 export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps) => {
   return (
     <PageLayout variant="default" className="flex flex-col items-center justify-center selection:bg-indigo-500/30 overflow-hidden">
-      
+
       {/* Content Container - Always Centered & Stacked */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-h-[100dvh] p-[clamp(1rem,5vw,3rem)] gap-[clamp(2rem,6vh,4rem)]">
 
@@ -36,8 +36,7 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
                 <Play className="w-[45%] h-[45%] text-indigo-400 group-hover:text-white fill-current" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Gioca</span>
-                <span className="text-[clamp(8px,2vw,13px)] font-bold text-indigo-400/60 group-hover:text-white/60 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">Inizia Sessione</span>
+                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Play</span>
               </div>
             </div>
           </button>
@@ -51,8 +50,7 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
                 <Users className="w-[45%] h-[45%] text-emerald-400 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Partecipa</span>
-                <span className="text-[clamp(8px,2vw,13px)] font-bold text-emerald-400/60 group-hover:text-white/60 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">Unisciti a Match</span>
+                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Join</span>
               </div>
             </div>
           </button>
@@ -66,12 +64,11 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
                 <Library className="w-[45%] h-[45%] text-violet-400 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Collezione</span>
-                <span className="text-[clamp(8px,2vw,13px)] font-bold text-violet-400/60 group-hover:text-white/60 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">I Tuoi Arsenali</span>
+                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Collection</span>
               </div>
             </div>
           </button>
-          
+
           <button
             onClick={() => onSelect('history')}
             className="group relative flex items-center justify-between p-[clamp(1.25rem,4vw,2.25rem)] bg-slate-900/60 backdrop-blur-xl hover:bg-amber-600 border border-white/10 hover:border-amber-400 rounded-[clamp(1rem,4vw,2.5rem)] transition-all duration-500 shadow-3xl hover:shadow-amber-600/40 hover:-translate-y-2 active:scale-95 overflow-hidden"
@@ -81,8 +78,7 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
                 <HistoryIcon className="w-[45%] h-[45%] text-amber-400 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">Storico</span>
-                <span className="text-[clamp(8px,2vw,13px)] font-bold text-amber-400/60 group-hover:text-white/60 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">Eventi Passati</span>
+                <span className="text-[clamp(1.5rem,6vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-tight italic">History</span>
               </div>
             </div>
           </button>
@@ -90,13 +86,6 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
         </div>
       </div>
 
-      {/* Footer Branding - Consistent opacity and size */}
-      <div className="absolute bottom-[clamp(1rem,3vh,2rem)] left-[clamp(1rem,4vw,2.5rem)] right-[clamp(1rem,4vw,2.5rem)] flex justify-start items-center opacity-30 text-[clamp(9px,1.5vw,11px)] font-black uppercase tracking-[0.3em] text-slate-500">
-        <div className="flex gap-6">
-          <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
-          <span className="hover:text-white cursor-pointer transition-colors">Terms</span>
-        </div>
-      </div>
 
       {/* Debug & Assets Buttons - Now fully fluid and responsive */}
       <div className="fixed bottom-[clamp(1rem,3vh,2rem)] right-[clamp(1rem,4vw,2.5rem)] z-[150] flex items-center gap-[clamp(0.5rem,1.5vw,1rem)]">

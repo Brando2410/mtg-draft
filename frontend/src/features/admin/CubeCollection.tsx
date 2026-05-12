@@ -57,17 +57,17 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
     }
   };
 
-  const filteredCubes = cubes.filter(c => 
+  const filteredCubes = cubes.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-10 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-      
+
       {/* HEADER */}
       <div className="flex flex-col md:flex-row items-center justify-between py-10 border-b border-indigo-500/10 gap-8">
         <div className="flex items-center gap-8">
-          <button 
+          <button
             onClick={onBack}
             className="p-4 bg-slate-900/50 hover:bg-slate-800 text-slate-500 hover:text-white rounded-3xl border border-white/5 transition-all shadow-2xl group active:scale-95"
           >
@@ -83,11 +83,11 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
 
         <div className="relative w-full md:max-w-xs group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
-          <input 
+          <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cerca un cubo..."
+            placeholder="Search Cubes..."
             className="w-full bg-slate-900/50 border border-white/5 text-white pl-12 pr-6 py-4 rounded-2xl outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm"
           />
         </div>
@@ -96,7 +96,7 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
       {loading ? (
         <div className="py-40 flex flex-col items-center justify-center space-y-4">
           <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-          <p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.2em]">Caricamento database...</p>
+          <p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.2em]">Loading...</p>
         </div>
       ) : cubes.length === 0 ? (
         <div className="py-40 flex flex-col items-center justify-center text-center space-y-6">
@@ -104,20 +104,20 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
             <Database className="w-10 h-10 text-slate-700" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Nessun Cubo Trovato</h3>
-            <p className="text-slate-500 max-w-sm mx-auto text-sm font-medium">Non hai ancora salvato nessun cubo sul server. Vai nel Builder per iniziare il tuo primo progetto!</p>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight">No Cubes Found</h3>
+            <p className="text-slate-500 max-w-sm mx-auto text-sm font-medium">You haven't saved any cubes on the server yet. Go to the Builder to start your first project!</p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCubes.map(cube => (
-            <div 
+            <div
               key={cube.id}
               className="group relative bg-slate-900/30 border border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/50 hover:border-indigo-500/20 transition-all duration-500 shadow-xl overflow-hidden"
             >
               {/* Sfondo Astratto Card */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors" />
-              
+
               <div className="relative space-y-6">
                 <div className="flex justify-between items-start">
                   <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-500">
@@ -141,14 +141,14 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
                 </div>
 
                 <div className="pt-6 flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={() => handleLoadCube(cube.id)}
                     className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/20"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Carica Cubo
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDeleteCube(cube.id, cube.name)}
                     className="p-4 bg-slate-800/50 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-500/20"
                   >

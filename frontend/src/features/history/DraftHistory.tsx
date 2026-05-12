@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Clock, Users, ChevronRight, X, LayoutPanelLeft, Trash2 } from 'lucide-react';
 import { DeckReviewView } from '../deck-builder/DeckReviewView';
@@ -84,81 +85,84 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[150] bg-slate-950 flex flex-col items-center p-4 sm:p-10 animate-in fade-in duration-500 overflow-y-auto">
-      <div className="w-full max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-12 sm:mb-20">
-          <div className="flex flex-col">
-            <h2 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter italic">Storico <span className="text-indigo-500">Draft</span></h2>
+    <div className="fixed inset-0 z-[150] bg-slate-950 flex flex-col items-center p-[clamp(1rem,4vw,3rem)] animate-in fade-in duration-700 overflow-y-auto selection:bg-indigo-500/30 custom-scrollbar">
+      <div className="w-full max-w-[clamp(18rem,95vw,1000px)] space-y-[clamp(2rem,6vh,4rem)]">
+        {/* Header - Fluid Proportions */}
+        <div className="flex items-center justify-between py-[clamp(2rem,4vh,3rem)] border-b border-white/5">
+          <div className="flex flex-col space-y-[clamp(0.25rem,0.5vw,0.5rem)]">
+            <h2 className="text-[clamp(2rem,6vw,4.5rem)] font-black text-white uppercase tracking-tighter italic leading-none">
+              Storico <span className="text-indigo-500 drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]">Eventi</span>
+            </h2>
+            <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[clamp(8px,1vw,11px)] ml-1 opacity-60">Cronologia delle tue battaglie passate</p>
           </div>
           <button
             onClick={onBack}
-            className="p-4 bg-slate-900 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all border border-white/5 active:scale-90"
+            className="p-[clamp(1rem,2vw,1.5rem)] bg-slate-900/60 backdrop-blur-xl hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-[clamp(1rem,1.5vw,2rem)] border border-white/10 transition-all shadow-2xl active:scale-90"
           >
-            <X className="w-6 h-6" />
+            <X className="w-[clamp(1.25rem,2vw,1.75rem)] h-[clamp(1.25rem,2vw,1.75rem)]" />
           </button>
         </div>
 
         {history.length === 0 ? (
-          <div className="py-20 text-center space-y-6 opacity-40">
-            <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mx-auto border border-white/5">
-              <Clock className="w-10 h-10 text-slate-500" />
+          <div className="py-[clamp(5rem,15vh,10rem)] text-center space-y-8 opacity-40">
+            <div className="w-[clamp(4rem,10vw,6rem)] h-[clamp(4rem,10vw,6rem)] bg-slate-900/50 rounded-full flex items-center justify-center mx-auto border border-white/10 shadow-2xl">
+              <Clock className="w-[50%] h-[50%] text-slate-500" />
             </div>
-            <p className="text-slate-500 font-black uppercase tracking-widest text-xs">Nessuna draft conclusa trovata.</p>
+            <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-[clamp(9px,1.2vw,11px)]">Nessuna draft conclusa trovata.</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-[clamp(1rem,2vw,1.5rem)] pb-10">
             {history.map((record) => (
               <div
                 key={record.id}
                 onClick={() => setSelectedDraft(record)}
-                className="group relative flex flex-col sm:flex-row items-center justify-between p-6 bg-slate-900/40 hover:bg-slate-900 border border-white/5 hover:border-indigo-500/30 rounded-3xl transition-all cursor-pointer overflow-hidden shadow-2xl"
+                className="group relative flex flex-col sm:flex-row items-center justify-between p-[clamp(1.5rem,3vw,2.5rem)] bg-slate-900/40 backdrop-blur-md hover:bg-slate-900 border border-white/5 hover:border-indigo-500/30 rounded-[clamp(1.5rem,2.5vw,3rem)] transition-all duration-500 cursor-pointer overflow-hidden shadow-3xl hover:-translate-y-1 active:scale-[0.99]"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/0 via-indigo-600/0 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/0 via-indigo-600/0 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                <div className="flex items-center gap-6 w-full sm:w-auto relative z-10">
-                  {/* Data Badge */}
-                  <div className="w-16 h-16 rounded-2xl bg-slate-950 border border-white/5 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[10px] font-black text-indigo-400 uppercase leading-none mb-1">
+                <div className="flex items-center gap-[clamp(1.5rem,3vw,2.5rem)] w-full sm:w-auto relative z-10">
+                  {/* Data Badge - Premium Design */}
+                  <div className="w-[clamp(3.5rem,8vw,4.5rem)] h-[clamp(3.5rem,8vw,4.5rem)] rounded-[clamp(1rem,2vw,1.5rem)] bg-slate-950/80 border border-white/10 flex flex-col items-center justify-center shrink-0 shadow-inner group-hover:border-indigo-500/30 transition-colors">
+                    <span className="text-[clamp(14px,1.5vw,18px)] font-black text-indigo-400 uppercase leading-none mb-1">
                       {new Date(record.date).toLocaleDateString('it-IT', { day: '2-digit' })}
                     </span>
-                    <span className="text-[8px] font-bold text-slate-500 uppercase leading-none">
+                    <span className="text-[clamp(8px,0.8vw,10px)] font-bold text-slate-500 uppercase leading-none tracking-widest">
                       {new Date(record.date).toLocaleDateString('it-IT', { month: 'short' })}
                     </span>
                   </div>
 
-                  <div className="flex flex-col text-left">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter truncate max-w-[200px] sm:max-w-xs">{record.cubeName}</h3>
+                  <div className="flex flex-col text-left space-y-[clamp(0.25rem,0.5vh,0.5rem)]">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-[clamp(1.25rem,3vw,2rem)] font-black text-white uppercase tracking-tighter truncate max-w-[200px] sm:max-w-md group-hover:text-indigo-400 transition-colors italic leading-none">{record.cubeName}</h3>
                       {record.type === 'tournament' && (
-                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-500 border border-amber-500/20 rounded text-[8px] font-black uppercase tracking-widest">Torneo</span>
+                        <span className="px-[clamp(0.5rem,1vw,0.75rem)] py-[clamp(0.2rem,0.4vh,0.25rem)] bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-[clamp(0.25rem,0.5vw,0.5rem)] text-[clamp(8px,0.8vw,10px)] font-black uppercase tracking-[0.2em] shadow-lg shadow-amber-500/10 animate-pulse">Torneo</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <LayoutPanelLeft className="w-3 h-3 text-slate-400" />
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{record.playerPool.length} Carte</span>
+                    <div className="flex items-center gap-[clamp(1rem,2vw,1.5rem)] opacity-40 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2">
+                        <LayoutPanelLeft className="w-[clamp(12px,1.2vw,14px)] h-[clamp(12px,1.2vw,14px)] text-slate-400" />
+                        <span className="text-[clamp(8px,1vw,10px)] font-bold text-slate-400 uppercase tracking-widest">{record.playerPool.length} Cards</span>
                       </div>
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <Users className="w-3 h-3 text-slate-400" />
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{record.playerCount} Giocatori</span>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-[clamp(12px,1.2vw,14px)] h-[clamp(12px,1.2vw,14px)] text-slate-400" />
+                        <span className="text-[clamp(8px,1vw,10px)] font-bold text-slate-400 uppercase tracking-widest">{record.playerCount} Players</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 mt-6 sm:mt-0 w-full sm:w-auto relative z-10">
+                <div className="flex items-center gap-[clamp(0.75rem,2vw,1.5rem)] mt-[clamp(1.5rem,3vh,0rem)] w-full sm:w-auto relative z-10">
                   <button
                     onClick={(e) => deleteRecord(record.id, e)}
-                    className="p-3 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-xl transition-all border border-transparent hover:border-red-500/20"
+                    className="p-[clamp(0.75rem,1.5vw,1rem)] hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-[clamp(0.75rem,1vw,1.25rem)] transition-all border border-transparent hover:border-red-500/20 active:scale-90"
                     title="Elimina"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-[clamp(14px,1.5vw,18px)] h-[clamp(14px,1.5vw,18px)]" />
                   </button>
                   <div className="flex-1 sm:flex-none">
-                    <button className="w-full sm:w-auto px-6 py-3 bg-indigo-500/10 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all">
+                    <button className="w-full sm:w-auto px-[clamp(1.5rem,3vw,2.5rem)] py-[clamp(0.75rem,1.5vh,1.25rem)] bg-indigo-500/10 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white rounded-[clamp(0.75rem,1.5vw,1.25rem)] font-black uppercase tracking-[0.2em] text-[clamp(9px,1vw,11px)] flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-105">
                       {record.type === 'tournament' ? 'Visualizza Risultati' : 'Visualizza Mazzo'}
-                      <ChevronRight className="w-4 h-4 translate-x-0 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-[clamp(14px,1.5vw,18px)] h-[clamp(14px,1.5vw,18px)] translate-x-0 group-hover:translate-x-1.5 transition-transform" />
                     </button>
                   </div>
                 </div>
@@ -167,6 +171,12 @@ export const DraftHistory = ({ onBack }: DraftHistoryProps) => {
           </div>
         )}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+      `}</style>
     </div>
   );
 };

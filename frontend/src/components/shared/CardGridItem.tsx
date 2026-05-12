@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Maximize2, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import type { SimplifiedCard } from '../../services/scryfall';
 
 interface CardGridItemProps {
@@ -8,7 +9,8 @@ interface CardGridItemProps {
   count: number;
   isSelected?: boolean;
   onSelect?: () => void;
-  onZoom: () => void;
+  onHoverStart?: (card: SimplifiedCard) => void;
+  onHoverEnd?: () => void;
   onRemove: () => void;
   onQuickAdd: () => void;
   onFlipToggle?: (e: React.MouseEvent) => void;
@@ -19,85 +21,88 @@ export const CardGridItem = ({
   card,
   count,
   isSelected,
-  onSelect,
-  onZoom,
+  onHoverStart,
+  onHoverEnd,
   onRemove,
   onQuickAdd,
   onFlipToggle,
   isFlipped = false
 }: CardGridItemProps) => {
   const [imageError, setImageError] = useState(false);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
+
+  const handleMouseEnter = () => {
+    hoverTimer.current = setTimeout(() => {
+      onHoverStart?.(card);
+    }, 1000);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+    onHoverEnd?.();
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onRemove();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Click sinistro (button 0) aggiunge, click destro (button 2) gestito da handleContextMenu
+    if (e.button === 0) {
+      onQuickAdd();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    };
+  }, []);
 
   return (
     <motion.div 
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      onClick={onSelect}
-      className={`group relative rounded-2xl overflow-hidden bg-slate-900 shadow-2xl transition-all duration-300 hover:-translate-y-2 ring-1 ring-inset ${isSelected ? 'ring-indigo-500 ring-2 translate-y-[-8px]' : 'ring-white/5 hover:shadow-indigo-500/20'}`}
+      transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown}
+      className={`group relative rounded-xl overflow-hidden bg-slate-950 shadow-2xl transition-all duration-300 cursor-pointer ring-2 ${isSelected ? 'ring-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.4)]' : 'ring-transparent hover:ring-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]'}`}
     >
-      <div className="relative aspect-[2.5/3.5] bg-slate-950 overflow-hidden">
+      <div className="relative aspect-[2.5/3.5] overflow-hidden">
         {imageError ? (
           <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-slate-900 to-slate-950 text-center border border-white/5">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2">Image Lost</span>
             <span className="text-sm font-black text-white italic leading-tight uppercase line-clamp-3">{card.name}</span>
-            <div className="mt-auto pt-2 border-t border-white/5 w-full">
-               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{card.manaCost || 'No Cost'}</span>
-            </div>
           </div>
         ) : (
           <img 
             src={displayImage} 
             alt={card.name} 
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover group-hover:scale-105 duration-700 pointer-events-none ring-1 ring-white/10" 
+            className="w-full h-full object-cover pointer-events-none" 
           />
         )}
         
         {/* COUNT BADGE */}
-        <div className="absolute bottom-2 left-2 flex items-center justify-center min-w-[32px] h-8 bg-indigo-600 text-white rounded-lg shadow-xl border border-indigo-400 z-10 px-2 pointer-events-none">
-          <span className="text-sm font-black italic">x{count}</span>
+        <div className="absolute bottom-2 left-2 flex items-center justify-center min-w-[28px] h-7 bg-indigo-600/90 backdrop-blur-md text-white rounded-lg shadow-xl border border-white/20 z-10 px-2 pointer-events-none">
+          <span className="text-xs font-black italic">x{count}</span>
         </div>
 
         {/* FLIP INDICATOR / BUTTON */}
         {card.back_image_url && onFlipToggle && (
           <button 
-            onClick={onFlipToggle}
-            className={`absolute top-1.5 left-1/2 -translate-x-1/2 z-30 p-1 rounded-lg border border-white/10 transition-all ${isFlipped ? 'bg-indigo-500/60 text-white shadow-lg' : 'bg-black/30 text-white/50 hover:text-white hover:bg-black/60'}`}
+            onClick={(e) => { e.stopPropagation(); onFlipToggle(e); }}
+            className={`absolute top-2 right-2 z-30 p-1.5 rounded-lg border border-white/10 transition-all ${isFlipped ? 'bg-indigo-500/80 text-white shadow-lg' : 'bg-black/40 text-white/60 hover:text-white hover:bg-black/80'}`}
           >
-            <RefreshCw className={`w-3 h-3 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isFlipped ? 'rotate-180' : ''} transition-transform duration-500`} />
           </button>
         )}
-
-        {/* ACTIONS OVERLAY */}
-        <div 
-          className={`absolute inset-0 bg-slate-950/40 transition-all flex items-center justify-center gap-3 z-20 ${isSelected ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto'}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button 
-            onClick={onZoom} 
-            className="w-10 h-10 rounded-xl bg-white/40 hover:bg-white/60 text-white flex items-center justify-center border border-white/20 shadow-2xl transition-all active:scale-90"
-          >
-            <Maximize2 className="w-4 h-4" />
-          </button>
-          
-          <div className="flex flex-col gap-1">
-             <button 
-               onClick={onQuickAdd} 
-               className="w-10 h-10 rounded-xl bg-emerald-500/30 hover:bg-emerald-500/50 text-white flex items-center justify-center border border-emerald-500/30 shadow-2xl transition-all active:scale-90"
-             >
-               <Plus className="w-4 h-4" />
-             </button>
-             <button 
-               onClick={onRemove} 
-               className="w-10 h-10 rounded-xl bg-red-500/30 hover:bg-red-500/50 text-white flex items-center justify-center border border-red-500/30 shadow-2xl transition-all active:scale-90"
-             >
-               <Trash2 className="w-4 h-4" />
-             </button>
-          </div>
-        </div>
       </div>
     </motion.div>
   );

@@ -54,6 +54,7 @@ export const CompulsiveResearch: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "a247ab59-7749-4d37-87f6-f90f44cd54f4",
     image_url: "https://cards.scryfall.io/normal/front/a/2/a247ab59-7749-4d37-87f6-f90f44cd54f4.jpg?1743206293",
     rarity: "common"

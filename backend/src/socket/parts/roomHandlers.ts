@@ -63,7 +63,7 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
   socket.on('join_room', async ({ roomId, playerName, playerId }) => {
     const room = rooms.get(roomId);
     if (!room) {
-      socket.emit('error_join', 'Stanza non trovata.');
+      socket.emit('error_join', 'Lobby not found.');
       return;
     }
 
@@ -86,14 +86,14 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     }
 
     if (room.status !== 'waiting') {
-      const msg = room.isNormalMatch ? 'Match già iniziato.' : 'Draft già iniziata.';
+      const msg = room.isNormalMatch ? 'Match already started.' : 'Draft already started.';
       LoggerService.warn('ROOM', `Join rejected for ${roomId}: status is ${room.status}`, { roomId, status: room.status, isNormalMatch: room.isNormalMatch });
       socket.emit('error_join', msg);
       return;
     }
 
     if (room.players.length >= room.rules.playerCount) {
-      socket.emit('error_join', 'Stanza piena.');
+      socket.emit('error_join', 'Room is full.');
       return;
     }
 
@@ -125,7 +125,7 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
 
     const botIndex = room.players.filter(p => p.isBot).length + 1;
     const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
-    
+
     const avatars = await AssetService.listAvatars();
     room.players.push({
       id: botId,
@@ -151,13 +151,13 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     if (playerIndex !== -1) {
       const player = room.players[playerIndex];
       LoggerService.info('SOCKET', `Kicking player/bot: ${player.name}`, { roomId, playerId });
-      
+
       room.players.splice(playerIndex, 1);
-      
+
       if (!player.isBot) {
         io.to(player.id).emit('kick_player', { playerId });
       }
-      
+
       io.to(roomId).emit('room_update', room);
       await PersistenceService.saveRooms(rooms);
     }
@@ -171,9 +171,9 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     if (playerIndex !== -1) {
       const player = room.players[playerIndex];
       LoggerService.info('SOCKET', `Player leaving room: ${player.name}`, { roomId, playerId });
-      
+
       room.players.splice(playerIndex, 1);
-      
+
       // If room is empty, destroy it
       if (room.players.length === 0) {
         rooms.delete(roomId);
@@ -188,11 +188,11 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
         }
         io.to(roomId).emit('room_update', room);
       }
-      
+
       socket.leave(roomId);
       delete socket.data.roomId;
       delete socket.data.playerId;
-      
+
       await PersistenceService.saveRooms(rooms);
     }
   });

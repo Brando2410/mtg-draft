@@ -13,6 +13,8 @@ interface SideboardSidebarProps {
   onDragStart: (card: SimplifiedCard, source: 'main' | 'side') => void;
   onDrop: (target: 'main' | 'side') => void;
   renderManaSymbols: (manaCost: string) => React.ReactNode;
+  onHoverStart?: (card: SimplifiedCard) => void;
+  onHoverEnd?: () => void;
 }
 
 export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
@@ -25,7 +27,9 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
   onRemoveFromSideboard,
   onDragStart,
   onDrop,
-  renderManaSymbols
+  renderManaSymbols,
+  onHoverStart,
+  onHoverEnd
 }) => {
   return (
     <motion.div
@@ -89,6 +93,8 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
                     draggable
                     onDragStart={() => onDragStart(card, 'side')}
                     onClick={() => onMoveToMainboard(card)}
+                    onMouseEnter={() => onHoverStart?.(card)}
+                    onMouseLeave={() => onHoverEnd?.()}
                     onContextMenu={(e) => { e.preventDefault(); onRemoveFromSideboard(card); }}
                     className="relative h-12 rounded-xl overflow-hidden border border-white/5 group bg-slate-950/40 shadow-lg flex items-center px-3 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all cursor-pointer active:scale-[0.98]"
                   >
@@ -128,16 +134,23 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
       </AnimatePresence>
 
       {isSideboardCollapsed && (
-        <div className="absolute inset-0 flex flex-col items-center py-8 gap-4 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center py-10 gap-4 pointer-events-none overflow-hidden">
+           {/* GLOWING EDGE */}
+           <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-gradient-to-b from-indigo-500/0 via-indigo-500/40 to-indigo-500/0 shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+           
            {sideboard.length > 0 && (
-             <div className="w-5 h-5 rounded-full bg-indigo-600/40 border border-white/10 flex items-center justify-center text-[9px] font-black text-indigo-200">
+             <motion.div 
+               animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+               transition={{ duration: 3, repeat: Infinity }}
+               className="w-7 h-7 rounded-xl bg-indigo-600 border border-indigo-400/50 flex items-center justify-center text-[11px] font-black text-white shadow-lg shadow-indigo-600/40"
+             >
                {sideboard.length}
-             </div>
+             </motion.div>
            )}
-           <div className="flex-1 flex flex-col items-center justify-center gap-6 opacity-10">
-             <div className="w-px h-20 bg-gradient-to-b from-transparent via-white/20 to-transparent rounded-full" />
-             <span className="[writing-mode:vertical-lr] text-[8px] font-black uppercase tracking-[0.6em] text-white rotate-180">Sideboard</span>
-             <div className="w-px h-20 bg-gradient-to-t from-transparent via-white/20 to-transparent rounded-full" />
+           <div className="flex-1 flex flex-col items-center justify-center gap-8">
+             <div className="w-px h-24 bg-gradient-to-b from-transparent via-indigo-500/30 to-transparent rounded-full shadow-[0_0_10px_rgba(99,102,241,0.2)]" />
+             <span className="[writing-mode:vertical-lr] text-[10px] font-black uppercase tracking-[0.8em] text-indigo-400/60 rotate-180 drop-shadow-sm">Sideboard</span>
+             <div className="w-px h-24 bg-gradient-to-t from-transparent via-indigo-500/30 to-transparent rounded-full shadow-[0_0_10px_rgba(99,102,241,0.2)]" />
            </div>
         </div>
       )}

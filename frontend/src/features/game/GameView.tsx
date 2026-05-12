@@ -37,7 +37,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   const { resetMatch, leaveRoom } = useDraftStore();
   const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
   const actions = useGameActions(room.id, effectivePlayerId);
-  
+
   useKeyboardControls({
     onToggleFullControl: actions.toggleFullControl,
     onToggleEscMenu: () => setShowEscMenu(prev => !prev),
@@ -53,7 +53,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   if (!gameState) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-10">
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter animate-pulse">Inizializzazione...</h2>
+        <h2 className="text-3xl font-black uppercase italic tracking-tighter animate-pulse">Initializing...</h2>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
 
   const handleOrderClick = (type: string, list?: string[]) => {
     if (type === 'CONFIRM' && list) {
-        actions.resolveCombatOrdering(list);
+      actions.resolveCombatOrdering(list);
     }
   };
 
@@ -75,71 +75,71 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
     if (!inspectingZone) return;
     const nextIsMe = !inspectingZone.isMe;
     const type = inspectingZone.type;
-    
+
     if (type === 'exile') {
-        const nextCards = (gameState.exile || []).filter((o: any) => o.ownerId === (nextIsMe ? effectivePlayerId : opponentId));
-        setInspectingZone({
-            label: nextIsMe ? "Your Exile" : "Enemy Exile",
-            cards: nextCards,
-            type: 'exile',
-            isMe: nextIsMe
-        });
+      const nextCards = (gameState.exile || []).filter((o: any) => o.ownerId === (nextIsMe ? effectivePlayerId : opponentId));
+      setInspectingZone({
+        label: nextIsMe ? "Your Exile" : "Enemy Exile",
+        cards: nextCards,
+        type: 'exile',
+        isMe: nextIsMe
+      });
     } else {
-        const nextPlayer = nextIsMe ? me : opponent;
-        setInspectingZone({
-            label: nextIsMe ? "Your Graveyard" : "Enemy Graveyard",
-            cards: nextPlayer?.graveyard || [],
-            type: 'graveyard',
-            isMe: nextIsMe
-        });
+      const nextPlayer = nextIsMe ? me : opponent;
+      setInspectingZone({
+        label: nextIsMe ? "Your Graveyard" : "Enemy Graveyard",
+        cards: nextPlayer?.graveyard || [],
+        type: 'graveyard',
+        isMe: nextIsMe
+      });
     }
   };
 
   return (
     <div className="fixed inset-0 bg-[#07080a] text-slate-200 flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30">
-      
+
       {/* CINEMATIC BATTLEFIELD BACKGROUND */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          <img 
-            src={battlefieldBg} 
-            className="w-full h-full object-cover scale-105 brightness-90"
-            alt="Battlefield Background"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-black/20" />
+        <img
+          src={battlefieldBg}
+          className="w-full h-full object-cover scale-105 brightness-90"
+          alt="Battlefield Background"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-black/20" />
       </div>
 
       <TurnTransitionOverlay activePlayerId={gameState.activePlayerId} playerId={effectivePlayerId} />
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
       <div className="fixed top-[calc(var(--u)*4.4)] left-[calc(var(--u)*4.4)] flex items-center gap-[var(--sp-4)] z-[400]">
-          <button 
-            onClick={() => setShowDebug(true)}
-            className="p-3 bg-white/5 hover:bg-indigo-500/20 rounded-2xl border border-white/5 transition-all group"
-            title="Open Debug Console (Key: D)"
-          >
-              <ShieldAlert className="w-5 h-5 text-indigo-400 transition-transform" />
-          </button>
-          <button 
-            onClick={() => setShowEscMenu(true)}
-            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all group"
-            title="Game Menu (Key: ESC)"
-          >
-              <Settings className="w-5 h-5 text-white/40 group-hover:text-white transition-colors rotate-90" />
-          </button>
+        <button
+          onClick={() => setShowDebug(true)}
+          className="p-3 bg-white/5 hover:bg-indigo-500/20 rounded-2xl border border-white/5 transition-all group"
+          title="Open Debug Console (Key: D)"
+        >
+          <ShieldAlert className="w-5 h-5 text-indigo-400 transition-transform" />
+        </button>
+        <button
+          onClick={() => setShowEscMenu(true)}
+          className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all group"
+          title="Game Menu (Key: ESC)"
+        >
+          <Settings className="w-5 h-5 text-white/40 group-hover:text-white transition-colors rotate-90" />
+        </button>
       </div>
 
-      <OpponentHand 
-          hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]} 
-          stateVersion={gameState.stateVersion}
-          onHoverStart={startZoom}
-          onHoverEnd={stopZoom}
+      <OpponentHand
+        hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]}
+        stateVersion={gameState.stateVersion}
+        onHoverStart={startZoom}
+        onHoverEnd={stopZoom}
       />
 
       {/* CENTRAL BATTLEFIELD */}
       <div className="flex-1 relative flex flex-col p-0 overflow-hidden gap-0">
-        <Battlefield 
+        <Battlefield
           me={me} opponent={opponent} battlefield={gameState.battlefield}
-          stack={gameState.stack || []} combat={gameState.combat} 
+          stack={gameState.stack || []} combat={gameState.combat}
           pendingAction={gameState.pendingAction} exile={gameState.exile || []}
           currentStep={gameState.currentStep}
           currentPhase={gameState.currentPhase}
@@ -148,10 +148,10 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
           priorityPlayerId={gameState.priorityPlayerId}
           onToggleStop={actions.toggleStop}
           onAvatarClick={(isOpponent) => {
-             const targetId = isOpponent ? opponentId : effectivePlayerId;
-             if (targetId && gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(targetId)) {
-                  actions.resolveTarget(targetId);
-             }
+            const targetId = isOpponent ? opponentId : effectivePlayerId;
+            if (targetId && gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(targetId)) {
+              actions.resolveTarget(targetId);
+            }
           }}
           onTapCard={(id) => {
             if (id.startsWith('ORDER_')) {
@@ -170,8 +170,8 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
               return;
             }
             if ((pType === 'DECLARE_BLOCKERS' || pType === ActionType.DeclareBlockers) && gameState.pendingAction?.sourceId === id) {
-                actions.resolveTarget('undo');
-                return;
+              actions.resolveTarget('undo');
+              return;
             }
             actions.tapPermanent(id);
           }}
@@ -182,7 +182,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
           onInspectZone={setInspectingZone}
         />
 
-        <ActionButton 
+        <ActionButton
           hasPriority={hasPriority}
           pendingAction={gameState.pendingAction}
           currentPhase={gameState.currentPhase}
@@ -191,7 +191,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
             const currentPending = room.gameState?.pendingAction;
             const pendingType = currentPending?.type as any;
             const isTargeting = pendingType === 'TARGETING' || pendingType === ActionType.Targeting;
-            
+
             if (isTargeting) {
               const selected = currentPending?.data?.selectedTargets || [];
               const targetDef = currentPending?.data?.targetDefinition;
@@ -222,49 +222,49 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         />
       </div>
 
-      <PlayerHand 
-          hand={me?.hand || []} 
-          virtualHand={me?.virtualHand || []}
-          stateVersion={gameState.stateVersion}
-          onPlayCard={(cardId) => {
-            if (me?.pendingDiscardCount && me.pendingDiscardCount > 0) {
-              actions.discardCard(cardId);
-            } else {
-              actions.playCard(cardId);
-            }
-          }} 
-          onHoverStart={startZoom}
-          onHoverEnd={stopZoom}
+      <PlayerHand
+        hand={me?.hand || []}
+        virtualHand={me?.virtualHand || []}
+        stateVersion={gameState.stateVersion}
+        onPlayCard={(cardId) => {
+          if (me?.pendingDiscardCount && me.pendingDiscardCount > 0) {
+            actions.discardCard(cardId);
+          } else {
+            actions.playCard(cardId);
+          }
+        }}
+        onHoverStart={startZoom}
+        onHoverEnd={stopZoom}
       />
 
       {/* ZOOM OVERLAY */}
       <AnimatePresence>
-          {hoveredCard && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="fixed left-[calc(var(--u)*6.6)] bottom-[calc(var(--u)*6.6)] z-[3000] pointer-events-none"
-              >
-                  <GameCard obj={hoveredCard} variant="zoom" />
-              </motion.div>
-          )}
+        {hoveredCard && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed left-[calc(var(--u)*6.6)] bottom-[calc(var(--u)*6.6)] z-[3000] pointer-events-none"
+          >
+            <GameCard obj={hoveredCard} variant="zoom" />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
-          {showDebug && (
-            <div className="fixed inset-0 z-[1000] flex justify-start pointer-events-none">
-                <DebugConsole 
-                  gameState={gameState} playerId={playerId} effectivePlayerId={effectivePlayerId}
-                  opponentId={opponentId} roomId={room.id}
-                  onClose={() => setShowDebug(false)} onSwapControl={(newId) => setEffectivePlayerId(newId)}
-                  room={room}
-                />
-            </div>
-          )}
+        {showDebug && (
+          <div className="fixed inset-0 z-[1000] flex justify-start pointer-events-none">
+            <DebugConsole
+              gameState={gameState} playerId={playerId} effectivePlayerId={effectivePlayerId}
+              opponentId={opponentId} roomId={room.id}
+              onClose={() => setShowDebug(false)} onSwapControl={(newId) => setEffectivePlayerId(newId)}
+              room={room}
+            />
+          </div>
+        )}
       </AnimatePresence>
 
-      <EscMenu 
+      <EscMenu
         isOpen={showEscMenu}
         onClose={() => setShowEscMenu(false)}
         onResetMatch={resetMatch}
@@ -278,12 +278,12 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
 
       <AnimatePresence>
         {inspectingZone && (
-          <ZoneInspector 
+          <ZoneInspector
             inspectingZone={inspectingZone}
             onClose={() => setInspectingZone(null)}
             onTapCard={(id) => {
               if (gameState.pendingAction?.type === ActionType.Targeting) {
-                  actions.resolveTarget(id);
+                actions.resolveTarget(id);
               }
             }}
             targetableIds={new Set(gameState.pendingAction?.data?.targets || [])}
@@ -294,16 +294,16 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         )}
       </AnimatePresence>
 
-      <OrderingModal 
-        pendingAction={gameState.pendingAction} 
-        me={me} 
-        battlefield={gameState.battlefield} 
+      <OrderingModal
+        pendingAction={gameState.pendingAction}
+        me={me}
+        battlefield={gameState.battlefield}
         onOrderClick={handleOrderClick}
       />
 
       <AnimatePresence>
         {gameState.status === 'completed' && (
-          <GameOverModal 
+          <GameOverModal
             winnerId={gameState.winner}
             playerId={effectivePlayerId}
             winnerName={gameState.winner ? (gameState.players[gameState.winner]?.name || 'Unknown') : 'Draw'}

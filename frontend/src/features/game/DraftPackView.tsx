@@ -163,10 +163,9 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
       if (saved) {
         try {
           history = JSON.parse(saved);
-        } catch (e) {}
+        } catch (e) { }
       }
-      
-      // Evitiamo duplicati per la stessa stanza nello storico recente
+
       if (!history.some((r: any) => r.roomId === room.id && Math.abs(new Date(r.date).getTime() - Date.now()) < 10000)) {
         history.unshift(draftRecord);
         if (history.length > 50) history = history.slice(0, 50);

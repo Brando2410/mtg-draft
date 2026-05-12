@@ -19,7 +19,7 @@ export interface DraftState {
   setActiveView: (view: DraftState['activeView']) => void;
   setJoinError: (error: string | null) => void;
   setIsJoining: (isJoining: boolean) => void;
-  
+
   // Socket Actions
   initSocketListeners: () => void;
   cleanupSocketListeners: () => void;
@@ -75,21 +75,21 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       const savedRoomId = localStorage.getItem('mtg_room_id');
       const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Giocatore';
       if (savedRoomId) {
-        socket.emit('join_room', { 
-          roomId: savedRoomId, 
-          playerName: savedPlayerName, 
-          playerId: PLAYER_ID 
+        socket.emit('join_room', {
+          roomId: savedRoomId,
+          playerName: savedPlayerName,
+          playerId: PLAYER_ID
         });
       }
     });
 
     socket.on('room_created', (newRoom: Room) => {
       logger.info('Room created successfully', { roomId: newRoom.id });
-      set((state) => ({ 
+      set((state) => ({
         rooms: { ...state.rooms, [newRoom.id]: newRoom },
-        room: newRoom, 
+        room: newRoom,
         activeView: 'draft_lobby',
-        isJoining: false 
+        isJoining: false
       }));
       localStorage.setItem('mtg_room_id', newRoom.id);
     });
@@ -97,16 +97,16 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.on('joined_successfully', (room: Room) => {
       logger.info('Joined room successfully', { roomId: room.id, status: room.status });
       const isInGame = ['drafting', 'deckbuilding', 'active', 'tournament'].includes(room.status);
-      
-      set((state) => ({ 
+
+      set((state) => ({
         rooms: { ...state.rooms, [room.id]: room },
-        room: room, 
+        room: room,
         activeView: isInGame ? 'drafting' : 'draft_lobby',
         isJoining: false,
         joinError: null
       }));
       localStorage.setItem('mtg_room_id', room.id);
-      
+
       if (room.status === 'completed') {
         localStorage.removeItem('mtg_room_id');
         set({ activeView: 'history' });
@@ -114,24 +114,24 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     });
 
     socket.on('room_update', (room: Room) => {
-      set((state) => ({ 
+      set((state) => ({
         rooms: { ...state.rooms, [room.id]: room },
         // Update focused room if it's the same one
         room: state.room?.id === room.id ? room : state.room
       }));
     });
-    
+
     socket.on('room_patch', (patch: any) => {
       // For patches, we need to know which room it's for. 
       // Assuming patches are for the current focused room or we need a roomId in the patch?
       // Usually patches are emitted to the room channel.
       const currentRoom = get().room;
       if (!currentRoom) return;
-      
+
       try {
         const result = applyPatch(currentRoom, patch, false, false);
         const updatedRoom = result.newDocument as Room;
-        set((state) => ({ 
+        set((state) => ({
           rooms: { ...state.rooms, [updatedRoom.id]: updatedRoom },
           room: state.room?.id === updatedRoom.id ? updatedRoom : state.room
         }));
@@ -142,7 +142,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
     socket.on('draft_started', (room: Room) => {
       logger.info('Draft started!', { roomId: room.id });
-      set((state) => ({ 
+      set((state) => ({
         rooms: { ...state.rooms, [room.id]: room },
         room: state.room?.id === room.id ? room : state.room,
         activeView: state.room?.id === room.id ? 'drafting' : state.activeView
@@ -151,7 +151,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
     socket.on('draft_update', (room: Room) => {
       if (!room) return;
-      set((state) => ({ 
+      set((state) => ({
         rooms: { ...state.rooms, [room.id]: room },
         room: state.room?.id === room.id ? room : state.room
       }));
@@ -160,7 +160,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.on('kick_player', ({ roomId, playerId }: { roomId: string, playerId: string }) => {
       if (playerId === PLAYER_ID) {
         get().leaveRoom(roomId);
-        set({ joinError: 'Sei stato rimosso dalla stanza.' });
+        set({ joinError: 'You have been removed from the room.' });
       }
     });
 
@@ -170,19 +170,19 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       set((state) => {
         const newRooms = { ...state.rooms };
         delete newRooms[roomId];
-        return { 
+        return {
           rooms: newRooms,
           room: state.room?.id === roomId ? null : state.room,
           activeView: state.room?.id === roomId ? 'menu' : state.activeView
         };
       });
-      set({ joinError: 'La stanza è stata chiusa dall\'host.' });
+      set({ joinError: 'The room has been closed by the host.' });
     });
 
     socket.on('error_join', (message: string) => {
       logger.warn('Join error', { message });
       set({ joinError: message, isJoining: false });
-      if (message === 'Stanza non trovata.') {
+      if (message === "Room not found.") {
         localStorage.removeItem('mtg_room_id');
       }
     });
@@ -190,12 +190,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     // Handle initial connection if already connected
     if (socket.connected) {
       const savedRoomId = localStorage.getItem('mtg_room_id');
-      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Giocatore';
+      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Player';
       if (savedRoomId) {
-        socket.emit('join_room', { 
-          roomId: savedRoomId, 
-          playerName: savedPlayerName, 
-          playerId: PLAYER_ID 
+        socket.emit('join_room', {
+          roomId: savedRoomId,
+          playerName: savedPlayerName,
+          playerId: PLAYER_ID
         });
       }
     }
@@ -226,11 +226,11 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   createRoom: (setupData) => {
     logger.info('Attempting to create room', { setupData });
     set({ isJoining: true });
-    
+
     // Assicuriamo persistenza del nome anche per l'host
     const nameToSave = setupData.hostName || localStorage.getItem('mtg_player_name') || 'Giocatore';
     localStorage.setItem('mtg_player_name', nameToSave);
-    
+
     socket.emit('create_room', { ...setupData, playerId: PLAYER_ID, hostName: nameToSave });
   },
 
@@ -251,13 +251,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   },
 
   leaveRoom: (targetRoomId?: string) => {
-    const { room, rooms, playerId } = get();
+    const { room, playerId } = get();
     const idToLeave = targetRoomId || room?.id;
     if (!idToLeave) return;
 
     socket.emit('leave_room', { roomId: idToLeave, playerId });
-    
-    // Se stavamo lasciando l'unica stanza salvata nel localStorage, puliamo
+
     if (localStorage.getItem('mtg_room_id') === idToLeave) {
       localStorage.removeItem('mtg_room_id');
     }
@@ -266,9 +265,9 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       const newRooms = { ...state.rooms };
       delete newRooms[idToLeave];
       const isLeavingFocused = state.room?.id === idToLeave;
-      
-      return { 
-        rooms: newRooms, 
+
+      return {
+        rooms: newRooms,
         room: isLeavingFocused ? null : state.room,
         activeView: isLeavingFocused ? 'menu' : state.activeView
       };
@@ -316,9 +315,9 @@ export const useDraftStore = create<DraftState>((set, get) => ({
         fetch(`${API_BASE}/api/assets/avatars`).then(res => res.json()),
         fetch(`${API_BASE}/api/assets/wallpapers`).then(res => res.json())
       ]);
-      set({ 
-        avatarList: Array.isArray(avatars) ? avatars : [], 
-        wallpaperList: Array.isArray(wallpapers) ? wallpapers : [] 
+      set({
+        avatarList: Array.isArray(avatars) ? avatars : [],
+        wallpaperList: Array.isArray(wallpapers) ? wallpapers : []
       });
     } catch (err) {
       console.error('Errore durante il caricamento degli asset:', err);

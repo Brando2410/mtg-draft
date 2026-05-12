@@ -16,6 +16,7 @@ export const ApproachOfTheSecondSun: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "fdf59a6e-7708-45a1-884d-d12e9f7b9ed9",
     image_url: "https://cards.scryfall.io/normal/front/f/d/fdf59a6e-7708-45a1-884d-d12e9f7b9ed9.jpg?1543674579",
     rarity: "rare"

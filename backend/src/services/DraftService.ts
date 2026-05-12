@@ -2,6 +2,7 @@ import { Card, Player, Room } from '@shared/types';
 import { LoggerService } from './LoggerService';
 import { PersistenceService } from './PersistenceService';
 import { CardRegistryService } from './CardRegistryService';
+import { PackService } from './PackService';
 
 export class DraftService {
    static performPick(rooms: Map<string, Room>, roomId: string, playerId: string, cardId: string): boolean {
@@ -87,7 +88,7 @@ export class DraftService {
          room.draftState.playerTimers = {};
          PersistenceService.logDraftResult(room);
 
-         LoggerService.info('DRAFT', `Draft completed in room: ${room.id}`, { roomId: room.id, playerCount: room.players.length });
+         LoggerService.info('DRAFT', `Draft completed in room: ${room.id}`, { roomId: room.id, round: room.draftState.round });
       } else {
          // Distribuzione nuove buste
          room.players.forEach((p: Player, idx: number) => {
@@ -105,25 +106,17 @@ export class DraftService {
 
    static startDraft(room: Room) {
       const { cardsPerPack, packsPerPlayer } = room.rules;
-
-      // Standardize and inject IDs
-      const shuffled = room.cube.cards.map((card: Card, idx: number) => {
-         const standardized = CardRegistryService.standardizeCard(card);
-         return {
-            ...standardized,
-            id: `${standardized.scryfall_id || 'c'}-${idx}-${Math.random().toString(36).substring(2, 7)}`
-         };
-      }).sort(() => Math.random() - 0.5);
+      // Filter out 'soa' cards if it's an SOS draft or just generally to avoid Mystical Archive in regular packs
+      const pool = room.cube.cards.filter((c: any) => c.set?.toLowerCase() !== 'soa' && c.set?.toLowerCase() !== 'sta' && !c.isMysticalArchive);
 
       const unopenedPacks: Card[][][] = []; // [playerIndex][packSlot]
 
-      let cardIdx = 0;
       room.players.forEach((_: Player, pIdx: number) => {
          unopenedPacks[pIdx] = [];
          for (let p = 0; p < packsPerPlayer; p++) {
-            const pack = shuffled.slice(cardIdx, cardIdx + cardsPerPack);
+            // Generate a seeded pack
+            const pack = PackService.generateSeededPack(pool, cardsPerPack);
             unopenedPacks[pIdx].push(pack);
-            cardIdx += cardsPerPack;
          }
          room.players[pIdx].pool = [];
       });

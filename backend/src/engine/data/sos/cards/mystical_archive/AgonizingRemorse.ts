@@ -49,6 +49,7 @@ export const AgonizingRemorse: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "09270c65-546e-4737-a6b7-402cbb87917a",
     image_url: "https://cards.scryfall.io/normal/front/0/9/09270c65-546e-4737-a6b7-402cbb87917a.jpg?1581479676",
     rarity: "uncommon"

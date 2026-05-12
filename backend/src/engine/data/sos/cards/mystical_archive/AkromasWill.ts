@@ -43,6 +43,7 @@ export const AkromasWill: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "608cdbdb-6f7e-438a-bab0-0e7782435f0f",
     image_url: "https://cards.scryfall.io/normal/front/6/0/608cdbdb-6f7e-438a-bab0-0e7782435f0f.jpg?1698988079",
     rarity: "rare"

@@ -20,6 +20,7 @@ export const ChaosWarp: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "65ae241c-8955-4c97-8be6-7356fbee2195",
     image_url: "https://cards.scryfall.io/normal/front/6/5/65ae241c-8955-4c97-8be6-7356fbee2195.jpg?1775941250",
     rarity: "rare"

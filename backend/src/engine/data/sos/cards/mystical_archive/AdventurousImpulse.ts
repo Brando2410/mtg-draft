@@ -23,6 +23,7 @@ export const AdventurousImpulse: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "30811fb2-5767-4106-9a8d-6091f61969c6",
     image_url: "https://cards.scryfall.io/normal/front/3/0/30811fb2-5767-4106-9a8d-6091f61969c6.jpg?1591227489",
     rarity: "common"

@@ -4,6 +4,7 @@ import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
 import { LoggerService } from './LoggerService';
 import { CardRegistryService } from './CardRegistryService';
+import { PackService } from './PackService';
 
 export class SealedService {
     static startSealed(room: Room) {
@@ -39,7 +40,7 @@ export class SealedService {
                 if (!def.image_url && !def.image_uris) return;
                 
                 // Strictly cards from the specific set (Rule 2)
-                if (def.isMysticalArchive || def.set?.toLowerCase() === 'sta') return;
+                if (def.isMysticalArchive || def.set?.toLowerCase() === 'sta' || def.set?.toLowerCase() === 'soa') return;
                 
                 // If it's a "back face" entry that doesn't have the // in the name,
                 // and there's a // version of the same object, skip it
@@ -58,9 +59,8 @@ export class SealedService {
             const playerPool: Card[] = [];
             
             for (let i = 0; i < packsPerPlayer; i++) {
-                // Generate a pack
-                // Since we don't have rarities, we just take random cards
-                const pack = this.generatePack(pool, cardsPerPack);
+                // Generate a pack seeded for rarity
+                const pack = PackService.generateSeededPack(pool, cardsPerPack);
                 playerPool.push(...pack);
             }
             
@@ -80,65 +80,5 @@ export class SealedService {
             timeLeftPaused: null,
             selections: {}
         };
-    }
-
-    private static generatePack(pool: any[], _count: number): Card[] {
-        // Step 1: Bucket cards by rarity (metadata expected later)
-        const mythics = pool.filter(c => c.rarity?.toLowerCase() === 'mythic');
-        const rares = pool.filter(c => c.rarity?.toLowerCase() === 'rare');
-        const uncommons = pool.filter(c => c.rarity?.toLowerCase() === 'uncommon');
-        const commons = pool.filter(c => c.rarity?.toLowerCase() === 'common');
-        const lands = pool.filter(c => (c.type_line?.toLowerCase().includes('basic land') || c.types?.includes('Land')));
-
-        // Combined rare/mythic pool (7/8 rare, 1/8 mythic rule)
-        const rarePool = [...rares, ...mythics];
-
-        const packDefs: any[] = [];
-
-        // If no rarity metadata exists yet, fallback to random selection to avoid empty packs
-        const hasMetadata = pool.some(c => c.rarity);
-
-        if (!hasMetadata) {
-            const shuffled = [...pool].sort(() => Math.random() - 0.5);
-            packDefs.push(...shuffled.slice(0, 14));
-        } else {
-            // SLOT 1: Rare/Mythic
-            if (rarePool.length > 0) {
-                const isMythic = mythics.length > 0 && Math.random() < 0.125;
-                const poolToUse = isMythic ? mythics : (rares.length > 0 ? rares : rarePool);
-                packDefs.push(this.pickRandom(poolToUse));
-            } else {
-                packDefs.push(this.pickRandom(pool));
-            }
-
-            // SLOTS 2-4: Uncommons
-            for (let i = 0; i < 3; i++) {
-                packDefs.push(this.pickRandom(uncommons.length > 0 ? uncommons : pool));
-            }
-
-            // SLOTS 5-12: Commons (8 cards, no foils)
-            for (let i = 0; i < 8; i++) {
-                packDefs.push(this.pickRandom(commons.length > 0 ? commons : pool));
-            }
-
-            // SLOT 13: Basic Land / Common
-            packDefs.push(this.pickRandom(lands.length > 0 ? lands : (commons.length > 0 ? commons : pool)));
-
-            // SLOT 14: Wildcard (Any Rarity)
-            packDefs.push(this.pickRandom(pool));
-        }
-
-        return packDefs.map(def => {
-            const standardized = CardRegistryService.standardizeCard(def);
-            return {
-                ...standardized,
-                id: `${standardized.scryfall_id || 'c'}-${Math.random().toString(36).substring(2, 9)}`
-            };
-        });
-    }
-
-    private static pickRandom(array: any[]): any {
-        if (array.length === 0) return null;
-        return array[Math.floor(Math.random() * array.length)];
     }
 }

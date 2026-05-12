@@ -24,6 +24,7 @@ export const BanishingLight: CardDefinition = {
             ]
         }
     ],
+    set: "soa",
     scryfall_id: "c45f11cd-a0aa-4d14-aa21-57f0969f3e2b",
     image_url: "https://cards.scryfall.io/normal/front/c/4/c45f11cd-a0aa-4d14-aa21-57f0969f3e2b.jpg?1752946576",
     rarity: "common"

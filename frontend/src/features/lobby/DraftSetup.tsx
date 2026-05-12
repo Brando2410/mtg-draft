@@ -49,16 +49,16 @@ export const DraftSetup = ({ onBack, onCreateRoom, isSealed }: DraftSetupProps) 
           <Icon className="w-4 h-4 text-indigo-400" /> {label}
         </div>
         <div className="flex items-center justify-between w-full px-4">
-          <button 
-            onClick={onSub} 
+          <button
+            onClick={onSub}
             disabled={isMin}
             className={`p-2 transition-all active:scale-90 ${isMin ? 'text-slate-800 cursor-not-allowed opacity-30' : 'hover:text-white text-slate-500 hover:bg-white/5 rounded-xl'}`}
           >
             <Minus className="w-6 h-6" />
           </button>
           <span className="text-3xl font-black text-white italic tabular-nums leading-none">{value}</span>
-          <button 
-            onClick={onAdd} 
+          <button
+            onClick={onAdd}
             className="p-2 hover:text-white text-slate-500 transition-all active:scale-90 hover:bg-white/5 rounded-xl"
           >
             <Plus className="w-6 h-6" />
@@ -71,7 +71,7 @@ export const DraftSetup = ({ onBack, onCreateRoom, isSealed }: DraftSetupProps) 
   return (
     <PageLayout variant="indigo" className="flex items-center justify-center p-6 lg:p-12">
       <div className="relative z-10 w-full max-w-4xl flex flex-col gap-10 lg:gap-14 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        
+
         {/* HEADER */}
         <div className="flex flex-col items-center text-center gap-4">
           <div className="flex items-center gap-4">
@@ -88,40 +88,39 @@ export const DraftSetup = ({ onBack, onCreateRoom, isSealed }: DraftSetupProps) 
 
         {/* CONTENT */}
         <div className="flex flex-col gap-6">
-          
+
           {/* HOST BOX */}
           <div className="bg-slate-900/40 border border-white/5 p-6 rounded-[2.5rem] shadow-2xl backdrop-blur-md">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Identità Host</span>
-            <div 
+            <span className="text-[11px] font-black text-indigo-400/80 uppercase tracking-[0.3em] mb-4 block ml-2">Your Name</span>
+            <div
               onClick={focusNameInput}
               className="flex items-center justify-between gap-4 bg-white/5 px-6 py-4 rounded-3xl border border-white/5 hover:border-indigo-500/30 transition-all cursor-text focus-within:border-indigo-500 focus-within:bg-indigo-500/5 group"
             >
-              <input 
+              <input
                 ref={nameInputRef}
-                value={hostName} 
-                onChange={(e) => setHostName(e.target.value)} 
-                className="bg-transparent border-none text-2xl lg:text-4xl font-black italic text-indigo-400 outline-none flex-1 placeholder:text-slate-800 uppercase tracking-tighter" 
-                placeholder="Nome Host" 
+                value={hostName}
+                onChange={(e) => setHostName(e.target.value)}
+                className="bg-transparent border-none text-2xl lg:text-4xl font-black italic text-indigo-400 outline-none flex-1 placeholder:text-slate-800 uppercase tracking-tighter"
+                placeholder="Your Name"
               />
               <Edit3 className="w-6 h-6 text-indigo-500/50 group-hover:text-indigo-400" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Stepper label="Giocatori" value={playerCount} min={2} onSub={() => setPlayerCount(p => Math.max(2, p-1))} onAdd={() => setPlayerCount(p => Math.min(16, p+1))} icon={Users} />
-            <Stepper label="Buste" value={packsPerPlayer} min={1} onSub={() => setPacksPerPlayer(p => Math.max(1, p-1))} onAdd={() => setPacksPerPlayer(p => Math.min(6, p+1))} icon={Package} />
-            <Stepper label="Carte" value={cardsPerPack} min={1} onSub={() => setCardsPerPack(p => Math.max(1, p-1))} onAdd={() => setCardsPerPack(p => Math.min(30, p+1))} icon={Settings2} />
-            <Stepper label="Timer (s)" value={timerSeconds} min={0} onSub={() => setTimerSeconds(p => Math.max(0, p-5))} onAdd={() => setTimerSeconds(p => Math.min(120, p+5))} icon={Settings2} />
+            <Stepper label="Giocatori" value={playerCount} min={2} onSub={() => setPlayerCount(p => Math.max(2, p - 1))} onAdd={() => setPlayerCount(p => Math.min(16, p + 1))} icon={Users} />
+            <Stepper label="Buste" value={packsPerPlayer} min={1} onSub={() => setPacksPerPlayer(p => Math.max(1, p - 1))} onAdd={() => setPacksPerPlayer(p => Math.min(6, p + 1))} icon={Package} />
+            <Stepper label="Carte" value={cardsPerPack} min={1} onSub={() => setCardsPerPack(p => Math.max(1, p - 1))} onAdd={() => setCardsPerPack(p => Math.min(30, p + 1))} icon={Settings2} />
+            <Stepper label="Timer (s)" value={timerSeconds} min={0} onSub={() => setTimerSeconds(p => Math.max(0, p - 5))} onAdd={() => setTimerSeconds(p => Math.min(120, p + 5))} icon={Settings2} />
           </div>
 
           <button
             onClick={handleCreate}
             disabled={loading || !hostName.trim()}
-            className={`group relative w-full py-6 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xl italic flex items-center justify-center gap-4 transition-all active:scale-95 overflow-hidden ${
-              loading || !hostName.trim()
+            className={`group relative w-full py-6 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xl italic flex items-center justify-center gap-4 transition-all active:scale-95 overflow-hidden ${loading || !hostName.trim()
               ? 'bg-slate-800 text-slate-700 cursor-not-allowed'
               : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-2xl shadow-indigo-600/40'
-            }`}
+              }`}
           >
             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
               <>
