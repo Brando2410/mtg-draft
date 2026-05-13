@@ -74,13 +74,24 @@ export class SpellProcessor {
             return false;
         }
 
+        // 2. Discard Guard (Rule 701.8)
+        // If ANY player has a pending discard requirement, no one can cast spells (no priority).
+        const playerMustDiscard = Object.values(state.players).find(p => p.pendingDiscardCount > 0);
+        if (playerMustDiscard) {
+            logger.info(state, LogCategory.ACTION, `[DISCARD-BLOCK] Player ${playerMustDiscard.name} must finish discarding (${playerMustDiscard.pendingDiscardCount} cards) before any player can cast spells.`);
+            return false;
+        }
+
         logger.debug(state, LogCategory.ACTION, `[PLAY-ENTRY] playCard for ${cardInstanceId}. bypassPriority=${bypassPriority}, bypassTargeting=${bypassTargeting}, isFreeCast=${isFreeCast}, hasParent=${!!parentContext}`);
         logger.debug(state, LogCategory.ACTION, `[PLAY-DEBUG] playCard for ${cardInstanceId} (isFreeCast=${isFreeCast}, hasParent=${!!parentContext})`);
 
         const player = state.players[playerId];
-        if (player && player.pendingDiscardCount > 0) {
-            logger.info(state, LogCategory.ACTION, `Player must finish discarding before playing cards.`);
-            return false;
+        if (player) {
+            logger.debug(state, LogCategory.ACTION, `[DISCARD-CHECK] Player ${playerId} pendingDiscardCount: ${player.pendingDiscardCount}`);
+            if (player.pendingDiscardCount > 0) {
+                logger.info(state, LogCategory.ACTION, `Player ${player.name} must finish discarding (${player.pendingDiscardCount} remaining) before playing cards.`);
+                return false;
+            }
         }
 
         const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, bypassPriority);
@@ -456,6 +467,14 @@ export class SpellProcessor {
     ): boolean {
         const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue, parentContext, exileOnResolution } = options;
         const { logger, targeting: TargetingProcessor, trigger: TriggerProcessor } = getProcessors(state);
+
+        // 1. Discard Guard (Rule 701.8)
+        const playerMustDiscard = Object.values(state.players).find(p => p.pendingDiscardCount > 0);
+        if (playerMustDiscard) {
+            logger.info(state, LogCategory.ACTION, `[DISCARD-BLOCK] Player ${playerMustDiscard.name} must finish discarding (${playerMustDiscard.pendingDiscardCount} cards) before any player can activate abilities.`);
+            return false;
+        }
+
         const obj = RuleUtils.findObject(state, cardId);
         if (!obj) return false;
 

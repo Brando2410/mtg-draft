@@ -354,6 +354,9 @@ export interface InteractionMetadata {
     choiceEffects?: import('./effects').EffectDefinition[];
     nextTriggersToStack?: any[];
     isMulliganPutBack?: boolean;
+    isSacrificeSequence?: boolean;
+    isDiscardSequence?: boolean;
+    isChoiceSequence?: boolean;
 }
 
 export interface CommonResolutionFields {
@@ -428,6 +431,7 @@ export interface BaseActionData extends CommonResolutionFields, CommonChoiceFiel
     triggers?: any[];
     isChoiceSequence?: boolean;
     isSacrificeSequence?: boolean;
+    isDiscardSequence?: boolean;
 
     canSkip?: boolean;
     optional?: boolean;

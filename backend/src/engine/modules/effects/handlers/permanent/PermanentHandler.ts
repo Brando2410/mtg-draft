@@ -89,14 +89,16 @@ export class PermanentHandler {
                 actionType: ActionType.ResolutionChoice,
                 onSelected: (c: GameObject) => [{ type: 'Sacrifice', targetIds: [c.id] }],
                 stackObj: stackObject,
-                parentContext: context
+                parentContext: context,
+                effectIndex: context.effectIndex,
+                metadata: {
+                    effects: context.effects,
+                    effectIndex: context.effectIndex,
+                    parentContext: context,
+                    nextPlayerIds: nextTargets,
+                    isSacrificeSequence: true
+                }
             });
-
-            // Store next targets in pendingAction to continue sequence
-            if (state.pendingAction && nextTargets.length > 0) {
-                state.pendingAction.data!.nextPlayerIds = nextTargets;
-                state.pendingAction.data!.isSacrificeSequence = true;
-            }
         } else {
             const obj = RuleUtils.findObject(state, tid);
             if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).controllerId);
@@ -262,6 +264,7 @@ export class PermanentHandler {
                 : available;
 
             const amount = Math.min(available, requestedAmount);
+            logger.info(state, LogCategory.ACTION, `[MOVE-COUNTERS] Type=${ctype}, Available=${available}, Requested=${requestedAmount}, Final=${amount}, xValue=${context.xValue}`);
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {

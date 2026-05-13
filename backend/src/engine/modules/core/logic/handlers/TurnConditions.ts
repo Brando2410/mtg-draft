@@ -7,8 +7,7 @@ import { LogCategory } from "../../../../utils/EngineLogger";
 export const TurnConditions: Record<string, IConditionHandler> = {
     [ConditionType.IsYourTurn]: {
         matches(state, params, context) {
-            const result = state.priorityPlayerId === context.controllerId;
-            return result;
+            return state.activePlayerId === context.controllerId;
         }
     },
     [ConditionType.IsOpponentTurn]: {
@@ -108,9 +107,9 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { controllerId, sourceId, stackObject } = context;
             const EngineFrame = { sourceId, controllerId, stackObject, effects: [], targets: [] };
-            return state.battlefield.some(o => 
-                o.controllerId === controllerId && 
-                RuleUtils.isPlaneswalker(o) && 
+            return state.battlefield.some(o =>
+                o.controllerId === controllerId &&
+                RuleUtils.isPlaneswalker(o) &&
                 o.definition.name.toLowerCase().includes("basri")
             );
         }

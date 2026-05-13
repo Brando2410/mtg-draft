@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const ExhibitionTidecaller: CardDefinition = {
     name: "Exhibition Tidecaller",
     manaCost: "{U}",
-
-
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Djinn", "Wizard"],

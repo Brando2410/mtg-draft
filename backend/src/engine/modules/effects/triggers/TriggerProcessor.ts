@@ -278,7 +278,7 @@ export class TriggerProcessor {
       type: AbilityType.Triggered,
       counters: {},
       name: `${sourceName}'s Trigger`,
-      targets: trigger.targetIds || (trigger.targetDefinitions?.length ? event.payload?.targetIds || [] : []),
+      targets: trigger.targetIds || [],
       effects: effects,
       definition: (RuleUtils.isEntity(sourceObj) ? sourceObj.definition : (trigger.payload?.definition || { name: sourceName, types: [], colors: [], oracleText: "", manaCost: "" } as CardDefinition)),
       image_url: sourceImage,

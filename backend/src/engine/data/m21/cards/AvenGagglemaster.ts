@@ -17,13 +17,17 @@ export const AvenGagglemaster: CardDefinition = {
             eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.GainLife,
-                amount: (state: any, source: any) => {
-                    const count = state.battlefield.filter((o: any) =>
-                        o.controllerId === source.controllerId &&
-                        ((o.definition.keywords || []).some((k: string) => k.toLowerCase() === "flying") ||
-                            (o.effectiveStats?.abilitiesToAdd || []).some((k: string) => k.toLowerCase() === "flying"))
-                    ).length;
-                    return 2 * count;
+                amount: {
+                    type: 'SCRIPT',
+                    resolver: (state, context) => {
+                        const { controllerId } = context;
+                        const count = state.battlefield.filter(o =>
+                            o.controllerId === controllerId &&
+                            (o.definition.keywords?.some(k => k.toLowerCase() === "flying") ||
+                                o.effectiveStats?.keywords?.some(k => k.toLowerCase() === "flying"))
+                        ).length;
+                        return 2 * count;
+                    }
                 },
                 targetMapping: TargetMapping.Controller
             }]

@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityDefinition, AbilityType, ActionType, ChoiceOption, ChoicePayload, EffectDefinition, EffectType, GameObject, GameState, PendingAction, PlayerId, EngineFrame, StackObject, TargetType, Zone, ModalActionData, XChoiceActionData, BatchActionData, CostActionData } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, AbilityType, ActionType, ChoiceOption, ChoicePayload, EffectDefinition, EffectType, GameObject, GameState, PendingAction, PlayerId, EngineFrame, StackObject, TargetType, Zone, ModalActionData, XChoiceActionData, BatchActionData, CostActionData, InteractionMetadata } from '@shared/engine_types';
 import { isModalData, isXChoiceData, isBatchData, isCostData } from '../../utils/ActionTypeGuards';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
@@ -10,6 +10,7 @@ import { ResolutionManager } from '../core/stack/ResolutionManager';
 import { StackProcessor } from '../core/stack/StackProcessor';
 import { getActionMeta } from '@shared/utils/ActionUtils';
 import { MulliganProcessor } from '../core/MulliganProcessor';
+import { PermanentHandler } from '../effects/handlers/permanent/PermanentHandler';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -93,7 +94,7 @@ export class ChoiceProcessor {
         choiceInput: number | string | ChoicePayload,
         engine: EngineContext
     ): boolean {
-        const { logger } = getProcessors(state);
+        const { logger, effect: EP } = getProcessors(state);
         const action = state.pendingAction;
         if (!action) return false;
 
@@ -224,6 +225,11 @@ export class ChoiceProcessor {
             if (allEffects.length === 0 && !finalChoice && !isEmptyConfirm) return false;
 
             state.pendingAction = undefined; // Clear modal before resolving effects
+            
+            // Cleanup: ensure the player's discard count is cleared since they just finished their choice
+            if (action.type === ActionType.Discard) {
+                state.players[playerId].pendingDiscardCount = 0;
+            }
 
             // Resolve all effects in the batch
             if (allEffects.length > 0) {
@@ -262,22 +268,24 @@ export class ChoiceProcessor {
                 }
             }
 
-            // After batch is done, check if we need to move to the next player (for DiscardCards)
-            const nextPlayerIds = meta.nextPlayerIds || [];
-            if (!state.pendingAction && nextPlayerIds.length > 0) {
-                const discardAmount = meta.discardAmount || 1;
-                const failureEffects = meta.onFailureEffects;
-                state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
+            // After batch is done, handle any next players in the sequence
+            if (this.processNextPlayerHandOff(state, engine, action, meta)) {
+                return true;
             }
 
             // Resume whatever was happening at the current level first
             if (meta.isMulliganPutBack) {
                 const cardIds = selections.filter(s => typeof s === 'string') as string[];
                 MulliganProcessor.resolvePutBack(state, engine, playerId, cardIds);
-                return true;
             }
 
-            return ResolutionManager.resume(state, engine, undefined, undefined, undefined, action);
+            // Resume parent resolution, advancing index since this effect sequence is complete
+            const resumeIndex = (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined;
+            return ResolutionManager.resume(state, engine, undefined, undefined, { 
+                ...meta.parentContext, 
+                targets: [], // Clear targets from previous effect sequence to allow re-mapping
+                effectIndex: resumeIndex
+            }, action);
         }
 
         // 3. Handle Scry/Surveil Reordering early as payload is not an index
@@ -286,9 +294,41 @@ export class ChoiceProcessor {
         }
 
         const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
-        if (!isNaN(choiceIdx) && isResolution) {
+        if (!isNaN(choiceIdx) && isResolution && action.type !== ActionType.ResolutionChoice && action.type !== ActionType.OptionalAction) {
             state.interaction.lastChoiceIndex = choiceIdx;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-PERSIST] Stored lastChoiceIndex: ${choiceIdx}`);
+            
+            // If we are here, it's a single-choice resolution that didn't go through the batch block above.
+            // We should treat it exactly like a batch of one to ensure consistency.
+            const choice = actionData.choices?.[choiceIdx];
+            if (choice) {
+                state.pendingAction = undefined;
+                if (choice.effects && choice.effects.length > 0) {
+                    EP.resolveEffects({
+                        state,
+                        context: EP.createEngineFrame(state, {
+                            sourceId: action.sourceId || "",
+                            effects: choice.effects,
+                            targets: meta.targets || meta.parentContext?.targets || [],
+                            stackObject: meta.stackObj as StackObject,
+                            parentContext: meta.parentContext as EngineFrame,
+                            controllerIdOverride: playerId,
+                            effectIndex: 0
+                        }),
+                        skipFizzleCheck: true
+                    });
+                }
+                
+                if (this.processNextPlayerHandOff(state, engine, action, meta)) {
+                    return true;
+                }
+
+                return ResolutionManager.resume(state, engine, undefined, undefined, { 
+                    ...meta.parentContext, 
+                    targets: [],
+                    effectIndex: (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined
+                }, action);
+            }
         }
 
         // Handle Legend Rule Choice
@@ -1036,7 +1076,7 @@ export class ChoiceProcessor {
 
             if (!resolved) {
                 logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolution suspended within choice effects. Waiting.`);
-                return true;
+                return false;
             }
         }
 
@@ -1100,21 +1140,19 @@ export class ChoiceProcessor {
             return true;
         }
 
-        // 2. ENQUEUE NEXT PLAYERS (Legacy path)
-        if (!state.pendingAction) {
-            const nextPlayerIds = meta.nextPlayerIds || [];
-            if (nextPlayerIds.length > 0) {
-                const discardAmount = meta.discardAmount || 1;
-                const failureEffects = meta.onFailureEffects;
-                state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
-                return true;
-            }
+        // 2. ENQUEUE NEXT PLAYERS
+        if (this.processNextPlayerHandOff(state, engine, action, meta)) {
+            return true;
         }
 
         // 3. Resume/Finalize Resolution
         if (!state.pendingAction) {
             logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] No pending action after choice. Resuming via ResolutionManager.`);
-            return ResolutionManager.resume(state, engine, stackObj, sourceId, undefined, action);
+            return ResolutionManager.resume(state, engine, stackObj, sourceId, {
+                ...meta.parentContext,
+                effectIndex: (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined,
+                targets: []
+            }, action);
         }
 
         return true;
@@ -1159,16 +1197,29 @@ export class ChoiceProcessor {
         if (RuleUtils.isEntity(card)) {
             card.xValue = x;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Set xValue=${x} on ${card.id}.`);
+            
+            // CRITICAL: Also propagate to the stack object if this is a triggered/activated ability resolution.
+            // Effects like MoveCounters look at the stackObj.xValue during resolveAmount('X').
+            if (meta.stackObj && meta.stackObj.id !== card.id) {
+                meta.stackObj.xValue = x;
+                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Also set xValue=${x} on stack object ${meta.stackObj.id}.`);
+            }
         }
 
 
         if (meta.isResolutionX) {
             // Mark as confirmed in the original action data so we don't re-prompt
-            if (actionData.originalActionData && !actionData.originalActionData.data) {
-                actionData.originalActionData.data = {};
-            }
-            if (actionData.originalActionData?.data) {
-                actionData.originalActionData.data.xValueConfirmed = true;
+            if (actionData.originalActionData) {
+                if (!actionData.originalActionData.metadata) {
+                    actionData.originalActionData.metadata = {};
+                }
+                actionData.originalActionData.metadata.xValueConfirmed = true;
+                actionData.originalActionData.metadata.xValue = x;
+                
+                // Also ensure the stack object in the original metadata gets the update
+                if (actionData.originalActionData.metadata.stackObj) {
+                    actionData.originalActionData.metadata.stackObj.xValue = x;
+                }
             }
 
             // Resume resolution choice with the chosen X
@@ -1240,6 +1291,51 @@ export class ChoiceProcessor {
             return r.type === 'Self' || (r.type === 'ObjectId' && r.value === sourceId);
         })) return true;
         return false;
+    }
+
+    private static processNextPlayerHandOff(state: GameState, engine: EngineContext, action: PendingAction, meta: InteractionMetadata): boolean {
+        if (state.pendingAction) return false;
+
+        const nextPlayerIds = meta.nextPlayerIds || [];
+        if (nextPlayerIds.length === 0) return false;
+
+        const sourceId = action.sourceId || "";
+        const actionData = action.data!;
+
+        if (meta.isSacrificeSequence) {
+            const effect = meta.parentContext?.effects?.[meta.effectIndex ?? 0];
+            PermanentHandler.handleSacrifice(state, effect || { label: actionData.label || "Sacrifice" }, {
+                ...meta.parentContext,
+                targets: nextPlayerIds,
+                effectIndex: meta.effectIndex,
+                effects: meta.effects
+            });
+        } else if (meta.isDiscardSequence || action.type === ActionType.Discard) {
+            const discardAmount = meta.discardAmount || 1;
+            const failureEffects = meta.onFailureEffects;
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
+            if (state.pendingAction && state.pendingAction.data) {
+                state.pendingAction.data.isDiscardSequence = true;
+                state.pendingAction.data.effectIndex = meta.effectIndex;
+                state.pendingAction.data.metadata = {
+                    ...state.pendingAction.data.metadata,
+                    isDiscardSequence: true,
+                    effects: meta.effects,
+                    effectIndex: meta.effectIndex,
+                    parentContext: meta.parentContext
+                };
+            }
+        } else {
+            // Fallback to resume if no known sequence is detected
+            getProcessors(state).logger.warn(state, LogCategory.ACTION, `[CHOICE-HANDOFF] Unknown sequence type for ${sourceId}. Resuming parent context.`);
+            ResolutionManager.resume(state, engine, undefined, undefined, { 
+                ...meta.parentContext, 
+                targets: [],
+                effectIndex: meta.effectIndex 
+            }, action);
+        }
+
+        return !!state.pendingAction;
     }
 }
 

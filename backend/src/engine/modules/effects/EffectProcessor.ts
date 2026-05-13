@@ -186,6 +186,7 @@ export class EffectProcessor {
 
       // Update the effectIndex AFTER execution (CR 608.2)
       context.effectIndex = i + 1;
+      context.targets = []; // Clear for next effect in the sequence
       if (stackObject && stackObject.effects === effects) {
         stackObject.effectIndex = i + 1;
       }
@@ -429,8 +430,7 @@ export class EffectProcessor {
     // Generic Interactive Selection support
     if (
       effect.targetDefinitions &&
-      validTargetIds.length === 0 &&
-      !effect.targetMapping &&
+      (validTargetIds.length === 0 || !effect.targetMapping) &&
       !([
         EffectType.SearchLibrary,
         EffectType.Choice,
@@ -445,7 +445,7 @@ export class EffectProcessor {
         sourceId,
         controllerId,
         stackObject,
-        context.parentContext,
+        context, // Pass the current context to preserve xValue and effectIndex
       );
     }
 
@@ -459,9 +459,9 @@ export class EffectProcessor {
       });
     } else {
       if (effect.targetMapping && effect.targetMapping !== "") {
-      logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] No handler registered for mapping: ${effect.targetMapping}`);
-    }
-    return [];
+        logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] No handler registered for mapping: ${effect.targetMapping}`);
+      }
+      return [];
     }
 
     // Strategy Dispatcher (Legacy) - DEPRECATED: All effects now use the Registry
@@ -727,7 +727,7 @@ export class EffectProcessor {
           stackObj: stackObject, // Legal in BaseActionData
         }
       };
-      logger.info(state, LogCategory.ACTION, `[TARGETING] Prompting for battlefield targeting for effect resolution...`);
+      logger.info(state, LogCategory.ACTION, `[TARGETING] Prompting for battlefield targeting for effect resolution... Index=${parentContext?.effectIndex}, effectsCount=${(parentContext?.effects || []).length}, xValue=${stackObject?.xValue}`);
       return;
     }
 

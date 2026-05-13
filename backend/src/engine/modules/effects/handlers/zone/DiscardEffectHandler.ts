@@ -14,7 +14,7 @@ export const DiscardEffectHandler: IEffectHandler<EffectDefinition> = {
         const playerIds = finalTargetIds.filter(id => state.players[id as PlayerId]) as PlayerId[];
         if (playerIds.length === 0 && !effect.targetDefinitions && !effect.targetMapping) playerIds.push(controllerId);
 
-        const amount = (typeof effect.amount === "number" || typeof effect.amount === "string") ? effect.amount : 1;
+        const amount = effect.amount !== undefined ? effect.amount : 1;
         if (amount === 0) return;
         
         if (playerIds.length > 0) {

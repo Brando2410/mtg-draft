@@ -39,6 +39,7 @@ export class ActionProcessor {
    */
   public static prepareAction(state: GameState, action: PendingAction): PendingAction {
     state.pendingAction = action;
+    state.stateVersion++; // Trigger reactive updates in the UI
     if (!state.mutationStack) state.mutationStack = [];
     if (!state.pendingAction.data) state.pendingAction.data = { label: 'Action' };
     state.pendingAction.data.mutationCheckpoint = state.mutationStack.length;

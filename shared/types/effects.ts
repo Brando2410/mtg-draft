@@ -250,19 +250,19 @@ export interface EngineFrame {
  * based on game state (CR 107).
  */
 export interface AmountResolver {
-    type: 'CONSTANT' | 'POWER' | 'TOUGHNESS' | 'COUNT_PLAYER_PERMANENTS' | 'X_VALUE' | 'SCRIPT';
+    type: 'CONSTANT' | 'POWER' | 'TOUGHNESS' | 'COUNT_PLAYER_PERMANENTS' | 'X_VALUE' | 'SCRIPT' | 'PLAYER_LIFE' | 'PLAYER_HAND_SIZE';
     baseValue?: number;
     multiplier?: number;
     offset?: number;
     resolver?: (state: GameState, context: EngineFrame) => number;
     subtype?: string;
+    rounding?: 'floor' | 'ceil';
 }
 export type NumericProperty = 
     | number 
     | string 
     | AmountResolver 
     | Record<string, number>
-    | ((state: GameState, context: EngineFrame, targets: string[]) => number)
     | { min: number; max: number }
     | undefined;
 

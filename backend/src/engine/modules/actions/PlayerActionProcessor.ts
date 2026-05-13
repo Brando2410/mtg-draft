@@ -21,6 +21,14 @@ export class PlayerActionProcessor {
     engine: EngineContext
   ): boolean {
     const { logger, choice } = getProcessors(state);
+
+    // 0. Discard Guard: No interacting with permanents while a discard is pending (Rule 701.8)
+    const playerMustDiscard = Object.values(state.players).find(p => p.pendingDiscardCount > 0);
+    if (playerMustDiscard) {
+      logger.info(state, LogCategory.ACTION, `[DISCARD-BLOCK] Cannot interact with permanents: ${playerMustDiscard.name} must finish discarding first.`);
+      return false;
+    }
+
     // 1. Intercept for special actions (Combat, Targeting)
     if (state.pendingAction?.playerId === playerId) {
       if (state.pendingAction.type === ActionType.Targeting || state.pendingAction.type === 'TARGETING') {
@@ -155,12 +163,12 @@ export class PlayerActionProcessor {
       .map((a, index) => ({ ability: a as AbilityDefinition, index }))
       .filter((entry) => {
         if (entry.ability.type !== AbilityType.Activated) return false;
-        
+
         // Mana abilities can be activated during priority OR while paying costs
         if (entry.ability.isManaAbility) {
           return PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, !isPayingCost);
         }
-        
+
         // Non-mana abilities REQUIRE priority
         return hasPriority && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true);
       });
@@ -468,7 +476,7 @@ export class PlayerActionProcessor {
     // MODIFICATION: London Mulligan "put back" moves to Library Bottom.
     const { action: ActionProcessor } = getProcessors(state);
     const isMulligan = state.pendingAction?.data?.isMulliganPutBack;
-    
+
     if (isMulligan) {
       ActionProcessor.moveCard(state, card, Zone.Library, playerId, "bottom", false, true);
     } else {
@@ -477,60 +485,72 @@ export class PlayerActionProcessor {
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
+      logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] ${player.name} discarded card. Remaining count: ${player.pendingDiscardCount}`);
+    } else if (!isOptionalDiscard) {
+      logger.warn(state, LogCategory.ACTION, `[DISCARD-DEBUG] ${player.name} tried to discard but pendingDiscardCount is already 0.`);
+      return { finished: false, success: false };
+    }
 
-      // Update top-level count (Cleanup phase and unified Discard UI)
-      if (state.pendingAction && state.pendingAction.count !== undefined) {
-        state.pendingAction.count--;
-      }
-      // Also update data.count for legacy effects if it exists
-      if (state.pendingAction && state.pendingAction.data?.count !== undefined) {
-        state.pendingAction.data.count--;
-      }
+    // Update top-level count (Cleanup phase and unified Discard UI)
+    if (state.pendingAction && state.pendingAction.count !== undefined) {
+      state.pendingAction.count--;
+    }
+    // Also update data.count for legacy effects if it exists
+    if (state.pendingAction && state.pendingAction.data?.count !== undefined) {
+      state.pendingAction.data.count--;
+    }
 
-      logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
+    logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
 
-      if (player.pendingDiscardCount === 0) {
-        logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
+    if (player.pendingDiscardCount === 0) {
+      logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
 
-        // Handle sequential discards (Next players)
-        const meta = getActionMeta(state.pendingAction);
-        const nextPlayerIds = state.pendingAction.data?.nextPlayerIds || [];
-        if (nextPlayerIds.length > 0 && (!state.pendingAction.data?.count || state.pendingAction.data.count <= 0)) {
-          const discardAmount = meta.discardAmount || 1;
-          const label = state.pendingAction.data?.label || "Discard";
-          const currentPlayerId = nextPlayerIds.shift()!;
-          const onFailureEffects = state.pendingAction.data?.onFailureEffects;
+      // Handle sequential discards (Next players)
+      const meta = getActionMeta(state.pendingAction);
+      const nextPlayerIds = state.pendingAction.data?.nextPlayerIds || [];
+      logger.debug(state, LogCategory.ACTION, `[DISCARD-HANDOFF] ${player.name} done. Next: ${JSON.stringify(nextPlayerIds)}`);
+      if (nextPlayerIds.length > 0 && (!state.pendingAction.data?.count || state.pendingAction.data.count <= 0)) {
+        const discardAmount = meta.discardAmount || 1;
+        const label = state.pendingAction.data?.label || "Discard";
+        const sourceId = state.pendingAction.sourceId || "";
+        const currentPlayerId = nextPlayerIds.shift()!;
+        state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
+          state,
+          [currentPlayerId, ...nextPlayerIds],
+          sourceId,
+          discardAmount,
+          label,
+          meta.stackObj,
+          meta.parentContext,
+          meta.onFailureEffects
+        );
 
-          state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
-            state,
-            [currentPlayerId, ...nextPlayerIds],
-            state.pendingAction.sourceId || "",
-            discardAmount,
-            label,
-            meta.stackObj,
-            meta.parentContext,
-            onFailureEffects
-          );
-          return { finished: false, success: true };
+        if (state.pendingAction && state.pendingAction.data) {
+          // Explicitly carry over the resolution context to the new player's action
+          state.pendingAction.data.metadata = {
+            ...state.pendingAction.data.metadata,
+            effects: meta.effects,
+            effectIndex: meta.effectIndex,
+            parentContext: meta.parentContext
+          };
         }
+        return { finished: false, success: true };
+      }
 
-        // Handle London Mulligan progression
-        if (isMulligan) {
-          if (state.mulliganState) {
-            state.mulliganState.discardsComplete[playerId] = true;
-          }
-          const { mulligan: MulliganProcessor } = getProcessors(state);
-          state.pendingAction = undefined; // Clear it first, finalizeMulligans will re-set it if needed for next player
-          MulliganProcessor.finalizeMulligans(state, getEngine(state));
-          return { finished: true, success: true };
+      // Handle Mulligan progression
+      if (isMulligan) {
+        if (state.mulliganState) {
+          state.mulliganState.discardsComplete[playerId] = true;
         }
-
-        // Brand New Resolution System: Hand off to ResolutionManager to automate extraction and resumption.
-        ResolutionManager.resume(state, getEngine(state));
+        const { mulligan: MulliganProcessor } = getProcessors(state);
+        state.pendingAction = undefined; // Clear it first, finalizeMulligans will re-set it if needed for next player
+        MulliganProcessor.finalizeMulligans(state, getEngine(state));
         return { finished: true, success: true };
       }
-    } else {
-      logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name}.`);
+
+      // Brand New Resolution System: Hand off to ResolutionManager to automate extraction and resumption.
+      ResolutionManager.resume(state, getEngine(state));
+      return { finished: true, success: true };
     }
 
     return { finished: false, success: true };
@@ -606,7 +626,7 @@ export class PlayerActionProcessor {
 
     // Use ResolutionManager to handle the stacking queue and any subsequent suspensions
     ResolutionManager.stackTriggers(state, orderedTriggers);
-    
+
     // If no new pending action was created (e.g. more triggers to order), reset priority
     if (!state.pendingAction) {
       getEngine(state).resetPriorityToActivePlayer();

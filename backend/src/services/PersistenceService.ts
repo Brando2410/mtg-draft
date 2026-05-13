@@ -46,7 +46,7 @@ export class PersistenceService {
       const data = Object.fromEntries(roomsMap);
       const json = JSON.stringify(data, null, 2);
       await fs.writeFile(this.ROOMS_FILE, json, 'utf8');
-      LoggerService.info('PERSISTENCE', `Rooms saved successfully: ${roomsMap.size} active rooms`);
+      LoggerService.debug('PERSISTENCE', `Rooms saved successfully: ${roomsMap.size} active rooms`);
     } catch (e: any) {
       LoggerService.error('PERSISTENCE', 'Critical error during room saving', e);
     }

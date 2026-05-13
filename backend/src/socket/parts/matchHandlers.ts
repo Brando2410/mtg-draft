@@ -13,6 +13,8 @@ import { AssetService } from '../../services/AssetService';
 import { SealedService } from '../../services/SealedService';
 
 
+const roomLocks = new Map<string, Promise<any>>();
+
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
 
   const authorizePlayer = (room: Room, playerId: string, actionName: string): boolean => {
@@ -24,128 +26,108 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     return true;
   };
 
-  const withMatch = (roomId: string, playerId: string, callback: (engine: GameEngine, room: Room, matchIndex?: number) => void) => {
-    try {
-      const room = rooms.get(roomId);
-      if (!room) return;
+  const withMatch = async (roomId: string, playerId: string, callback: (engine: GameEngine, room: Room, matchIndex?: number) => void) => {
+    // Serialization lock to prevent race conditions on shared room state
+    const currentLock = roomLocks.get(roomId) || Promise.resolve();
+    const nextLock = currentLock.then(async () => {
+      try {
+        const room = rooms.get(roomId);
+        if (!room) return;
+        if (!authorizePlayer(room, playerId, 'match action')) return;
 
-      if (!authorizePlayer(room, playerId, 'match action')) return;
+        let gameState: GameState | undefined;
+        let matchIndex: number | undefined;
 
-      let gameState: GameState | undefined;
-      let matchIndex: number | undefined;
-
-      if (room.status === 'tournament' && room.matches) {
-        // Only look for matches that are currently in progress or waiting
-        matchIndex = room.matches.findIndex(m => m.players.includes(playerId) && m.status !== 'completed');
-        if (matchIndex === -1) return;
-        const match = room.matches[matchIndex];
-        // If match is pending (players in waiting room), it's normal not to have a state yet
-        if (match.status === 'pending') return;
-        gameState = match.engineState;
-      } else {
-        gameState = room.gameState;
-      }
-
-      if (!gameState) {
-        // Only warn if we really expected a state (e.g. room active but no state)
-        if (room.status === 'active' || (room.status === 'tournament' && matchIndex !== undefined)) {
-          LoggerService.warn('MATCH', `No GameState found for room ${roomId}`, { roomId, status: room.status, matchIndex });
+        if (room.status === 'tournament' && room.matches) {
+          matchIndex = room.matches.findIndex(m => m.players.includes(playerId) && m.status !== 'completed');
+          if (matchIndex === -1) return;
+          const match = room.matches[matchIndex];
+          if (match.status === 'pending') return;
+          gameState = match.engineState;
+        } else {
+          gameState = room.gameState;
         }
-        return;
-      }
 
-      const playerIds = gameState.players ? Object.keys(gameState.players) : room.players.map(p => p.playerId as PlayerId);
-      const playerNames: Record<string, string> = {};
-      const playerAvatars: Record<string, string> = {};
-      const bots: Record<string, boolean> = {};
-      room.players.forEach(p => {
-        playerNames[p.playerId] = p.name;
-        playerAvatars[p.playerId] = p.avatar || 'ajani.png';
-        bots[p.playerId] = !!p.isBot;
-      });
+        if (!gameState) return;
 
-      const engine = new GameEngine(playerIds, {}, playerNames, playerAvatars, bots);
-      engine.setState(gameState);
+        const playerIds = gameState.players ? Object.keys(gameState.players) : room.players.map(p => p.playerId as PlayerId);
+        const playerNames: Record<string, string> = {};
+        const playerAvatars: Record<string, string> = {};
+        const bots: Record<string, boolean> = {};
+        room.players.forEach(p => {
+          playerNames[p.playerId] = p.name;
+          playerAvatars[p.playerId] = p.avatar || 'ajani.png';
+          bots[p.playerId] = !!p.isBot;
+        });
 
-      // Take a snapshot for delta calculation
-      const previousRoomSnapshot = JSON.parse(JSON.stringify(room));
+        const engine = new GameEngine(playerIds, {}, playerNames, playerAvatars, bots);
+        engine.setState(gameState);
 
-      // Execute the action (most engine actions are synchronous)
-      callback(engine, room, matchIndex);
-
-      const newState = engine.getState();
-
-      // CR 704: Handle losing/winning conditions automatically
-      const players = Object.values(newState.players);
-      const lostPlayer = players.find(p => p.hasLost);
-
-      if (lostPlayer && matchIndex !== undefined && room.matches?.[matchIndex]) {
-        const match = room.matches![matchIndex];
+        const previousRoomSnapshot = JSON.parse(JSON.stringify(room));
         
-        // Log for debugging
-        const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
-        LoggerService.info('MATCH', `Win Detection: Found lost player ${lostId} in match ${matchIndex}. Match Status: ${match.status}`);
-
-        if (match.status === 'active' || match.status === 'pending') {
-          const winnerId = match.players.find(id => id.toString() !== lostId);
-          
-          if (winnerId) {
-            match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
-            
-            LoggerService.info('MATCH', `Score Updated: ${winnerId} won. New Score: ${match.wins[match.players[0]]} - ${match.wins[match.players[1]]}`);
-
-            // Best of 3: Check if someone reached 2 wins
-            if (match.wins[winnerId] >= 2) {
-              match.status = 'completed';
-              LoggerService.info('TOURNAMENT', `Match ${matchIndex} COMPLETED. Winner: ${winnerId}`);
-              if (room.status === 'tournament') {
-                advanceTournament(room);
-              }
-            } else {
-              LoggerService.info('MATCH', `Game Resolved. Match continues (Bo3).`);
-              match.status = 'pending';
-              match.joinedPlayers = [];
-              match.restartRequestedBy = undefined;
-            }
-          } else {
-            LoggerService.warn('MATCH', `Found lost player ${lostId} but could not determine winner in match ${matchIndex}. Players: ${JSON.stringify(match.players)}`);
-          }
+        if (gameState.pendingAction) {
+          LoggerService.info('MATCH', `[LOCK-TRACE] ${playerId} entering withMatch. Current PendingAction: ${gameState.pendingAction.type} for ${gameState.pendingAction.playerId}`);
         }
-      } else if (lostPlayer && room.gameState) {
-        // Normal match game end detection
-        const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
-        const winnerId = Object.keys(newState.players).find(id => id.toString() !== lostId);
-        newState.status = 'completed';
-        newState.winner = winnerId;
-        room.status = 'completed';
-        LoggerService.info('MATCH', `Normal Match COMPLETED. Winner: ${winnerId}`);
-      }
 
-      if (matchIndex !== undefined) {
-        room.matches![matchIndex].engineState = newState;
-      } else {
-        room.gameState = newState;
-      }
+        callback(engine, room, matchIndex);
 
-      // 4. DELTA SYNC: Calculate and emit patch instead of full state
-      const patch = jsonpatch.compare(previousRoomSnapshot, room);
+        const newState = engine.getState();
+        if (newState.pendingAction) {
+          LoggerService.info('MATCH', `[LOCK-TRACE] ${playerId} exiting withMatch. New PendingAction: ${newState.pendingAction.type} for ${newState.pendingAction.playerId}`);
+        }
+        const players = Object.values(newState.players);
+        const lostPlayer = players.find(p => p.hasLost);
 
-      if (patch.length > 0) {
-        // We only send the patch to save bandwidth
-        io.to(roomId).emit('room_patch', patch);
-      } else {
-        // Fallback for cases where no delta was detected but update was requested
-        io.to(roomId).emit('room_update', room);
-      }
+        if (lostPlayer && matchIndex !== undefined && room.matches?.[matchIndex]) {
+          const match = room.matches![matchIndex];
+          const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
+          if (match.status === 'active' || match.status === 'pending') {
+            const winnerId = match.players.find(id => id.toString() !== lostId);
+            if (winnerId) {
+              match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
+              if (match.wins[winnerId] >= 2) {
+                match.status = 'completed';
+                if (room.status === 'tournament') {
+                   advanceTournament(room);
+                }
+              } else {
+                match.status = 'pending';
+                match.joinedPlayers = [];
+                match.restartRequestedBy = undefined;
+              }
+            }
+          }
+        } else if (lostPlayer && room.gameState) {
+          const lostId = (lostPlayer.playerId || lostPlayer.id || '').toString();
+          const winnerId = Object.keys(newState.players).find(id => id.toString() !== lostId);
+          newState.status = 'completed';
+          newState.winner = winnerId;
+          room.status = 'completed';
+        }
 
-      PersistenceService.saveRooms(rooms).catch(e => LoggerService.error('SAVE', `Save failed: ${e.message}`));
-    } catch (err: any) {
-      LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });
-      if (err.stack) {
-        console.error('Stack trace:', err.stack);
+        if (matchIndex !== undefined) {
+          room.matches![matchIndex].engineState = newState;
+        } else {
+          room.gameState = newState;
+        }
+
+        const patch = jsonpatch.compare(previousRoomSnapshot, room);
+        if (patch.length > 0) {
+          io.to(roomId).emit('room_patch', patch);
+        } else {
+          io.to(roomId).emit('room_update', room);
+        }
+      } catch (err: any) {
+        LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });
       }
-    }
+    }).catch(err => {
+      console.error('Fatal Lock Error:', err);
+    });
+
+    roomLocks.set(roomId, nextLock);
+    return nextLock;
   };
+
 
   socket.on('ready_with_deck', async ({ roomId, playerId, deck }: { roomId: string, playerId: string, deck: Card[] }) => {
     const room = rooms.get(roomId);
@@ -327,9 +309,6 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         }
       ];
       io.to(roomId).emit('room_patch', patch);
-      
-      // Still save to persistence but don't broadcast full state
-      await PersistenceService.saveRooms(rooms);
     }
   });
 

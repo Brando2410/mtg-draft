@@ -1,13 +1,7 @@
 import { AbilityType, CardDefinition, EffectType, GameState, PlayerId, Restriction, TargetMapping } from '@shared/engine_types';
-
-/**
- * Pox Plague (SOS 0XX)
- */
 export const PoxPlague: CardDefinition = {
     name: "Pox Plague",
     manaCost: "{B}{B}{B}{B}{B}",
-
-
     colors: ["B"],
     types: ["Sorcery"],
     subtypes: [],
@@ -19,30 +13,33 @@ export const PoxPlague: CardDefinition = {
             effects: [
                 {
                     type: EffectType.LoseLife,
+                    label: "Lose half life",
                     targetMapping: TargetMapping.EachPlayer,
-                    amount: (state: GameState, source: any, targets: string[]) => {
-                        const pid = targets[0] as PlayerId;
-                        const player = state.players[pid];
-                        return player ? Math.floor(player.life / 2) : 0;
+                    amount: {
+                        type: 'PLAYER_LIFE',
+                        multiplier: 0.5,
+                        rounding: 'floor'
                     }
                 },
                 {
                     type: EffectType.DiscardCards,
+                    label: "Discard half hand",
                     targetMapping: TargetMapping.EachPlayer,
-                    amount: (state: GameState, source: any, targets: string[]) => {
-                        const pid = targets[0] as PlayerId;
-                        const player = state.players[pid];
-                        return player ? Math.floor(player.hand.length / 2) : 0;
+                    amount: {
+                        type: 'PLAYER_HAND_SIZE',
+                        multiplier: 0.5,
+                        rounding: 'floor'
                     }
                 },
                 {
                     type: EffectType.Sacrifice,
+                    label: "Sacrifice half permanents",
                     targetMapping: TargetMapping.EachPlayer,
                     restrictions: [Restriction.Permanent],
-                    amount: (state: GameState, source: any, targets: string[]) => {
-                        const pid = targets[0] as PlayerId;
-                        const perms = state.battlefield.filter((o) => o.controllerId === pid);
-                        return Math.floor(perms.length / 2);
+                    amount: {
+                        type: 'COUNT_PLAYER_PERMANENTS',
+                        multiplier: 0.5,
+                        rounding: 'floor'
                     }
                 }
             ]

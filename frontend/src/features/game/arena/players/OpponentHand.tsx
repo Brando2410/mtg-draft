@@ -29,14 +29,15 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd, revealAll }:
   const getCardY = (index: number) => {
     const middle = (cardCount - 1) / 2;
     const offset = Math.abs(index - middle);
-    // Sit slightly lower in the frame for better visibility
-    return -2 - (offset * 0.3);
+    // Y is the pivot point. Since cards rotate 180deg around the top, 
+    // higher Y means more of the card is visible on screen.
+    return 10 - (offset * 0.8);
   };
 
   const getCardX = (index: number) => {
     const middle = (cardCount - 1) / 2;
-    // Tight horizontal overlap using U units
-    const spacing = 5.5;
+    // Increased spacing to reduce hitbox overlap
+    const spacing = 8.5;
     return (index - middle) * spacing;
   };
 
@@ -60,24 +61,24 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd, revealAll }:
                 key={card.id || index}
                 initial={{ y: 'calc(var(--u)*-20)', opacity: 0 }}
                 animate={{
-                  // Keep them tucked at the top, slightly lower if revealed
-                  y: `calc(var(--u)*${isRevealed ? yBase + 2 : yBase})`,
+                  // Keep them tucked at the top
+                  y: `calc(var(--u)*${isRevealed ? yBase + 4 : yBase})`,
                   x: `calc(var(--u)*${xBase})`,
                   opacity: 1,
                   // Stay in the hand's fan orientation (opponent view)
                   rotate: rotation + 180,
                   scale: isRevealed ? 1.1 : 1,
-                  zIndex: isRevealed ? 700 : index,
+                  zIndex: index,
                   transition: { type: 'spring', stiffness: 100, damping: 20 }
                 }}
                 exit={{ y: 'calc(var(--u)*-20)', opacity: 0 }}
                 whileHover={{
-                  y: `calc(var(--u)*${isRevealed ? yBase + 3 : yBase + 1.5})`,
-                  scale: 1.2,
-                  zIndex: 800,
+                  y: `calc(var(--u)*16)`, // Move further DOWN into the screen on hover
+                  scale: 1.3,
+                  zIndex: 1000,
                   transition: { type: 'spring', stiffness: 400, damping: 25 }
                 }}
-                className="absolute w-[calc(var(--u)*10)] h-[calc(var(--u)*14)] origin-center pointer-events-auto cursor-help"
+                className="absolute top-0 w-[calc(var(--u)*10)] h-[calc(var(--u)*14)] origin-top pointer-events-auto cursor-help"
                 onMouseEnter={() => isRevealed && onHoverStart?.(cardWithFlags)}
                 onMouseLeave={() => isRevealed && onHoverEnd?.(card.id)}
               >

@@ -292,13 +292,31 @@ export class RuleUtils {
                 return resolverObj.resolver(state, context);
             }
             if (resolverObj.type === 'CONSTANT') return resolverObj.baseValue || 0;
+
+            let base = 0;
             if (resolverObj.type === 'POWER' || resolverObj.type === 'TOUGHNESS') {
                 const obj = this.findObject(state, sourceId);
-                if (!obj) return 0;
-                const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
-                const base = resolverObj.type === 'POWER' ? stats.power : stats.toughness;
-                return (base * (resolverObj.multiplier || 1)) + (resolverObj.offset || 0);
+                if (obj) {
+                    const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
+                    base = resolverObj.type === 'POWER' ? stats.power : stats.toughness;
+                }
+            } else if (resolverObj.type === 'PLAYER_LIFE') {
+                const pid = targetIds[0] as PlayerId || controllerId;
+                base = state.players[pid]?.life || 0;
+            } else if (resolverObj.type === 'PLAYER_HAND_SIZE') {
+                const pid = targetIds[0] as PlayerId || controllerId;
+                base = state.players[pid]?.hand.length || 0;
+            } else if (resolverObj.type === 'COUNT_PLAYER_PERMANENTS') {
+                const pid = targetIds[0] as PlayerId || controllerId;
+                base = state.battlefield.filter(o => o.controllerId === pid).length;
+            } else if (resolverObj.type === 'X_VALUE') {
+                base = stackObject?.xValue ?? context.event?.payload?.xValue ?? 0;
             }
+
+            const val = (base * (resolverObj.multiplier ?? 1)) + (resolverObj.offset ?? 0);
+            if (resolverObj.rounding === 'floor') return Math.floor(val);
+            if (resolverObj.rounding === 'ceil') return Math.ceil(val);
+            return val;
         }
 
         switch (amount) {

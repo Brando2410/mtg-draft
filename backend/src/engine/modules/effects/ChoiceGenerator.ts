@@ -103,6 +103,7 @@ export class ChoiceGenerator {
             exileOnResolution: config.exileOnResolution || config.stackObj?.exileOnResolution,
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
+            metadata: config.metadata
         }, config.actionType);
     }
 
@@ -223,7 +224,10 @@ export class ChoiceGenerator {
 
         // Initialize player's discard state for the unified UI
         // pendingDiscardCount MUST be > 0 so frontend routes hand clicks to discard (not play).
-        player.pendingDiscardCount = discardAmount;
+        if (state.players[currentPlayerId]) {
+            state.players[currentPlayerId].pendingDiscardCount = discardAmount;
+        }
+        logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] Calculated amount for ${currentPlayerId}: ${discardAmount} (from resolved: ${resolvedAmount}, hand: ${state.players[currentPlayerId]?.hand.length})`);
         state.turnState.lastDiscardedCount = 0; // Reset for new selection phase
         state.turnState.lastDiscardedIds = [];
 
@@ -243,6 +247,10 @@ export class ChoiceGenerator {
             },
             parentContext: pruneContext(parentContext),
             targets: [currentPlayerId],
+            metadata: { 
+                discardAmount: amount, 
+                isDiscardSequence: true 
+            }, // Preserve original resolver/amount for sequential players
             onSelected: (card: GameObject) => {
                 return [{ type: 'MoveToZone', targetIds: [card.id], zone: Zone.Graveyard, isDiscard: true }];
             }
@@ -257,6 +265,7 @@ export class ChoiceGenerator {
                 finalAction.data.discardAmount = amount;
                 finalAction.data.onFailureEffects = onFailureEffects;
                 finalAction.data.isOptionalDiscard = isAny; // Allow early exit via pass
+                finalAction.data.isDiscardSequence = true;
             }
         }
 

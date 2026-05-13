@@ -20,36 +20,41 @@ interface PlayerHandProps {
  * - Higher baseline to keep names above screen edge.
  * - Dynamic z-index for natural overlapping.
  */
-export const PlayerHand = memo(({ 
-  hand, 
-  virtualHand = [], 
-  onPlayCard, 
-  onHoverStart, 
+export const PlayerHand = memo(({
+  hand,
+  virtualHand = [],
+  onPlayCard,
+  onHoverStart,
   onHoverEnd,
   targetableIds = new Set(),
   pendingAction
 }: PlayerHandProps) => {
-  
+
+  const hasVirtual = virtualHand.length > 0;
+  const hasReal = hand.length > 0;
+
   const allCards = [
-    ...hand.map(c => ({ ...c, isVirtual: false })),
-    ...virtualHand.map(c => ({ ...c, isVirtual: true }))
+    ...hand.map(c => ({ ...c, isVirtual: false, isSeparator: false })),
+    ...(hasReal && hasVirtual ? [{ id: 'separator', isSeparator: true }] : []),
+    ...virtualHand.map(c => ({ ...c, isVirtual: true, isSeparator: false }))
   ];
 
   const totalCards = allCards.length;
-  // Dynamic spread: Use universal units for spacing
-  const spacing = Math.min(8.5, 120 / Math.max(totalCards, 1));
+  // Dynamic spread: Increase base spacing and max limit to reduce hitbox overlap
+  const spacing = Math.min(12, 140 / Math.max(totalCards, 1));
 
   const getCardRotation = (index: number) => {
     if (totalCards <= 1) return 0;
     const middle = (totalCards - 1) / 2;
-    return (index - middle) * (18 / Math.max(totalCards - 1, 1)); 
+    // Slightly less aggressive rotation for better readability
+    return (index - middle) * (15 / Math.max(totalCards - 1, 1));
   };
 
   const getCardY = (index: number) => {
     const middle = (totalCards - 1) / 2;
     const offset = Math.abs(index - middle);
-    // Vertical arch in unit increments
-    return 6 + (offset * 0.8); 
+    // Base Y is the amount "tucked" into the bottom. Center cards are tucked less.
+    return 4 + (offset * 1.2); 
   };
 
   const getCardX = (index: number) => {
@@ -62,13 +67,28 @@ export const PlayerHand = memo(({
       <div className="relative w-full h-full flex items-end justify-center pointer-events-none">
         <AnimatePresence>
           {allCards.map((card, index) => {
+            if ((card as any).isSeparator) {
+               return (
+                <motion.div
+                  key="separator"
+                  animate={{ 
+                    y: `calc(var(--u)*${getCardY(index)})`, 
+                    x: `calc(var(--u)*${getCardX(index)})`,
+                    rotate: getCardRotation(index),
+                  }}
+                  className="absolute bottom-0 w-[calc(var(--u)*12)] pointer-events-none"
+                />
+               );
+            }
+
             const rotation = getCardRotation(index);
             const xBase = getCardX(index);
             const yBase = getCardY(index);
+            const gameObject = card as GameObject;
             
             return (
               <motion.div
-                key={card.id}
+                key={gameObject.id}
                 initial={{ y: 'calc(var(--u)*40)', opacity: 0, rotate: rotation }}
                 animate={{ 
                   y: `calc(var(--u)*${yBase})`, 
@@ -80,28 +100,28 @@ export const PlayerHand = memo(({
                 }}
                 exit={{ y: 'calc(var(--u)*50)', opacity: 0 }}
                 whileHover={{ 
-                  y: 0, 
+                  y: 0, // Ground the card to the bottom edge on hover
                   rotate: 0,
                   scale: 1.35,
-                  zIndex: 800, // Pop above Avatar (500)
+                  zIndex: 1000, 
                   transition: { type: 'spring', stiffness: 1200, damping: 50 }
                 }}
-                className="absolute origin-bottom cursor-pointer pointer-events-auto"
-                onClick={() => onPlayCard?.(card.id)}
+                className="absolute bottom-0 origin-bottom cursor-pointer pointer-events-auto"
+                onClick={() => onPlayCard?.(gameObject.id)}
               >
                 <div className="relative group">
-                    <GameCard 
-                        obj={card} 
-                        variant="hand" 
-                        isPlayable={card.effectiveStats?.isPlayable}
-                        isTargetable={targetableIds.has(card.id)}
-                        onHoverStart={onHoverStart}
-                        onHoverEnd={onHoverEnd}
-                        pendingAction={pendingAction}
-                    />
+                  <GameCard
+                    obj={gameObject}
+                    variant="hand"
+                    isPlayable={gameObject.effectiveStats?.isPlayable}
+                    isTargetable={targetableIds.has(gameObject.id)}
+                    onHoverStart={onHoverStart}
+                    onHoverEnd={onHoverEnd}
+                    pendingAction={pendingAction}
+                  />
 
 
-                    {/* Removed duplicate playable indicator, handled by GameCard */}
+                  {/* Removed duplicate playable indicator, handled by GameCard */}
                 </div>
               </motion.div>
             );
@@ -114,39 +134,45 @@ export const PlayerHand = memo(({
     </div>
   );
 }, (prevProps, nextProps) => {
-    if (prevProps.hand.length !== nextProps.hand.length) return false;
-    if ((prevProps.virtualHand?.length || 0) !== (nextProps.virtualHand?.length || 0)) return false;
-    if (prevProps.targetableIds?.size !== nextProps.targetableIds?.size) return false;
+  if (prevProps.hand.length !== nextProps.hand.length) return false;
+  if ((prevProps.virtualHand?.length || 0) !== (nextProps.virtualHand?.length || 0)) return false;
+  if (prevProps.targetableIds?.size !== nextProps.targetableIds?.size) return false;
 
-    if (prevProps.targetableIds && nextProps.targetableIds) {
-        for (let id of prevProps.targetableIds) {
-            if (!nextProps.targetableIds.has(id)) return false;
-        }
+  if (prevProps.targetableIds && nextProps.targetableIds) {
+    for (let id of prevProps.targetableIds) {
+      if (!nextProps.targetableIds.has(id)) return false;
     }
+  }
 
-    // 3. Check if playability or versions changed for any card
-    const anyPlayabilityChanged = prevProps.hand.some((c, i) => {
-        const nextCard = nextProps.hand[i];
-        return c.effectiveStats?.isPlayable !== nextCard.effectiveStats?.isPlayable || 
-               c.version !== nextCard.version;
-    });
+  // 3. Check if playability or versions changed for any card
+  const anyPlayabilityChanged = prevProps.hand.some((c, i) => {
+    const nextCard = nextProps.hand[i];
+    return c.effectiveStats?.isPlayable !== nextCard.effectiveStats?.isPlayable ||
+      c.version !== nextCard.version;
+  });
 
-    if (anyPlayabilityChanged) return false;
+  if (anyPlayabilityChanged) return false;
 
-    for (let i = 0; i < prevProps.hand.length; i++) {
-        if (prevProps.hand[i].id !== nextProps.hand[i].id) return false;
-    }
+  for (let i = 0; i < prevProps.hand.length; i++) {
+    if (prevProps.hand[i].id !== nextProps.hand[i].id) return false;
+  }
 
-    const pv = prevProps.virtualHand || [];
-    const nv = nextProps.virtualHand || [];
-    for (let i = 0; i < pv.length; i++) {
-        if (pv[i].id !== nv[i].id) return false;
-    }
+  const pv = prevProps.virtualHand || [];
+  const nv = nextProps.virtualHand || [];
+  for (let i = 0; i < pv.length; i++) {
+    if (pv[i].id !== nv[i].id) return false;
+  }
 
-    // 4. Fallback to stateVersion if provided
-    if (prevProps.stateVersion !== undefined && nextProps.stateVersion !== undefined) {
-        return prevProps.stateVersion === nextProps.stateVersion;
-    }
+  // 4. Fallback to stateVersion if provided
+  if (prevProps.stateVersion !== undefined && nextProps.stateVersion !== undefined) {
+    if (prevProps.stateVersion !== nextProps.stateVersion) return false;
+  }
 
-    return true;
+  // 5. Explicitly check for pendingAction and playerId changes to prevent stale closures
+  if (prevProps.pendingAction?.type !== nextProps.pendingAction?.type) return false;
+  if (prevProps.pendingAction?.playerId !== nextProps.pendingAction?.playerId) return false;
+  // Note: effectivePlayerId is not a prop here, but onPlayCard changes when it does.
+  // Since we don't check functions, we must rely on stateVersion or explicit data props.
+
+  return true;
 });

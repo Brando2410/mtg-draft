@@ -23,7 +23,10 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
         {
           type: EffectType.AddCounters,
           counterType: 'stun',
-          amount: (state: any, source: any) => (source.xValue || 0) * 2,
+          amount: {
+            type: 'X_VALUE',
+            multiplier: 2
+          },
           targetMapping: TargetMapping.Target1
         }
       ]

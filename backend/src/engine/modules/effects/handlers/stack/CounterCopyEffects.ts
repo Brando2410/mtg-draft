@@ -172,7 +172,7 @@ export const CopySpellHandler: IEffectHandler = {
                             data.metadata.isCopyTargeting = true;
                             data.metadata.parentSourceId = context.sourceId; // Store parent ID explicitly
                             data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
-                            data.metadata.effectIndex = context.effectIndex;
+                            data.metadata.effectIndex = 0; // Copies always start resolution from the beginning
                             data._backupTargets = backupTargets;
 
                             logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata for spell copy. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);
@@ -238,7 +238,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                         data.metadata.isCopyTargeting = true;
                         data.metadata.parentSourceId = context.sourceId; // Store parent ID explicitly
                         data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
-                        data.metadata.effectIndex = context.effectIndex;
+                        data.metadata.effectIndex = 0; // Copies always start resolution from the beginning
                         data._backupTargets = backupTargets;
 
                         logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);

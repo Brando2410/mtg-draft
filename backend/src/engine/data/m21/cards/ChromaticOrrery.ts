@@ -40,12 +40,16 @@ export const ChromaticOrrery: CardDefinition = {
             effects: [
                 {
                     type: EffectType.DrawCards,
-                    amount: (state: any, source: any) => {
-                        const colors = new Set<string>();
-                        state.battlefield.filter((o: any) => o.controllerId === source.controllerId).forEach((o: any) => {
-                            (o.definition.colors || []).forEach((c: string) => colors.add(c));
-                        });
-                        return colors.size;
+                    amount: {
+                        type: 'SCRIPT',
+                        resolver: (state, context) => {
+                            const { controllerId } = context;
+                            const colors = new Set<string>();
+                            state.battlefield.filter(o => o.controllerId === controllerId).forEach(o => {
+                                (o.definition.colors || []).forEach(c => colors.add(c));
+                            });
+                            return colors.size;
+                        }
                     },
                     targetMapping: TargetMapping.Controller
                 }

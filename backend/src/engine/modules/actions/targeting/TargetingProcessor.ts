@@ -444,7 +444,7 @@ export class TargetingProcessor {
 
         const { logger, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
         const stackIds = state.stack.map(s => s.id).join(', ');
-        logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${meta.isFreeCast}, hasParent=${!!meta.parentContext}, hasStackObj=${!!meta.stackObj}, parentStackId=${meta.parentStackId}, parentSourceId=${meta.parentSourceId}. Stack IDs: [${stackIds}]`);
+        logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${meta.isFreeCast}, hasParent=${!!meta.parentContext}, hasStackObj=${!!meta.stackObj}, parentStackId=${meta.parentStackId}, parentSourceId=${meta.parentSourceId}. effectIndex=${meta.effectIndex}, xValue=${meta.xValue}. Stack IDs: [${stackIds}]`);
 
         if (actionData?.isCostChoice && actionData.costType) {
             state.interaction.lastSelections[actionData.costType as string] = resolvedTargets;
@@ -540,6 +540,7 @@ export class TargetingProcessor {
         // --- CASE 2: Resolution-Time Effects (e.g. "Exile target, then draw") ---
         // These resume the current effect chain directly.
         if (meta.effectIndex !== undefined) {
+            logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Case 2: Resolution-Time Effect. Index=${meta.effectIndex}`);
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
 
@@ -568,55 +569,55 @@ export class TargetingProcessor {
             let resumeSourceId = (actionData.sourceId || sourceId!);
             let resumeStackObj = stackObj;
 
-            if (meta.parentContext || meta.parentStackId || meta.parentSourceId || meta.isCopyTargeting || meta.isChangeTargeting) {
-                const parentId = meta.parentStackId || meta.parentContext?.stackObject?.id;
-                const parentSource = meta.parentSourceId || meta.parentContext?.sourceId;
-                
-                // CRITICAL: Search stack for the parent spell/ability
-                const parentObj = state.stack.find(s => (parentId && s.id === parentId) || (parentSource && s.id === parentSource));
-                
-                logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${!!parentObj}`);
-                
-                if (parentObj || meta.parentContext) {
-                    // Explicitly clear pendingAction so resume can work
-                    state.pendingAction = undefined;
-                    
-                    return ResolutionManager.resume(state, engine, 
-                        parentObj, 
-                        parentSource || parentId, 
-                        meta.parentContext
-                    );
-                } else {
-                    logger.warn(state, LogCategory.TARGETING, `[RESUME-FAIL] Could not find parent object on stack to resume resolution.`);
-                }
+            // Resolve the current level of effects
+            let completed = true;
+            if (!meta.isCopyTargeting && !meta.isChangeTargeting) {
+                completed = EffectProcessor.resolveEffects({
+                    state,
+                    context: EffectProcessor.createEngineFrame(state, {
+                        sourceId: resumeSourceId,
+                        effects: savedEffects,
+                        targets: savedTargets,
+                        effectIndex: meta.effectIndex,
+                        isResumption: true,
+                        stackObject: resumeStackObj,
+                        parentContext: meta.parentContext,
+                        exileOnResolution: meta.exileOnResolution
+                    }),
+                });
             }
 
-            // Fallback for non-parented resumption (legacy)
-            EffectProcessor.resolveEffects({
-                state,
-                context: EffectProcessor.createEngineFrame(state, {
-                    sourceId: resumeSourceId,
-                    effects: savedEffects,
-                    targets: savedTargets,
-                    effectIndex: (meta.effectIndex !== undefined ? meta.effectIndex + 1 : undefined),
-                    isResumption: true,
-                    stackObject: resumeStackObj,
-                    parentContext: meta.parentContext,
-                    exileOnResolution: meta.exileOnResolution
-                }),
-            });
-
-            if (!state.pendingAction) {
-                if (meta.parentContext) {
-                    return ResolutionManager.resume(state, engine);
+            // If the current level finished and we have a parent, resume it
+            if (completed && !state.pendingAction) {
+                if (meta.parentContext || meta.parentStackId || meta.parentSourceId || meta.isCopyTargeting || meta.isChangeTargeting) {
+                    const parentId = meta.parentStackId || meta.parentContext?.stackObject?.id;
+                    const parentSource = meta.parentSourceId || meta.parentContext?.sourceId;
+                    
+                    // Search stack for the parent spell/ability
+                    const parentObj = state.stack.find(s => (parentId && s.id === parentId) || (parentSource && s.id === parentSource));
+                    
+                    logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${!!parentObj}`);
+                    
+                    if (parentObj || meta.parentContext) {
+                        state.pendingAction = undefined;
+                        return ResolutionManager.resume(state, engine, 
+                            parentObj, 
+                            parentSource || parentId, 
+                            meta.parentContext
+                        );
+                    }
                 }
+                
+                // Final fallback if no parent
                 engine.resetPriorityToActivePlayer();
             }
+
             return true;
         }
 
         // --- CASE 3: Specialized Stack Object Updates (e.g. Copying/Retargeting Spells) ---
         if (stackObj) {
+            logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Case 3: Stack Object Update. Type=${stackObj.type}`);
             const finalTargets = (meta.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;

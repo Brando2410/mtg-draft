@@ -114,7 +114,8 @@ export class ResolutionManager {
                 effectIndex: meta.effectIndex ?? 0,
                 isResumption: true,
                 parentContext: meta.parentContext,
-                targets: meta.targets || [],
+                targets: [], // Clear targets to ensure fresh mapping for the resumed effect index
+                originalTargets: meta.targets || [], // Preserve for handlers that might need them
                 lookingCards: meta.lookingCards || [],
                 sourceId,
                 controllerId: meta.controllerId || stackObj?.controllerId || action.playerId,
@@ -136,6 +137,7 @@ export class ResolutionManager {
 
         if (action && state.pendingAction === action) {
             state.pendingAction = undefined;
+            state.stateVersion++;
         }
 
         while (
@@ -148,11 +150,6 @@ export class ResolutionManager {
             const resumingCtx = currentCtx;
             const nextIdx = resumingCtx.effectIndex!;
             const effs = resumingCtx.effects!;
-            const parentTargets = resumingCtx.targets || [];
-            const lookingCards = resumingCtx.lookingCards;
-            const nextParentCtx = resumingCtx.parentContext;
-
-            currentCtx = nextParentCtx;
 
             logger.info(state, LogCategory.ACTION, `[RESOLUTION-MGR] Resuming effects at index ${nextIdx}/${effs.length} for ${sourceId}. Next effect: ${effs[nextIdx]?.type}`);
 
@@ -162,6 +159,21 @@ export class ResolutionManager {
                 skipFizzleCheck: true,
             });
 
+            if (completed && !state.pendingAction) {
+                // This context level is complete. Move up to parent if it exists.
+                const parent = resumingCtx.parentContext;
+                if (parent) {
+                    logger.debug(state, LogCategory.ACTION, `[RESOLUTION-MGR] Level complete. Popping to parent context (Index: ${parent.effectIndex}).`);
+                }
+                currentCtx = parent;
+                if (currentCtx) {
+                    currentCtx.effectIndex = (currentCtx.effectIndex || 0) + 1;
+                    currentCtx.targets = []; // Ensure next level starts fresh
+                }
+            } else {
+                // Suspended or finished with current stack, we must stop and keep currentCtx for next resume
+                break;
+            }
         }
 
         if (!state.pendingAction) {

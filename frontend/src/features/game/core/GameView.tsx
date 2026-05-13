@@ -42,7 +42,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   const { leaveRoom } = useDraftStore();
   const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
   const actions = useGameActions(room.id, effectivePlayerId);
-  
+
   const currentMatch = room.matches?.find((m: TournamentMatch) => m.players.includes(effectivePlayerId) && m.status === 'active');
   const restartRequestedBy = currentMatch?.restartRequestedBy || room.restartRequestedBy;
   const isRequestingRestart = restartRequestedBy === effectivePlayerId;
@@ -68,7 +68,7 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
   });
 
   const isSpectator = !gameState?.players[playerId];
-  
+
   const handleSwapPOV = () => {
     const playerIds = Object.keys(gameState.players);
     if (playerIds.length < 2) return;
@@ -263,7 +263,10 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
         virtualHand={me?.virtualHand || []}
         stateVersion={gameState.stateVersion}
         onPlayCard={(cardId) => {
-          if (me?.pendingDiscardCount && me.pendingDiscardCount > 0) {
+          const isDiscarding = (gameState.pendingAction?.type === ActionType.Discard || gameState.pendingAction?.type === 'DISCARD') &&
+            gameState.pendingAction.playerId === effectivePlayerId;
+
+          if (isDiscarding) {
             actions.discardCard(cardId);
           } else {
             actions.playCard(cardId);
@@ -304,7 +307,10 @@ export const GameView = ({ room, playerId, customGameState, onLeave, onBack }: G
       <EscMenu
         isOpen={showEscMenu}
         onClose={() => setShowEscMenu(false)}
-        onResetMatch={actions.requestMatchRestart}
+        onResetMatch={() => {
+          actions.requestMatchRestart();
+          setShowEscMenu(false);
+        }}
         onConcede={() => {
           actions.concede();
           setShowEscMenu(false);

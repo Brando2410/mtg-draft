@@ -232,6 +232,7 @@ export class GameEngine implements EngineContext {
 
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
     const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId);
+    this.incrementVersion();
     return res.success;
   }
 
