@@ -68,7 +68,9 @@ export class RegistryUtils {
             }
         }
 
-        const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
+        const lastChosenModeIndex = (obj as StackObject).lastChosenModeIndex !== undefined 
+            ? (obj as StackObject).lastChosenModeIndex 
+            : state.interaction?.lastChosenModeIndex;
         const hasPreSelectedMode = lastChosenModeIndex !== undefined;
 
         // 1. Initial extraction from root or spell ability

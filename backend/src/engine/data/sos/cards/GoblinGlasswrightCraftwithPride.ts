@@ -28,7 +28,7 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
                             types: ["Artifact", "Token"],
                             subtypes: ["Treasure"],
                             oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
-                            image_url: "https://cards.scryfall.io/normal/front/4/3/437976e1-9f2d-4560-8451-f7615957d591.jpg?1775828483",
+                            image_url: "https://cards.scryfall.io/normal/front/b/4/b4f61b5e-9c53-40b1-b93e-3ffa351ff052.jpg?1775828602",
                             abilities: [
                                 {
                                     type: AbilityType.Activated,

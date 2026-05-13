@@ -465,14 +465,17 @@ export class LayerProcessor {
           return Array.isArray(effect.targetIds) && (effect.targetIds as string[]).includes(objId);
         }
         case TargetMapping.Controller:
-          return (
-            RuleUtils.getController(obj) === effect.controllerId &&
-            TargetingProcessor.matchesRestrictions(
+          const controllerMatches = RuleUtils.getController(obj) === effect.controllerId;
+          const restrictionMatches = TargetingProcessor.matchesRestrictions(
               state,
               obj,
               effect.restrictions || [],
               { sourceId: effect.sourceId, controllerId: effect.controllerId, effects: [], targets: [] }
-            )
+            );
+
+          return (
+            controllerMatches &&
+            restrictionMatches
           );
         default:
           return false;
@@ -762,6 +765,7 @@ export class LayerProcessor {
             damageMarked: 0,
             summoningSickness: false,
             attachedTo: undefined,
+            typeMask: this.calculateTypeMask(face.types || []),
           };
           player.virtualHand.push(virtualSpell);
         }

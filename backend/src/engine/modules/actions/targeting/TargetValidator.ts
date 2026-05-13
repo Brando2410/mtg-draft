@@ -253,6 +253,8 @@ export class TargetValidator {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
 
+
+
             // 1. Numeric Regex
             if (isNumericRestriction(lr)) {
                 if (!RestrictionRegistry["NUMERIC_REGEX"].matches(state, targetObj, lr, context)) return false;

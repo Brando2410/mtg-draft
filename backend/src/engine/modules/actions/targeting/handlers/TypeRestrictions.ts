@@ -55,7 +55,8 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     }),
     "INSTANT_OR_SORCERY": gameObjectRestriction((state, obj) => {
         const mask = obj.typeMask || 0;
-        return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
+        if (mask !== 0) return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
+        return RuleUtils.isType(obj, 'instant') || RuleUtils.isType(obj, 'sorcery');
     }),
     "CREATURE_OR_PLANESWALKER": gameObjectRestriction((state, obj) => {
         const mask = obj.typeMask || 0;

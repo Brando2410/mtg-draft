@@ -593,16 +593,18 @@ export class TargetingProcessor {
                     const parentId = meta.parentStackId || meta.parentContext?.stackObject?.id;
                     const parentSource = meta.parentSourceId || meta.parentContext?.sourceId;
                     
-                    // Search stack for the parent spell/ability
-                    const parentObj = state.stack.find(s => (parentId && s.id === parentId) || (parentSource && s.id === parentSource));
+                    // Search stack for the parent spell/ability (search from top to bottom to find the most recent/relevant parent)
+                    const reversedStack = [...state.stack].reverse();
+                    const parentObj = (parentId ? reversedStack.find(s => s.id === parentId) : undefined) || 
+                                     (parentSource ? reversedStack.find(s => s.id === parentSource) : undefined);
                     
-                    logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${!!parentObj}`);
+                    logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${parentObj?.id || 'none'}`);
                     
                     if (parentObj || meta.parentContext) {
                         state.pendingAction = undefined;
                         return ResolutionManager.resume(state, engine, 
                             parentObj, 
-                            parentSource || parentId, 
+                            parentObj?.id || parentSource || parentId, 
                             meta.parentContext
                         );
                     }

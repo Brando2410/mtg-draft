@@ -360,26 +360,11 @@ export class SpellProcessor {
             if (hasHybrids) totalMana = newManaStr;
         }
 
-        // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
+        // --- SETUP SEQUENCE: MODES -> COSTS -> TARGETING -> FINALIZATION ---
+        // CR 601.2: The order of choosing modes and costs must precede choosing targets.
 
-        // Step 1: Check Targeting
-        const totalTargetCounts = targetDefinitions ? TargetingProcessor.calculateTotalCounts(targetDefinitions, cardToPlay.xValue || 0) : { maxCount: 0 };
-
-        if (targetDefinitions && (!declaredTargets || declaredTargets.length < totalTargetCounts.maxCount) && !bypassTargeting) {
-            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinitions, totalMana, cardInstanceId, engine, parentContext, isFreeCast, exileOnResolution, declaredTargets);
-            if (typeof result === 'boolean') return result;
-            declaredTargets = result;
-        }
-
-        // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
-        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, parentContext, isFreeCast, exileOnResolution);
-        if (interactiveResult === null) return false; // Illegal play, stop
-        if (interactiveResult === true) return true; // Flow paused for input
-
-        // Step 1.7: Check Mode Selection (Charms/Comands)
+        // Step 1: Check Mode Selection (Charms/Commands) - CR 601.2b
         if (modalAbility && !hasPreSelectedMode) {
-
-
             let minChoices = modalAbility.minChoices || 1;
             let maxChoices = modalAbility.maxChoices || 1;
 
@@ -405,7 +390,7 @@ export class SpellProcessor {
                 });
                 if (met) {
                     maxChoices = modalAbility.modes!.length;
-                    logger.debug(state, LogCategory.ACTION, `[MODAL] Commander condition met: You may choose all ${maxChoices} modes.`);
+                    logger.debug(state, LogCategory.ACTION, `[MODAL] Condition met: You may choose all ${maxChoices} modes.`);
                 }
             }
 
@@ -421,9 +406,8 @@ export class SpellProcessor {
                 };
             });
 
-            const { action: ActionProcessor } = getProcessors(state);
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, modalAbility.label || 'Choose options')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(choices, minChoices, maxChoices)
                 .withData({ isModeSelection: true, allowDuplicates: modalAbility.allowDuplicates, declaredTargets: declaredTargets || [] })
                 .build();
@@ -431,16 +415,29 @@ export class SpellProcessor {
             return true;
         }
 
-        // Step 2: Check Modal Choice
+        // Step 2: Check Additional Costs (Casualty, Kicker, etc.) - CR 601.2b
+        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, parentContext, isFreeCast, exileOnResolution);
+        if (interactiveResult === null) return false; // Illegal play, stop
+        if (interactiveResult === true) return true; // Flow paused for input (Choice or Payment)
+
+        // Step 3: Check Targeting - CR 601.2c
+        const totalTargetCounts = targetDefinitions ? TargetingProcessor.calculateTotalCounts(targetDefinitions, cardToPlay.xValue || 0) : { maxCount: 0 };
+
+        if (targetDefinitions && (!declaredTargets || declaredTargets.length < totalTargetCounts.maxCount) && !bypassTargeting) {
+            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinitions, totalMana, cardInstanceId, engine, parentContext, isFreeCast, exileOnResolution, declaredTargets);
+            if (typeof result === 'boolean') return result;
+            declaredTargets = result;
+        }
+
+        // Step 4: Check Modal Choice (Resolution Effect Choices)
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
-            // Trigger choice phase (targets are already in declaredTargets if we are here)
             const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, choiceEffect.label || 'Choose an option')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(choiceEffect.choices as ChoiceOption[], (choiceEffect.minChoices as number) || 1, (choiceEffect.maxChoices as number) || 1)
                 .withData({ declaredTargets: declaredTargets || [] })
                 .build();
-            logger.debug(state, LogCategory.ACTION, `[CHOICE] Selecting mode for ${cardToPlay.definition.name}...`);
+            logger.debug(state, LogCategory.ACTION, `[CHOICE] Selecting choice for ${cardToPlay.definition.name}...`);
             return true;
         }
 
@@ -818,6 +815,7 @@ export class SpellProcessor {
             isFlashbackCast: cardToPlay.isFlashbackCast,
             targetsControllers,
             paidManaValue: cardToPlay.paidManaValue,
+            lastChosenModeIndex: state.interaction?.lastChosenModeIndex,
             data: {
                 preSelectedChoice,
                 declaredXValue: cardToPlay.xValue,
@@ -837,7 +835,8 @@ export class SpellProcessor {
         const paidCasualty = state.interaction?.flags.paidCasualtyFor === cardToPlay.id;
         if (paidCasualty) {
             delete state.interaction.flags.paidCasualtyFor;
-            const casualtyObj = {
+
+            const casualtyObj: StackObject = {
                 id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
                 controllerId: playerId,
                 ownerId: stackObj.ownerId,
@@ -848,7 +847,8 @@ export class SpellProcessor {
                 name: `Casualty Copy (${stackObj.definition.name})`,
                 image_url: stackObj.definition.image_url,
                 targets: [],
-                data: { effects: [{ type: EffectType.CopySpellOnStack, targetMapping: 'SOURCE_OBJECT', chooseNewTargets: true }] }
+                effects: [{ type: EffectType.CopySpellOnStack, targetMapping: 'SOURCE_OBJECT', chooseNewTargets: true }],
+                zone: Zone.Stack
             };
             state.stack.push(casualtyObj);
             getProcessors(state).action.updateEntityCache(state, casualtyObj);

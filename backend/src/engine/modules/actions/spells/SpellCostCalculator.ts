@@ -43,6 +43,7 @@ export class SpellCostCalculator {
      * @returns Object containing totalMana string, list of additionalCosts, and optional usedAlternativeCostId.
      */
     public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: import('@shared/engine_types').CardDefinition, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string, isFlashback?: boolean } {
+
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
 
@@ -232,6 +233,7 @@ export class SpellCostCalculator {
 
         // 2.5 Scan keywords for Affinity and Casualty
         const keywords = [...new Set([...(stats?.keywords || []), ...(currentDef.keywords || [])])];
+
         keywords.forEach((k: string) => {
             if (k.toLowerCase().startsWith('affinity for ')) {
                 const condition = k.substring(13).toLowerCase();
@@ -277,9 +279,12 @@ export class SpellCostCalculator {
                             }
                         ]
                     } as ChoiceCost);
+
                 }
             }
         });
+
+
 
         for (const mod of modifiers) {
             const type = mod.type;

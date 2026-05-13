@@ -150,6 +150,7 @@ export interface StackObject extends BaseEntity {
     lookingCards?: GameObject[];
     maxChoices?: number;
     minChoices?: number;
+    lastChosenModeIndex?: number[];
     effectIndex?: number;
     isResumption?: boolean;
     nextPlayerIds?: PlayerId[];

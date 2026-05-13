@@ -48,10 +48,12 @@ export class SpellValidator {
                         const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${realObj.id}_${Date.now()}`;
                         if (state.dynamicCopies && state.dynamicCopies[copyId]) return state.dynamicCopies[copyId];
                         
+                        const { layer: LayerProcessor } = getProcessors(state);
                         const copy: GameObject = {
                             ...realObj,
                             id: copyId,
                             definition: { ...face, image_url: face.image_url || realObj.definition.image_url },
+                            typeMask: LayerProcessor.calculateTypeMask(face.types || []),
                             zone: Zone.Exile,
                             isPreparedCopy: true,
                             sourceCreatureId: realObj.id,

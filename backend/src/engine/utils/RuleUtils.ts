@@ -252,6 +252,7 @@ export class RuleUtils {
         if (q === 'multicolored' && this.getColors(obj, state).length >= 2) return true;
         if (q === 'colorless' && this.getColors(obj, state).length === 0) return true;
         if (q === 'monocolored' && this.getColors(obj, state).length === 1) return true;
+        if (q === 'instant_or_sorcery' && (this.isType(obj, 'instant') || this.isType(obj, 'sorcery'))) return true;
 
         return false;
     }
