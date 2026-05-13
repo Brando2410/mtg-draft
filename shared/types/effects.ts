@@ -236,6 +236,7 @@ export interface EngineFrame {
 
     // === Hierarchy ===
     parentContext?: EngineFrame;
+    depth?: number;
 
     // === Condition/Targeting Specific ===
     cardToPlay?: GameObject;

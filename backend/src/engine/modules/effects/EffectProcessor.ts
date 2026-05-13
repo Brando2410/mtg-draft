@@ -98,7 +98,7 @@ export class EffectProcessor {
 
     const targets = options.targets || options.validTargetIds || [];
 
-    return {
+    const frame: EngineFrame = {
       castFromZone: transient.castFromZone || stackObject?.castFromZone || parentContext?.castFromZone,
       controllerId,
       effectIndex: options.effectIndex ?? (options.effects ? 0 : stackObject?.effectIndex ?? 0),
@@ -120,6 +120,7 @@ export class EffectProcessor {
       nextPlayerIds: transient.nextPlayerIds || stackObject?.nextPlayerIds || parentContext?.nextPlayerIds,
       onFailureEffects: transient.onFailureEffects || stackObject?.onFailureEffects || parentContext?.onFailureEffects,
       parentContext,
+      depth: (parentContext?.depth || 0) + 1,
       sourceId,
       sourceName: transient.sourceName || stackObject?.sourceName || parentContext?.sourceName,
       sourceObject: (sourceObj as GameObject),
@@ -127,6 +128,14 @@ export class EffectProcessor {
       targets,
       xValue: transient.xValue ?? stackObject?.xValue ?? parentContext?.xValue,
     };
+
+    if ((frame.depth || 0) > 20) {
+      const { logger } = getProcessors(state);
+      logger.error(state, LogCategory.EFFECT, `[CRITICAL] Max resolution depth exceeded (Depth: ${frame.depth}). Potential infinite loop for source ${sourceId}. Killing frame.`);
+      return { ...frame, effects: [] }; // Return a frame with no effects to kill the loop
+    }
+
+    return frame;
   }
 
   /**
@@ -304,7 +313,12 @@ export class EffectProcessor {
     const { sourceId, stackObject, controllerId, targets } = context;
     const { logger, targeting: TP } = getProcessors(state);
 
-    logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
+    logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] (Depth: ${context.depth || 1}) Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
+
+    // Safety: Proactive xValue Validation
+    if (effect.amount === 'X' && context.xValue === undefined) {
+      logger.warn(state, LogCategory.ACTION, `[SAFETY] Effect ${effect.type} from source ${sourceId} requires X, but xValue is undefined in context.`);
+    }
 
 
     // Rule 608.2: Evaluate conditions

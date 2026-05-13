@@ -617,6 +617,9 @@ export class TargetingProcessor {
 
         // --- CASE 3: Specialized Stack Object Updates (e.g. Copying/Retargeting Spells) ---
         if (stackObj) {
+            if (meta.parentContext) {
+                logger.warn(state, LogCategory.TARGETING, `[SAFETY] finaliseTargeting fell through to Case 3 despite having a parentContext. This usually indicates a missing effectIndex, which will cause a resolution restart instead of a resumption.`);
+            }
             logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Case 3: Stack Object Update. Type=${stackObj.type}`);
             const finalTargets = (meta.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
