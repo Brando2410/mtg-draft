@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
 export const ColorstormStallion: CardDefinition = {
     name: "Colorstorm Stallion",
     manaCost: "{1}{U}{R}",
-
-
     colors: ["R", "U"],
     types: ["Creature"],
     subtypes: ["Elemental", "Horse"],

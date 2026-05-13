@@ -373,8 +373,8 @@ export class SpellProcessor {
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
         const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, parentContext, isFreeCast, exileOnResolution);
-        if (interactiveResult === true) return true; // Flow paused for input
         if (interactiveResult === null) return false; // Illegal play, stop
+        if (interactiveResult === true) return true; // Flow paused for input
 
         // Step 1.7: Check Mode Selection (Charms/Comands)
         if (modalAbility && !hasPreSelectedMode) {
@@ -695,7 +695,9 @@ export class SpellProcessor {
                     TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Sacrificed ${obj.definition.name}.`);
-                    if (cost.isCasualty && state.interaction) state.interaction.flags.paidCasualtyFor = cardToPlay.id;
+                    if (cost.isCasualty && state.interaction) {
+                        state.interaction.flags.paidCasualtyFor = cardToPlay.id;
+                    }
                 }
             } else if (cost.type === 'Discard') {
                 const chosenId = state.interaction?.lastSelections['Discard']?.[0];
@@ -734,14 +736,6 @@ export class SpellProcessor {
         });
 
         // Cleanup temporary selection state
-        if (state.interaction) {
-            state.interaction.lastSelections = {};
-            state.interaction.lastChoiceIndex = undefined;
-            state.interaction.lastChosenModeIndex = undefined;
-            state.interaction.manaChoices = undefined;
-            state.interaction.flags = {};
-        }
-
         // Move to Stack
         const lastZone = cardToPlay.zone;
         if (!cardToPlay.isPreparedCopy) {
@@ -840,7 +834,8 @@ export class SpellProcessor {
         logger.info(state, LogCategory.STACK, `[STACK] + ${player.name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}`);
 
         // Casualty
-        if (state.interaction?.flags.paidCasualtyFor === cardToPlay.id) {
+        const paidCasualty = state.interaction?.flags.paidCasualtyFor === cardToPlay.id;
+        if (paidCasualty) {
             delete state.interaction.flags.paidCasualtyFor;
             const casualtyObj = {
                 id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -881,7 +876,14 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { object: cardToPlay, sourceId: cardToPlay.id, targetIds: [cardToPlay.id] } });
         }
 
-        logger.info(state, LogCategory.STACK, `[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
+        if (state.interaction) {
+            state.interaction.lastSelections = {};
+            state.interaction.lastChoiceIndex = undefined;
+            state.interaction.lastChosenModeIndex = undefined;
+            state.interaction.manaChoices = undefined;
+            state.interaction.flags = {};
+        }
+
         if (!state.pendingAction) {
             engine.checkStateBasedActions();
             engine.resetPriorityToActivePlayer();

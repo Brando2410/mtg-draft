@@ -294,7 +294,7 @@ export class ChoiceProcessor {
         }
 
         const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
-        if (!isNaN(choiceIdx) && isResolution && action.type !== ActionType.ResolutionChoice && action.type !== ActionType.OptionalAction) {
+        if (!isNaN(choiceIdx) && isResolution && action.type !== ActionType.ResolutionChoice && action.type !== ActionType.OptionalAction && !meta.isSpellCasting && !actionData.isCostChoice) {
             state.interaction.lastChoiceIndex = choiceIdx;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-PERSIST] Stored lastChoiceIndex: ${choiceIdx}`);
             
@@ -365,7 +365,7 @@ export class ChoiceProcessor {
 
         // 2. Handle Casting-Phase Choices (Modes, Additional Costs)
         // If it's a resolution-phase choice (Cascade, etc.), we fall through to handleResolutionChoice
-        if ((isModal || meta.isSpellCasting || actionData.isCostChoice) && !isResolution) {
+        if ((isModal || meta.isSpellCasting || actionData.isCostChoice) && (action.type !== ActionType.Choice || meta.isSpellCasting || actionData.isCostChoice)) {
             return this.handleModalSelection(state, playerId, sourceId, choice, firstSelection, action, engine, payload);
         }
 
@@ -936,10 +936,11 @@ export class ChoiceProcessor {
         const isSpellCasting = meta.isSpellCasting;
 
         // Ensure cardToPlayId remains sourceId for modes/costs/targeting. 
-        // Only use choice.value if it's a legitimate card selection (e.g. from a list of faces/cards).
+        // Only use choice.value if it's a legitimate card selection (e.g. from a list of faces/cards) AND not a cost choice.
         const choiceValStr = choice?.value ? String(choice.value) : "";
         const isSystemValue = choiceValStr.startsWith('MODE_SELECTION_') || choiceValStr.startsWith('COST_CHOICE_') || choiceValStr.startsWith('FACE_SELECTION_');
-        const cardToPlayId = (isSpellCasting && !isTargeting && !isSystemValue && choice?.value && typeof choice.value === 'string' && choice.value.length > 20) ? choice.value : sourceId;
+        const isCostChoice = actionData.isCostChoice || !!actionData.costType;
+        const cardToPlayId = (isSpellCasting && !isTargeting && !isSystemValue && !isCostChoice && choice?.value && typeof choice.value === 'string' && choice.value.length > 20) ? choice.value : sourceId;
 
         // If this is a copy being re-targeted at resolution time, we do NOT call playCard.
         // We just update the copy's targets and resume the parent resolution (the trigger).

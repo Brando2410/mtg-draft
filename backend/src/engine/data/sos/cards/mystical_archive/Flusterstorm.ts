@@ -2,7 +2,7 @@ import { CardDefinition } from '@shared/engine_types';
 
 export const Flusterstorm: CardDefinition = {
     name: "Flusterstorm",
-    manaCost: "{U}",
+    manaCost: "{U}",
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],

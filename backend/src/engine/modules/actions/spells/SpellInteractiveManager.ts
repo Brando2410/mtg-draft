@@ -168,7 +168,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Sacrifice a creature to cast " + cardToPlay.definition.name)
                 .asCost('Sacrifice')
-                .withContext({ isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(legalSacrificeIds.map(id => {
                     const obj = state.battlefield.find(o => o.id === id)!;
                     return { label: `Sacrifice ${obj.definition.name}`, value: id, cardData: obj, selectable: true }
@@ -202,7 +202,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Discard a card to cast " + cardToPlay.definition.name)
                 .asCost('Discard')
-                .withContext({ isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(legalDiscardIds.map(id => {
                     const c = player.hand.find(o => o.id === id)!;
                     return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
@@ -244,7 +244,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Exile ${amount} card(s) to cast ` + cardToPlay.definition.name)
                 .asCost('Exile')
-                .withContext({ isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(legalExileIds.map((id: string) => {
                     const obj = pool.find((o: GameObject) => o.id === id);
                     return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
@@ -278,7 +278,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Tap ${amount} permanents to cast ` + cardToPlay.definition.name)
                 .asCost('TapSelection')
-                .withContext({ isFreeCast, parentContext })
+                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
                 .withChoices(legalTapIds.map(id => {
                     const sObj = state.battlefield.find(o => o.id === id);
                     return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }

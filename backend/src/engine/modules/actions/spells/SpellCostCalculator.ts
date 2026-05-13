@@ -1,8 +1,9 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, EnginePrefix, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, EnginePrefix, GameObject, GameState, ManaCost, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { RegistryUtils } from '../../../utils/RegistryUtils';
+import { LogCategory } from '../../../utils/EngineLogger';
 
 
 /**
@@ -229,7 +230,7 @@ export class SpellCostCalculator {
             }
         });
 
-        // 2.5 Scan keywords for Affinity
+        // 2.5 Scan keywords for Affinity and Casualty
         const keywords = [...new Set([...(stats?.keywords || []), ...(currentDef.keywords || [])])];
         keywords.forEach((k: string) => {
             if (k.toLowerCase().startsWith('affinity for ')) {
@@ -249,6 +250,34 @@ export class SpellCostCalculator {
                     controllerId: card.controllerId || card.ownerId,
                     targetMapping: 'SELF'
                 } as ContinuousEffect);
+            }
+
+            // --- CASUALTY (Rule 702.152) ---
+            if (k.toLowerCase().startsWith('casualty ')) {
+                const parts = k.split(' ');
+                const amountStr = parts[parts.length - 1];
+                const amount = parseInt(amountStr);
+                if (!isNaN(amount)) {
+                    additionalCosts.push({
+                        type: CostType.Choice,
+                        label: `Casualty ${amount}`,
+                        choices: [
+                            {
+                                label: "Don't pay Casualty",
+                                costs: []
+                            },
+                            {
+                                label: `Pay Casualty ${amount} (Sacrifice a creature with power ${amount} or greater)`,
+                                costs: [{
+                                    type: CostType.Sacrifice,
+                                    amount: 1,
+                                    restrictions: [Restriction.Creature, `POWER${amount}ORGREATER`],
+                                    isCasualty: true
+                                }]
+                            }
+                        ]
+                    } as ChoiceCost);
+                }
             }
         });
 
