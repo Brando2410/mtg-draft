@@ -149,6 +149,12 @@ export class EffectProcessor {
 
     logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${activeEffects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. isResumption: ${context.isResumption}. Targets: ${targets.join(', ')}`);
 
+    // Ensure transient tracking arrays are initialized so shallow copies share the same reference (CR 608)
+    if (!context.exiledIds) context.exiledIds = (stackObject?.exiledIds || []);
+    if (!context.lastMilledIds) context.lastMilledIds = (stackObject?.lastMilledIds || []);
+    if (!context.lastDiscardedIds) context.lastDiscardedIds = (stackObject?.lastDiscardedIds || []);
+    if (!context.lookingCards) context.lookingCards = (stackObject?.lookingCards || []);
+
     // CR 608.2b: Check target legality on resolution (Fizzle check)
     // Only check at the very beginning of the original resolution sequence
     if (startIndex === 0 && !context.isResumption && !parentContext && !skipFizzleCheck && targets.length > 0 && activeEffects.some(e => {
@@ -169,19 +175,20 @@ export class EffectProcessor {
       const effect = activeEffects[i];
       logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${activeEffects.length}: Type=${effect.type} Source=${sourceId}`);
 
-      // CR 608.2: Update the effectIndex BEFORE execution so that any choices 
-      // capture the correct resumption point in their metadata.
-      context.effectIndex = i + 1;
-
-      if (stackObject && stackObject.effects === effects) {
-        stackObject.effectIndex = i + 1;
-      }
+      // CR 608.2: We will update the effectIndex AFTER successful execution or during suspension handling.
+      // This ensures that if an effect suspends, it resumes at the CORRECT index.
 
       this.executeEffect({
         state,
         context,
         effect
       });
+
+      // Update the effectIndex AFTER execution (CR 608.2)
+      context.effectIndex = i + 1;
+      if (stackObject && stackObject.effects === effects) {
+        stackObject.effectIndex = i + 1;
+      }
 
       // Update lookingCards in the context if it was modified during execution (for remainder effects)
       if (state.pendingAction?.data?.metadata?.lookingCards) {
@@ -328,18 +335,20 @@ export class EffectProcessor {
         effect,
       ) as string[];
 
-      // System effects (Choice, Delayed Triggers, Continuous Effects) should inherit parent targets if no mapping is specified
+      // System effects (Choice, Delayed Triggers, Continuous Effects, Conditional) should inherit parent targets if no mapping is specified
       const inheritsTargets = (
         [
           EffectType.Choice,
           EffectType.CreateDelayedTrigger,
           EffectType.ApplyContinuousEffect,
+          EffectType.ConditionalEffect,
         ] as string[]
       ).includes(effect.type);
 
       if (inheritsTargets && (!m || m === "") && ids.length === 0) {
         return ids.length > 0 ? ids : [...targets];
       }
+
 
       const mStr = (m || "").toString().toUpperCase();
       const isDirectTargetMapping = mStr.startsWith("TARGET_") && !isNaN(parseInt(mStr.substring(7))) && mStr.split("_").length === 2;
@@ -443,14 +452,16 @@ export class EffectProcessor {
     // Registry Dispatcher
     const handler = EffectRegistry[effect.type];
     if (handler) {
-      logger.debug(state, LogCategory.ACTION, `[HANDLER-FOUND] Executing handler for ${effect.type}`);
       return handler.handle(state, effect, {
         ...context,
         targets: allResolvedTargets,
         originalTargets: targets, // Preserve original targets for secondary mapping resolution
       });
     } else {
-      logger.error(state, LogCategory.ACTION, `[HANDLER-MISSING] No handler registered for effect type: ${effect.type}`);
+      if (effect.targetMapping && effect.targetMapping !== "") {
+      logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] No handler registered for mapping: ${effect.targetMapping}`);
+    }
+    return [];
     }
 
     // Strategy Dispatcher (Legacy) - DEPRECATED: All effects now use the Registry

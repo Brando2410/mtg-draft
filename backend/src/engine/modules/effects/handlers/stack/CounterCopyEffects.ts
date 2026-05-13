@@ -66,6 +66,7 @@ export const CopySpellHandler: IEffectHandler = {
             copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
             copy.isCopy = true;
             copy.controllerId = controllerId;
+            copy.paidManaValue = 0;
 
             if (copy.sourceObject) {
                 // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
@@ -173,7 +174,7 @@ export const CopySpellHandler: IEffectHandler = {
                             data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
                             data.metadata.effectIndex = context.effectIndex;
                             data._backupTargets = backupTargets;
-                            
+
                             logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata for spell copy. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);
                         }
                     }
@@ -239,7 +240,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                         data.metadata.parentStackId = context.stackObject?.id; // Store parent stack ID explicitly
                         data.metadata.effectIndex = context.effectIndex;
                         data._backupTargets = backupTargets;
-                        
+
                         logger.debug(state, LogCategory.TARGETING, `[COPY-INIT-DEBUG] Setting resumption metadata. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}, ContextSource: ${context.sourceId}`);
                     }
                 }
@@ -311,7 +312,7 @@ export const ChangeTargetHandler: IEffectHandler = {
                     data.metadata.parentStackId = context.stackObject?.id;
                     data.metadata.effectIndex = context.effectIndex;
                     data._backupTargets = backupTargets;
-                    
+
                     logger.debug(state, LogCategory.TARGETING, `[CHANGE-TARGET-INIT] Setting resumption metadata. ParentStackId: ${context.stackObject?.id}, EffectIndex: ${context.effectIndex}`);
                 }
             } else {

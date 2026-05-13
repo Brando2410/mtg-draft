@@ -114,6 +114,11 @@ export class TargetingProcessor {
         updatePrompt();
 
         if (isUndoing) {
+            if (action.data?.hideUndo) {
+                logger.info(state, LogCategory.ACTION, `Undo blocked: this action is mandatory.`);
+                return false;
+            }
+
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
 
@@ -154,9 +159,18 @@ export class TargetingProcessor {
                     const player = state.players[stackObj.controllerId];
                     if (player) {
                         stackObj.sourceObject.xValue = undefined; // Explicitly clear before move
-                        ActionProcessor.moveCard(state, stackObj.sourceObject, Zone.Hand, stackObj.controllerId);
-                        ManaProcessor.refundManaCost(player, stackObj.sourceObject.definition.manaCost);
-                        logger.info(state, LogCategory.ACTION, `Refunding mana for ${stackObj.sourceObject.definition.name}: ${stackObj.sourceObject.definition.manaCost}`);
+
+                        // BUG FIX: Only move to hand if it's a SPELL. 
+                        // Triggered abilities and Activated abilities should NOT move their source permanent.
+                        if (stackObj.type === AbilityType.Spell) {
+                            ActionProcessor.moveCard(state, stackObj.sourceObject, Zone.Hand, stackObj.controllerId);
+                            ManaProcessor.refundManaCost(player, stackObj.sourceObject.definition.manaCost);
+                            logger.info(state, LogCategory.ACTION, `Refunding mana for ${stackObj.sourceObject.definition.name}: ${stackObj.sourceObject.definition.manaCost}`);
+                        } else if (stackObj.type === AbilityType.Activated) {
+                            // Activated abilities stay on battlefield but refund costs if they weren't finalized
+                            ManaProcessor.refundManaCost(player, stackObj.sourceObject.definition.manaCost);
+                            logger.info(state, LogCategory.ACTION, `Refunding mana for activated ability of ${stackObj.sourceObject.definition.name}.`);
+                        }
                     }
                 } else if (sourceId) {
                     // Fallback for spells that haven't entered the stack yet (targeting phase)

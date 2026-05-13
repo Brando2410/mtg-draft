@@ -7,7 +7,8 @@ import { LogCategory } from "../../../../utils/EngineLogger";
 export const TurnConditions: Record<string, IConditionHandler> = {
     [ConditionType.IsYourTurn]: {
         matches(state, params, context) {
-            return state.activePlayerId === context.controllerId;
+            const result = state.priorityPlayerId === context.controllerId;
+            return result;
         }
     },
     [ConditionType.IsOpponentTurn]: {

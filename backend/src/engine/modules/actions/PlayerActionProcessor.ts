@@ -148,15 +148,26 @@ export class PlayerActionProcessor {
       });
     }
 
+    const hasPriority = state.priorityPlayerId === playerId;
+    const isPayingCost = state.pendingAction && state.pendingAction.playerId === playerId;
+
     const filtered = allActivated
       .map((a, index) => ({ ability: a as AbilityDefinition, index }))
-      .filter((entry) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
-
-    logger.debug(state, LogCategory.ACTION, `interactWithPermanent: ${obj.definition.name} (${cardId}) found ${allActivated.length} intrinsic abilities, ${filtered.length} are currently legal activated abilities.`);
+      .filter((entry) => {
+        if (entry.ability.type !== AbilityType.Activated) return false;
+        
+        // Mana abilities can be activated during priority OR while paying costs
+        if (entry.ability.isManaAbility) {
+          return PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, !isPayingCost);
+        }
+        
+        // Non-mana abilities REQUIRE priority
+        return hasPriority && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true);
+      });
 
     if (filtered.length > 0) {
-      if (state.priorityPlayerId !== playerId) {
-        logger.warn(state, LogCategory.ACTION, `Player tried to activate ability without priority.`);
+      if (!hasPriority && !isPayingCost) {
+        logger.warn(state, LogCategory.ACTION, `Player tried to interact without priority.`);
         return false;
       }
 
@@ -216,6 +227,10 @@ export class PlayerActionProcessor {
     }
 
     // 4. Default: Tap for Mana (Undo/Untap) or non-PW interaction
+    // CR 605.3a: Mana abilities can only be activated with priority or while paying costs.
+    const canActivateMana = state.priorityPlayerId === playerId || (state.pendingAction && state.pendingAction.playerId === playerId);
+    if (!canActivateMana) return false;
+
     return engine.tapForMana(playerId, cardId) || false;
   }
 

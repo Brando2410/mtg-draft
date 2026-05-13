@@ -1,0 +1,60 @@
+# Engine Cache Audit
+
+This document lists all caching mechanisms currently present in the `GameState` and how they are managed by the engine.
+
+## 1. Entity Cache (`state._entityMap`)
+*   **Purpose**: Provides O(1) lookup for any `GameObject` or `StackObject` by its ID.
+*   **Location**: `GameState._entityMap` (Record<string, BaseEntity>)
+*   **Managed by**: `ActionProcessor.updateEntityCache`
+*   **Lifecycle**:
+    *   **Populated**: When an object enters a zone via `ActionProcessor.moveCard` -> `ActionProcessor.updateEntityCache`.
+    *   **Invalidated**: When an object leaves a zone via `ActionProcessor.removeFromCurrentZone` -> `ActionProcessor.updateEntityCache(..., true)`.
+*   **Used by**: `RuleUtils.findObject` (First priority lookup).
+
+## 2. Stats Cache (`state._statsCache`)
+*   **Purpose**: Caches the results of the Layer System (CR 613) for each object on the battlefield. Prevents expensive recalculation of P/T and keywords during loops (e.g., SBA checks).
+*   **Location**: `GameState._statsCache` (Map<string, EffectiveStats>)
+*   **Managed by**: `LayerProcessor.getEffectiveStats` and `LayerProcessor.updateDerivedStats`.
+*   **Lifecycle**:
+    *   **Populated**: During `getEffectiveStats` calls.
+    *   **Invalidated**: 
+        *   Manually in `RegistryProcessor` when abilities are registered/unregistered.
+        *   Automatically in `LayerProcessor.updateDerivedStats` if the `layerHash` (computed from effects and game state) changes.
+    *   **Version Check**: Every cache hit verifies `cache.version === state.stateVersion`.
+*   **Used by**: `LayerProcessor.getEffectiveStats`.
+
+## 3. Object Cache (`state._objectCache`)
+*   **Purpose**: A flat index of all relevant objects (Battlefield + Stack) used to speed up source/target lookups during layer processing.
+*   **Location**: `GameState._objectCache` (Map<string, GameObject | StackObject>)
+*   **Managed by**: `LayerProcessor.rebuildObjectCache`.
+*   **Lifecycle**:
+    *   **Populated**: At the start of `updateDerivedStats`.
+    *   **Invalidated**: Rebuilt every time `updateDerivedStats` is called if the version is old.
+*   **Used by**: `LayerProcessor` internal logic.
+
+## 4. Trigger Cache (`state._triggerCache`)
+*   **Purpose**: Pre-indexes triggered abilities by their event type (bucket) to avoid scanning the entire registry for every event.
+*   **Location**: `GameState._triggerCache` (Record<string, TriggeredAbility[]>)
+*   **Managed by**: `TriggerProcessor.buildTriggerCache`.
+*   **Lifecycle**:
+    *   **Populated**: On demand when an event is emitted and cache is missing.
+    *   **Invalidated**: In `RegistryProcessor` when abilities are registered/unregistered.
+*   **Used by**: `TriggerProcessor.onEvent`.
+
+## 5. Layer Hash (`state._lastLayerHash`)
+*   **Purpose**: Tracks the "signature" of the continuous effect environment. If the hash remains the same, the engine knows that stats haven't changed even if the `stateVersion` increased.
+*   **Location**: `GameState._lastLayerHash` (string)
+*   **Managed by**: `LayerProcessor.updateDerivedStats`.
+*   **Logic**: Includes effect count, stack length, tapped/attacking status, and counter values.
+*   **Used by**: `LayerProcessor` to decide whether to reuse `_statsCache`.
+
+## 6. Last Known Information (LKI) (`state.lki`)
+*   **Purpose**: Stores snapshots of objects as they existed right before a zone change (CR 608.2h).
+*   **Location**: `GameState.lki` (Record<string, Record<Zone, GameObject | StackObject>>)
+*   **Managed by**: `LkiProcessor.saveSnapshot`.
+*   **Used by**: Trigger handlers (Modular, Dies triggers) and Effect handlers (Look back in time).
+
+## 7. Dynamic/Paradigm Copies
+*   **Purpose**: Tracks relationships between original cards and their "prepared" or "modal" faces.
+*   **Location**: `GameState.dynamicCopies`, `GameState.paradigmCopies`.
+*   **Managed by**: `RegistryProcessor` / `SpellProcessor`.

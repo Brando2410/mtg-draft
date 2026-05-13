@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const StirringHonormancer: CardDefinition = {
     name: "Stirring Honormancer",
@@ -16,7 +16,7 @@ export const StirringHonormancer: CardDefinition = {
         effects: [
             {
                 type: EffectType.LookAtTopAndPick,
-                fromTop: 'CREATURE_COUNT_YOU_CONTROL',
+                fromTop: DynamicAmount.CreaturesYouControl,
                 amount: 1,
                 zone: Zone.Hand,
                 remainderZone: Zone.Graveyard

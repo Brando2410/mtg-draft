@@ -193,7 +193,7 @@ export const ActionButton = memo(({
                     )}
 
                     {/* TARGETING CANCELLATION */}
-                    {pendingAction?.type === ActionType.Targeting && (
+                    {pendingAction?.type === ActionType.Targeting && ((pendingAction.data?.selectedTargets || []).length > 0 || !pendingAction.data?.hideUndo) && (
                         <div className="flex flex-col gap-[var(--sp-1)] w-full items-center">
                             <motion.button 
                                 initial={{ opacity: 0, scale: 0.9 }}

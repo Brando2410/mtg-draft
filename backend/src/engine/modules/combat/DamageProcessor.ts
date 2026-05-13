@@ -159,10 +159,15 @@ export class DamageProcessor {
         amount - lethalNeeded,
       );
 
-      target.damageMarked += amount;
-      EngineLogger.info(state, LogCategory.ACTION,
-        `[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`,
-      );
+      if (amount > 0) {
+        target.damageMarked += amount;
+        
+        EngineLogger.info(
+          state,
+          LogCategory.ACTION,
+          `[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`,
+        );
+      }
 
       // Rule 702.2: Deathtouch
       if (RuleUtils.hasDeathtouch(sourceObj)) {

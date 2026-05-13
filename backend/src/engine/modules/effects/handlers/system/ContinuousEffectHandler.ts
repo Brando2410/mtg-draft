@@ -174,6 +174,11 @@ export class ContinuousEffectHandler {
             }
 
             state.ruleRegistry.continuousEffects.push(finalEffect);
+            
+            // Invalidate caches (CR 613 / 603)
+            state._statsCache = undefined;
+            state._triggerCache = undefined;
+
             logger.info(state, LogCategory.ACTION, `[CE_HANDLER] Registered Layer ${layer} effect: ${finalEffect.label || finalEffect.type} for ${targetCID}. Duration: ${effDuration.type}.`);
         });
     }

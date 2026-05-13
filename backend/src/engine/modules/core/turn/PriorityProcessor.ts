@@ -616,10 +616,11 @@ export class PriorityProcessor {
     if (RuleUtils.isGameObject(obj) && !RestrictionValidator.canActivateAbility(state, playerId, ability, obj)) return false;
 
     // Skip mana abilities for auto-pass scan (Optimization)
-    if (!checkPriority && ability.isManaAbility) return false;
+    // CR 605.3a: During cost payment (pendingAction), we must NOT skip mana abilities.
+    if (!checkPriority && ability.isManaAbility && !state.pendingAction) return false;
 
     // 5. Cost Check
-    if (!player.manaCheat && !CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
+    if (!player.manaCheat && !CostProcessor.canPay(state, ability.costs || [], obj, playerId)) {
       return false;
     }
 
@@ -648,7 +649,7 @@ export class PriorityProcessor {
   public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false, checkPriority = true): boolean {
     const player = state.players[playerId];
     if (!player) return false;
-    const { logger } = getProcessors(state);
+
 
     // 1. Priority Check (Rule 117.1)
     // If checkPriority is false, we are doing a "potential action" scan for auto-pass.

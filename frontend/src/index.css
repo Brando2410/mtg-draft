@@ -19,9 +19,12 @@
     /* Standardized Spacing & Typography */
     --sp-1: calc(var(--u) * 0.5);
     --sp-2: calc(var(--u) * 1);
+    --sp-3: calc(var(--u) * 1.5);
     --sp-4: calc(var(--u) * 2);
+    --sp-5: calc(var(--u) * 2.5);
     --sp-6: calc(var(--u) * 3);
     --sp-8: calc(var(--u) * 4);
+    --sp-10: calc(var(--u) * 5);
     --sp-12: calc(var(--u) * 6);
     --sp-16: calc(var(--u) * 8);
 

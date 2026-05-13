@@ -28,7 +28,7 @@ export class SpellInteractiveManager {
      * @returns Always true (flow is paused for UI input).
      */
     public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: EngineFrame, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
-        state.pendingAction = ActionBuilder.chooseX(playerId, cardToPlay.id, `Choose a value for X for ${cardToPlay.definition.name}`)
+        state.pendingAction = ActionBuilder.chooseX(playerId, cardToPlay.id, `Choose X value for: ${cardToPlay.definition.name}`)
             .withContext({ parentContext, isFreeCast, exileOnResolution })
             .withData({ declaredTargets: declaredTargets || [] })
             .build();

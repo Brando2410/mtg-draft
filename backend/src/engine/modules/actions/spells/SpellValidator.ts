@@ -158,7 +158,7 @@ export class SpellValidator {
             return false;
         }
 
-        if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
+        if (!CostProcessor.canPay(state, ability.costs || [], obj, playerId)) {
             logger.info(state, LogCategory.ACTION, `Illegal Activation: Cannot pay costs for ${obj.definition.name}'s ability.`);
             return false;
         }

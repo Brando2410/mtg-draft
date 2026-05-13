@@ -399,7 +399,7 @@ export class SpellProcessor {
             }
 
             const choices = modalAbility.modes!.map((mode, idx: number) => {
-                const isSelectable = !mode.targetDefinitions || mode.targetDefinitions.length === 0 || 
+                const isSelectable = !mode.targetDefinitions || mode.targetDefinitions.length === 0 ||
                     mode.targetDefinitions.every((td: TargetDefinition) => td.optional) ||
                     TargetingProcessor.hasLegalTargets(state, cardToPlay.id, mode.targetDefinitions, playerId);
 
@@ -804,6 +804,7 @@ export class SpellProcessor {
             isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
             targetsControllers,
+            paidManaValue: cardToPlay.paidManaValue,
             data: {
                 preSelectedChoice,
                 declaredXValue: cardToPlay.xValue,
@@ -935,7 +936,7 @@ export class SpellProcessor {
             }
         }
 
-        CostProcessor.pay(state, ability.costs || [], obj.id, playerId);
+        CostProcessor.pay(state, ability.costs || [], obj, playerId);
 
         // Clean up choice flags
         if (state.interaction) {

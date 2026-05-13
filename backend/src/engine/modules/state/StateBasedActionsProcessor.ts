@@ -49,28 +49,27 @@ export class StateBasedActionsProcessor {
     const objects = [...state.battlefield];
     for (const obj of objects) {
       const stats = LayerProcessor.getEffectiveStats(obj, state);
-      // Rule 704.5f: 0 Toughness (ignores indestructible)
-      if (RuleUtils.isCreature(obj) && stats.toughness <= 0) {
-        logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} has 0 toughness and dies.`);
-        ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
-        actionTaken = true;
-        continue;
-      }
+      
+      // 2. Creature checks (Rule 704.5f-g)
+      if (RuleUtils.isCreature(obj)) {
 
-      // Rule 704.5g: Lethal Damage
-      const isLethal =
-        obj.damageMarked >= stats.toughness || obj.deathtouchMarked;
-      if (RuleUtils.isCreature(obj) && isLethal) {
-        if (!RuleUtils.hasIndestructible(obj)) {
-          logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} destroyed by lethal damage.`);
-          ActionProcessor.moveCard(
-            state,
-            obj,
-            Zone.Graveyard,
-            obj.ownerId,
-          );
+        // Rule 704.5f: 0 Toughness (ignores indestructible)
+        if (stats.toughness <= 0) {
+          logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} has 0 toughness and dies.`);
+          ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
           actionTaken = true;
           continue;
+        }
+
+        // Rule 704.5g: Lethal Damage
+        const isLethal = obj.damageMarked >= stats.toughness || obj.deathtouchMarked;
+        if (isLethal) {
+          if (!RuleUtils.hasIndestructible(obj)) {
+            logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} destroyed by lethal damage.`);
+            ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
+            actionTaken = true;
+            continue;
+          }
         }
       }
 

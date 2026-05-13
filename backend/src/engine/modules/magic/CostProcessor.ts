@@ -13,15 +13,10 @@ export class CostProcessor {
    * Returns true if all costs in the list are currently payable.
    * Checks for restrictions like "Cannot Tap" (Rule 101.1).
    */
-  public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, stackObject?: GameObject | StackObject): boolean {
-    let source = this.findObject(state, sourceId);
+  public static canPay(state: GameState, costs: AbilityCost[], source: GameObject | StackObject | GameObjectId, playerId: PlayerId, stackObject?: GameObject | StackObject): boolean {
+    const validSource = typeof source === 'string' ? (this.findObject(state, source) || { id: source, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object', types: [] }, zone: Zone.Stack, counters: {}, isTapped: false } as unknown as GameObject) : source as GameObject;
 
-    // Fallback for resolving objects in transition
-    if (!source) {
-      source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object', types: [] }, zone: Zone.Stack, counters: {}, isTapped: false } as unknown as GameObject;
-    }
 
-    const validSource = source as GameObject;
     const excludeSourceFromMana = costs.some(c => 
       c.type === CostType.Tap || 
       c.type === CostType.SacrificeSelf || 
@@ -42,14 +37,8 @@ export class CostProcessor {
    * Executes the payment for all costs.
    * Note: This assumes canPay has already been checked.
    */
-  public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId) {
-    let source = this.findObject(state, sourceId);
-
-    if (!source) {
-      source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object', types: [] }, zone: Zone.Stack, counters: {}, isTapped: false } as unknown as GameObject;
-    }
-
-    const validSource = source as GameObject;
+  public static pay(state: GameState, costs: AbilityCost[], source: GameObject | StackObject | GameObjectId, playerId: PlayerId) {
+    const validSource = typeof source === 'string' ? (this.findObject(state, source) || { id: source, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object', types: [] }, zone: Zone.Stack, counters: {}, isTapped: false } as unknown as GameObject) : source as GameObject;
     for (const cost of costs) {
       this.paySingle(state, cost, validSource, playerId);
     }
@@ -61,13 +50,17 @@ export class CostProcessor {
 
     switch (cost.type) {
       case CostType.Tap:
-        if (source.isTapped) return false;
+        if (source.isTapped) {
+          this.logFailure(state, cost, source, 'Source is already tapped');
+          return false;
+        }
 
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
         if (RuleUtils.isCreature(source) && source.summoningSickness) {
           const { layer: LayerProcessor } = getProcessors(state);
           const stats = LayerProcessor.getEffectiveStats(source, state);
           if (!RuleUtils.hasHaste(source)) {
+            this.logFailure(state, cost, source, 'Summoning sickness');
             return false;
           }
         }
@@ -76,7 +69,10 @@ export class CostProcessor {
           r.type === RestrictionType.CannotTap &&
           (r.targetId === source.id || (r.targetControllerId === source.controllerId && !r.targetId))
         );
-        if (hasRestriction) return false;
+        if (hasRestriction) {
+          this.logFailure(state, cost, source, 'CannotTap restriction active');
+          return false;
+        }
         return true;
 
       case CostType.Mana:
@@ -181,8 +177,15 @@ export class CostProcessor {
 
 
       default:
+        const { logger } = getProcessors(state);
+        logger.debug(state, LogCategory.ACTION, `[COST-DEBUG] Unknown cost type: ${cost.type}`);
         return false;
     }
+  }
+
+  private static logFailure(state: GameState, cost: AbilityCost, source: GameObject, reason: string) {
+    const { logger } = getProcessors(state);
+    logger.debug(state, LogCategory.ACTION, `[COST-DEBUG] ${source.definition.name} failed ${cost.type} cost: ${reason}`);
   }
 
   private static paySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId) {

@@ -47,6 +47,8 @@ export const ManaHandler: IEffectHandler = {
         const p = state.players[tid];
         if (p) {
           const amount = RuleUtils.resolveAmount(state, manaEffect.amount, context) || 1;
+          logger.debug(state, LogCategory.ACTION, `[MANA-HANDLER] Adding mana. Type: ${manaStr}, Amount: ${amount} (Original: ${manaEffect.amount})`);
+
           // Ensure braces if missing
           const formattedMana = String(manaStr).startsWith('{') ? String(manaStr) : `{${manaStr}}`;
           const res = MP.parseManaCost(formattedMana);

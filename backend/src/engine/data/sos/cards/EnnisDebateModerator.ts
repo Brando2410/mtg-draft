@@ -3,8 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Ta
 export const EnnisDebateModerator: CardDefinition = {
     name: "Ennis, Debate Moderator",
     manaCost: "{1}{W}",
-
-
     colors: ["W"],
     types: ["Legendary", "Creature"],
     subtypes: ["Human", "Cleric"],

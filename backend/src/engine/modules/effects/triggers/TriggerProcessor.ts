@@ -199,7 +199,7 @@ export class TriggerProcessor {
       controllerId,
       eventMatch: (effect as TriggerAbilityEffect).eventMatch || '', // eventMatch is dynamic for delayed triggers
       effects: effect.effects || [],
-      duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.UntilEndOfTurn },
+      duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.Permanent },
       condition: effect.condition,
       payload: { metadata: effect.data },
       targetIds: effect.targetIds,
@@ -209,7 +209,9 @@ export class TriggerProcessor {
       type: AbilityType.Triggered,
       targets: [],
     };
-    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} (oneShot: ${delayedTrigger.oneShot}) with targets: ${delayedTrigger.targetIds?.join(', ')}`);
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} (oneShot: ${delayedTrigger.oneShot}, duration: ${delayedTrigger.duration?.type}) with targets: ${delayedTrigger.targetIds?.join(', ')}`);
+
+
     if (!state.ruleRegistry.triggeredAbilities)
       state.ruleRegistry.triggeredAbilities = [];
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
@@ -289,12 +291,13 @@ export class TriggerProcessor {
       sourceName: sourceName,
       effectIndex: 0,
       exileOnResolution: exileOnResolution,
-      // Phase 4: Data is now just a backup/snapshot of the event
-      data: { event },
+      // Phase 4: Data is now just a backup/snapshot of the event, but we must preserve captured metadata
+      data: { ...(trigger.payload?.metadata || {}), event },
       zone: Zone.Stack
     };
-    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with data: ${JSON.stringify(stackObj.data)}`);
     return stackObj;
+
   }
   public static stackTrigger(
     state: GameState,

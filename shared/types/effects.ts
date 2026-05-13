@@ -594,6 +594,7 @@ export interface TriggerAbilityEffect extends BaseEffect {
     deferredTrigger?: AbilityDefinition;
     eventMatch?: string | string[];
     oneShot?: boolean;
+    triggerCondition?: ConditionDefinition;
 }
 
 
@@ -610,6 +611,7 @@ export interface SimpleEffect extends BaseEffect {
         | typeof EffectType.Fight
         | typeof EffectType.AddAdditionalTrigger;
 }
+
 
 export interface SkipTurnsEffect extends BaseEffect {
     type: typeof EffectType.SkipTurns;

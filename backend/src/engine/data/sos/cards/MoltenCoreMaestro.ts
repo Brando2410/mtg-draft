@@ -1,19 +1,10 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const MoltenCoreMaestro: CardDefinition = {
     name: "Molten-Core Maestro",
     manaCost: "{1}{R}",
-
-
-    colors: [
-        "R"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Goblin",
-        "Bard"
-    ],
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Goblin", "Bard"],
     keywords: ["Menace"],
     oracleText: "Menace\nOpus — Whenever you cast an instant or sorcery spell, put a +1/+1 counter on this creature. If five or more mana was spent to cast that spell, add an amount of {R} equal to this creature's power.",
     abilities: [
@@ -32,7 +23,7 @@ export const MoltenCoreMaestro: CardDefinition = {
                     type: EffectType.AddMana,
                     condition: 'SPENT_MANA_GE:5',
                     manaType: 'R',
-                    amount: 'POWER'
+                    amount: DynamicAmount.SourcePower
                 }
             ]
         }

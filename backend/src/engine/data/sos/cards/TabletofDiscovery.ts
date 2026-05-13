@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TabletofDiscovery: CardDefinition = {
     name: "Tablet of Discovery",
@@ -49,7 +49,7 @@ export const TabletofDiscovery: CardDefinition = {
                     type: EffectType.AddMana,
                     manaType: 'R',
                     amount: 2,
-                    manaRestrictions: ['Instant_or_Sorcery']
+                    manaRestrictions: [Restriction.InstantOrSorcery]
                 }
             ]
         }

@@ -292,6 +292,13 @@ export class RuleUtils {
                 return resolverObj.resolver(state, context);
             }
             if (resolverObj.type === 'CONSTANT') return resolverObj.baseValue || 0;
+            if (resolverObj.type === 'POWER' || resolverObj.type === 'TOUGHNESS') {
+                const obj = this.findObject(state, sourceId);
+                if (!obj) return 0;
+                const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
+                const base = resolverObj.type === 'POWER' ? stats.power : stats.toughness;
+                return (base * (resolverObj.multiplier || 1)) + (resolverObj.offset || 0);
+            }
         }
 
         switch (amount) {
@@ -315,7 +322,6 @@ export class RuleUtils {
             }
 
             case DynamicAmount.CreaturesYouControl:
-            case DynamicAmount.CreatureCountYouControl:
                 return state.battlefield.filter(o => String(o.controllerId) === String(controllerId) && this.isCreature(o)).length;
 
             case DynamicAmount.LandsYouControl:
@@ -325,7 +331,6 @@ export class RuleUtils {
                 return state.players[controllerId]?.graveyard.length || 0;
 
             case DynamicAmount.HandSize:
-            case DynamicAmount.CardsInHandCount:
                 return state.players[controllerId]?.hand.length || 0;
 
             case DynamicAmount.CardsDrawnThisTurn:
@@ -387,7 +392,14 @@ export class RuleUtils {
                     if (amount === DynamicAmount.PaidManaSpent) {
                         return stackObject?.sourceObject?.paidManaValue ?? context.event?.payload?.amount ?? 0;
                     }
+                    if (amount === 'CAPTURED_AMOUNT' || amount === 'CAPTURED_MV') {
+                        const val = stackObject?.data?.capturedMV ?? stackObject?.data?.event?.payload?.metadata?.capturedMV ?? 0;
+                        getProcessors(state).logger.debug(state, LogCategory.SYSTEM, `[RESOLVE-AMOUNT] Resolved ${amount} to ${val}`);
+
+                        return val;
+                    }
                 }
+
                 return 0;
         }
     }

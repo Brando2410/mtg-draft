@@ -359,6 +359,11 @@ export class TargetMapper {
       });
     }
 
+    if (!mapping || mapping === "") {
+      logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] Empty mapping provided for source ${sourceId}. Context targets: ${resolvedTargets?.join(', ')}`);
+      return [];
+    }
+
     logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] No handler registered for mapping: ${mapping}`);
     return [];
   }

@@ -426,12 +426,19 @@ export class ChoiceProcessor {
             const card = stackObj.sourceObject;
             const player = state.players[card.ownerId];
             if (player) {
-                const refundCost = card.definition.manaCost;
                 card.xValue = undefined; // Explicitly clear
-                getProcessors(state).action.moveCard(state, card, Zone.Hand, card.ownerId);
 
-                const { mana: ManaProcessor } = getProcessors(state);
-                ManaProcessor.refundManaCost(player, refundCost);
+                // BUG FIX: Only move to hand if it's a SPELL.
+                // Triggered abilities (ETBs) must NOT bounce the creature.
+                if (stackObj.type === AbilityType.Spell) {
+                    getProcessors(state).action.moveCard(state, card, Zone.Hand, card.ownerId);
+                    const { mana: ManaProcessor } = getProcessors(state);
+                    ManaProcessor.refundManaCost(player, card.definition.manaCost);
+                } else if (stackObj.type === AbilityType.Activated) {
+                    // Refund costs for activated abilities but leave source on battlefield
+                    const { mana: ManaProcessor } = getProcessors(state);
+                    ManaProcessor.refundManaCost(player, card.definition.manaCost);
+                }
             }
         }
 

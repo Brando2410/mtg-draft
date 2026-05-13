@@ -275,7 +275,10 @@ export class ResolutionManager {
     private static areAllTargetsIllegal(state: GameState, stackObj: StackObject): boolean {
         if (!stackObj.targets || stackObj.targets.length === 0) return false;
 
-        const definitions = stackObj.targetDefinitions;
+        const definitions = stackObj.targetDefinitions || [];
+        // CR 608.2b: Legality is only checked if the spell or ability specifies targets (has definitions).
+        // If we have IDs but no definitions, these are "contextual targets" used for metadata/LKI, not for resolution requirements.
+        if (definitions.length === 0) return false;
 
         return stackObj.targets.every((targetId, index) => {
             return !TargetingProcessor.isLegalTarget(state, {

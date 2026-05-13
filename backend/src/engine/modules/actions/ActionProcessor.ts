@@ -171,6 +171,15 @@ export class ActionProcessor {
     const processors = getProcessors(state);
     processors.lki.saveSnapshot(state, card, fromZone);
 
+    // CRITICAL: If moving from Stack, also save the StackObject's LKI 
+    // so effects can find metadata (like paidManaValue) using the Stack ID.
+    if (fromZone === Zone.Stack) {
+      const stackObj = state.stack.find(s => s.id === card.id || s.sourceId === card.id);
+      if (stackObj && stackObj.id !== card.id) {
+        processors.lki.saveSnapshot(state, stackObj, Zone.Stack);
+      }
+    }
+
     this.removeFromCurrentZone(state, card);
 
     // 2. Rule 400.7: Reset characteristics and update zone
@@ -200,9 +209,9 @@ export class ActionProcessor {
       if (!card.originalDefinition) {
         card.originalDefinition = card.definition;
       }
-      card.definition = { 
-        ...card.selectedFaceDefinition, 
-        image_url: card.selectedFaceDefinition.image_url || card.definition.image_url 
+      card.definition = {
+        ...card.selectedFaceDefinition,
+        image_url: card.selectedFaceDefinition.image_url || card.definition.image_url
       };
       card.image_url = card.definition.image_url;
     }
@@ -343,7 +352,7 @@ export class ActionProcessor {
     state.stack = state.stack.filter((s) => {
       const isMatch = s.id === realId || s.id === virtualId;
       const isSpellSourceMatch = s.type === AbilityType.Spell && (s.sourceId === realId || s.sourceId === virtualId);
-      
+
       if (isMatch || isSpellSourceMatch) {
         this.updateEntityCache(state, s, true);
         return false;
@@ -356,7 +365,7 @@ export class ActionProcessor {
     for (const pid in state.players) {
       const p = state.players[pid as PlayerId];
       p.hand = p.hand.filter((c) => c.id !== realId && c.id !== virtualId);
-      
+
       const isFromGrave = p.graveyard.some((c) => c.id === realId || c.id === virtualId);
       p.graveyard = p.graveyard.filter((c) => c.id !== realId && c.id !== virtualId);
       if (isFromGrave) {
@@ -366,11 +375,11 @@ export class ActionProcessor {
       p.library = p.library.filter((c) => c.id !== realId && c.id !== virtualId);
 
       if (p.virtualHand) {
-        p.virtualHand = p.virtualHand.filter((c) => 
-            c.id !== realId && 
-            c.id !== virtualId && 
-            c.sourceCreatureId !== realId &&
-            c.sourceCreatureId !== virtualId
+        p.virtualHand = p.virtualHand.filter((c) =>
+          c.id !== realId &&
+          c.id !== virtualId &&
+          c.sourceCreatureId !== realId &&
+          c.sourceCreatureId !== virtualId
         );
       }
     }

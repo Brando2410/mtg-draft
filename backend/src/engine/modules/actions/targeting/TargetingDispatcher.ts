@@ -1,4 +1,4 @@
-import { ActionType, GameObject, GameState, PlayerId, Restriction, TargetDefinition, TargetType, Zone, EngineFrame, StackObject } from "@shared/engine_types";
+import { ActionType, GameObject, GameState, PlayerId, Restriction, TargetDefinition, TargetType, Zone, EngineFrame, StackObject, AbilityType } from "@shared/engine_types";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { TargetingProcessor } from "./TargetingProcessor";
@@ -117,6 +117,7 @@ export class TargetingDispatcher {
                     prompt,
                     isOptional: nextCounts.minCount === 0,
                     canSkip: nextCounts.minCount === 0 || autoSelected.length >= nextCounts.minCount,
+                    hideUndo: (RuleUtils.isStackObject(sourceObj) && sourceObj.type === AbilityType.Triggered) || (!isSpellCasting && nextCounts.minCount > 0)
                 }
             };
             return true;
@@ -221,7 +222,8 @@ export class TargetingDispatcher {
                         isCopyTargeting,
                         effectIndex: parentContext?.effectIndex,
                         spellCopyRef: (isCopyTargeting || parentContext) && RuleUtils.isStackObject(sourceObj) ? sourceObj : undefined
-                    }
+                    },
+                    hideUndo: (RuleUtils.isStackObject(sourceObj) && sourceObj.type === AbilityType.Triggered) || (!isSpellCasting && Math.max(1, consecutiveMin) > 0)
                 }
             };
             logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT-MODAL] Grouping ${consecutiveCount} consecutive ${currentDef.type} targets into modal.`);
@@ -262,6 +264,7 @@ export class TargetingDispatcher {
                 prompt,
                 isOptional: stepCounts.minCount === 0,
                 canSkip: stepCounts.minCount === 0 || existingTargets.length >= stepCounts.minCount,
+                hideUndo: (RuleUtils.isStackObject(sourceObj) && sourceObj.type === AbilityType.Triggered) || (!isSpellCasting && stepCounts.minCount > 0)
             }
         };
         logger.info(state, LogCategory.ACTION, `[TARGETING] ${state.players[playerId].name} is selecting targets for ${sourceObj.definition.name}...`);

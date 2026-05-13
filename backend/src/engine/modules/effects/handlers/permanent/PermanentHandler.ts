@@ -197,6 +197,9 @@ export class PermanentHandler {
                 }
                 logger.info(state, LogCategory.ACTION, `[COUNTERS] Added ${amount} ${finalType} counter(s) to ${obj.definition.name}.`);
                 TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [obj.id], amount, counterType: finalType, object: obj } });
+
+                // Invalidate stats cache (CR 613) so subsequent effects in the same resolution see the update
+                state._statsCache = undefined;
             }
         });
     }
@@ -221,6 +224,7 @@ export class PermanentHandler {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
                     TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [obj.id], amount, counterType: finalType, object: obj } });
+                    state._statsCache = undefined;
                 }
             }
         });
@@ -270,6 +274,7 @@ export class PermanentHandler {
             });
 
             sourceObj.counters[counterKey] = (sourceObj.counters[counterKey] || 0) - amount;
+            state._statsCache = undefined;
         });
     }
 

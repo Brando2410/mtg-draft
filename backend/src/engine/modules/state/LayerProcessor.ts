@@ -573,7 +573,7 @@ export class LayerProcessor {
     // 0.5. Partial Cache Invalidation: Only clear cache if layer-relevant state changed
     let layerHash = `${state.ruleRegistry.continuousEffects.length}:${state.stack.length}`;
     state.battlefield.forEach(o => {
-      layerHash += `|${o.id}:${o.isTapped ? 1 : 0}:${o.isAttacking ? 1 : 0}:${Object.values(o.counters || {}).join(',')}`;
+      layerHash += `|${o.id}:${o.isTapped ? 1 : 0}:${o.isAttacking ? 1 : 0}:${o.damageMarked}:${Object.values(o.counters || {}).join(',')}`;
     });
     Object.values(state.players).forEach(p => {
       layerHash += `|${p.life}:${p.hand.length}:${p.graveyard.length}:${Object.values(p.manaPool || {}).join(',')}`;
