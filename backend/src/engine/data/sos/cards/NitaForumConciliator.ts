@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const NitaForumConciliator: CardDefinition = {
     name: "Nita, Forum Conciliator",
@@ -16,11 +16,7 @@ export const NitaForumConciliator: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: (state: any, event: any, t: any) => {
-                const casterId = event.playerId;
-                const spell = event.payload?.object;
-                return String(casterId) === String(t.controllerId) && spell && String(spell.ownerId) !== String(casterId);
-            },
+            condition: `${ConditionType.EventPlayerIsYou} && ${ConditionType.EventObjectOwnerNotYou}`,
             effects: [
                 {
                     type: EffectType.AddCounters,

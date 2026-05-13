@@ -1,11 +1,9 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 import { RuleUtils } from '../../../utils/RuleUtils';
 
 export const MagmabloodArchaic: CardDefinition = {
     name: "Magmablood Archaic",
     manaCost: "{2/R}{2/R}{2/R}",
-
-
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Avatar"],
@@ -29,11 +27,7 @@ export const MagmabloodArchaic: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: (state, event, trigger) => {
-                if (event?.playerId !== trigger.controllerId) return false;
-                const card = RuleUtils.getEventObject(event, state);
-                return !!card?.definition.types?.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
-            },
+            condition: `${ConditionType.EventPlayerIsYou} && ${ConditionType.EventObjectMatches}:${Restriction.InstantOrSorcery}`,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

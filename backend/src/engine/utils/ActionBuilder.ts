@@ -79,7 +79,6 @@ export class ActionBuilder {
         // Move transient fields from root to metadata container
         TRANSIENT_FIELDS.forEach(field => {
             if (dataRoot[field] !== undefined) {
-                console.log(`[ACTION-BUILDER] Moving ${field} to metadata:`, dataRoot[field]);
                 metadata[field] = dataRoot[field];
                 delete dataRoot[field];
             }

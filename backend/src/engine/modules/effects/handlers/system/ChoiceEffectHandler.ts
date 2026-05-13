@@ -37,12 +37,16 @@ export class ChoiceEffectHandler {
 
     let dynamicChoices = effect.choices;
     if (dynamicChoices) {
+      // Determine who is making the choice (Target player or Spell controller)
+      const playerTargets = targets.filter((tid) => state.players[tid as PlayerId]);
+      const decisionPlayerId = playerTargets.length > 0 ? (playerTargets[0] as PlayerId) : controllerId;
+
       const { condition: ConditionProcessor } = getProcessors(state);
       dynamicChoices = dynamicChoices.filter((c) => {
         if (!c.condition) return true;
         return ConditionProcessor.matchesCondition(state, c.condition, {
           sourceId,
-          controllerId,
+          controllerId: decisionPlayerId, // Use the person actually making the decision
           stackObject,
           targets: [],
           effects: []

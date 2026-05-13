@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const GriffinAerie: CardDefinition = {
     name: "Griffin Aerie",
     manaCost: "{1}{W}",
-
     oracleText: "At the beginning of your end step, if you gained 3 or more life this turn, create a 2/2 white Griffin creature token with flying.",
     colors: ["W"],
     types: ["Enchantment"],

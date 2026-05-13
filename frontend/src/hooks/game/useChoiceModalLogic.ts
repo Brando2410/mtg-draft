@@ -65,9 +65,8 @@ export const useChoiceModalLogic = (
     const choices = pendingAction?.data?.choices || [];
     const minChoices = meta.minChoices ?? pendingAction?.data?.minChoices ?? 1;
     const maxChoices = meta.maxChoices ?? pendingAction?.data?.maxChoices ?? 1;
-    const allowDuplicates = pendingAction?.data?.allowDuplicates;
+    const allowDuplicates = meta.allowDuplicates ?? pendingAction?.data?.allowDuplicates;
 
-    console.log('[CHOICE-LOGIC] min:', minChoices, 'max:', maxChoices, 'meta:', meta);
 
     useEffect(() => {
         if (isOrderTriggers && (pendingAction?.data?.triggers || meta.triggers)) {

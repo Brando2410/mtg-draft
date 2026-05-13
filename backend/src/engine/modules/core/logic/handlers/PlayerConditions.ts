@@ -1,5 +1,6 @@
 import { PlayerId } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
+import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const PlayerConditions: Record<string, IConditionHandler> = {
@@ -85,6 +86,14 @@ export const PlayerConditions: Record<string, IConditionHandler> = {
             if (!player || player.library.length === 0) return false;
             const topCard = player.library[player.library.length - 1];
             return RuleUtils.hasSubtype(topCard, "goblin");
+        }
+    },
+    "HAS_CARD_IN_HAND": {
+        matches(state, params, context) {
+            const { targeting: TargetingProcessor } = getProcessors(state);
+            const { sourceId, controllerId, stackObject } = context;
+            const hand = state.players[controllerId]?.hand || [];
+            return hand.some(c => TargetingProcessor.matchesRestrictions(state, c, params, { sourceId, controllerId, stackObject, effects: [], targets: [] }));
         }
     }
 };

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const CompulsiveResearch: CardDefinition = {
     name: "Compulsive Research",
@@ -23,15 +23,11 @@ export const CompulsiveResearch: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Discard two cards unless you discard a land card",
                     // The player chosen as target is the one who makes the choice
-                    targetMapping: TargetMapping.Target1, 
+                    targetMapping: TargetMapping.Target1,
                     choices: [
                         {
                             label: "Discard a land card",
-                            condition: {
-                                type: "HasInZone",
-                                zone: Zone.Hand,
-                                restrictions: [Restriction.Land]
-                            },
+                            condition: `${ConditionType.HasCardInHand}:${Restriction.Land}`,
                             effects: [
                                 {
                                     type: EffectType.DiscardCards,
@@ -59,4 +55,3 @@ export const CompulsiveResearch: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/a/2/a247ab59-7749-4d37-87f6-f90f44cd54f4.jpg?1743206293",
     rarity: "common"
 };
-

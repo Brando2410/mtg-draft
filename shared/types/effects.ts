@@ -272,8 +272,7 @@ export type NumericProperty =
  */
 export type ConditionDefinition = 
     | string 
-    | ((state: GameState, event: GameEvent | undefined, context: EngineFrame) => boolean)
-    | { matches: (state: GameState, targets: string[], context: EngineFrame) => boolean };
+    | string[];
 
 /**
  * Base properties shared by all effects (Rule 608)

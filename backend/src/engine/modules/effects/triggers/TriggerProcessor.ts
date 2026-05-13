@@ -115,7 +115,8 @@ export class TriggerProcessor {
           const replacements = (state.ruleRegistry.replacementEffects || []).filter(r => r.replacesEvent === eventName);
           for (const r of replacements) {
             const context: any = { ...r, targets: r.targets || [] };
-            const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, context) : true;
+            const { condition: ConditionProcessor } = getProcessors(state);
+            const conditionMet = !r.condition || ConditionProcessor.matchesCondition(state, r.condition, context);
             if (conditionMet && r.effects?.some((e: EffectDefinition) => e.type === EffectType.AddAdditionalTrigger)) {
               triggerCount++;
               logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers via replacement.`);

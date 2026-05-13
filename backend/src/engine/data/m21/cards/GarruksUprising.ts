@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GarruksUprising: CardDefinition = {
     name: "Garruk's Uprising",
@@ -11,9 +11,7 @@ export const GarruksUprising: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            condition: (state: any, event: any, source: any) =>
-                event.sourceId === source.id &&
-                state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
+            condition: `${ConditionType.EventSourceIsSelf} && ${ConditionType.HasPermanent}:${Restriction.Creature},${Restriction.Power4OrGreater}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
@@ -30,14 +28,7 @@ export const GarruksUprising: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            condition: (state: any, event: any, source: any) => {
-                const entered = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return entered &&
-                    entered.controllerId === source.controllerId &&
-                    entered.definition.types.includes('Creature') &&
-                    (entered.effectiveStats?.power || 0) >= 4 &&
-                    entered.id !== source.id;
-            },
+            condition: `${ConditionType.EventObjectControllerIsYou} && ${ConditionType.EventObjectMatches}:${Restriction.Creature},${Restriction.Power4OrGreater} && !${ConditionType.EventSourceIsSelf}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ],

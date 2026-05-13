@@ -1,4 +1,4 @@
-import { EngineFrame, ConditionType, GameState } from "@shared/engine_types";
+import { EngineFrame, ConditionType, GameState, ConditionDefinition } from "@shared/engine_types";
 import { ConditionRegistry } from "./ConditionRegistry";
 
 export class ConditionProcessor {
@@ -11,22 +11,17 @@ export class ConditionProcessor {
    */
   public static matchesCondition(
     state: GameState,
-    condition: ConditionType | string | Function | { matches: Function } | undefined,
+    condition: ConditionDefinition | undefined,
     context: EngineFrame,
   ): boolean {
     if (!condition) return true;
 
-    if (typeof condition === "function") {
-      return condition(state, context.event, context);
-    }
-
-    if (typeof condition === "object" && condition !== null) {
-      if ('matches' in condition && typeof condition.matches === 'function') {
-        return condition.matches(state, [], context);
+    if (typeof condition !== "string") {
+      if (Array.isArray(condition)) {
+        return condition.every(c => this.matchesCondition(state, c, context));
       }
+      return true;
     }
-
-    if (typeof condition !== "string") return true;
 
     // --- RECURSIVE LOGICAL PARSER (Supports parentheses, &&, ||, !) ---
 

@@ -348,6 +348,7 @@ export interface InteractionMetadata {
     isOptionalDiscard?: boolean;
     maxChoices?: number;
     minChoices?: number;
+    allowDuplicates?: boolean;
     involvedIds?: string[];
     declaredTargets?: string[];
     choiceEffects?: import('./effects').EffectDefinition[];

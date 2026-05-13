@@ -646,25 +646,18 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         restrictions: effect.restrictions,
         reveal: moveEff.reveal,
         optional: effect.optional || effect.selectionType === SelectionType.ANY,
-        minChoices: (() => {
-          const min = effect.selectionType === SelectionType.ANY || (moveEff.amount === "ANY")
+        minChoices:
+          effect.selectionType === SelectionType.ANY || (moveEff.amount === "ANY")
             ? 0
-            : 1;
-          logger.debug(state, LogCategory.ACTION, `[PICK-DEBUG] minChoices for ${effect.type}: ${min}`);
-          return min;
-        })(),
+            : 1,
         maxChoices: (() => {
           const count = moveEff.pickCount || moveEff.amount || 1;
-          let resolved = 1;
           if (effect.selectionType === SelectionType.ANY || count === "ANY") {
-            resolved = cards.length;
-          } else {
-            const processors = getProcessors(state);
-            resolved = processors.effect.resolveAmount(state, count, context, cards.map(c => c.id));
+            return cards.length;
           }
-          const finalMax = Math.min(cards.length, resolved);
-          logger.debug(state, LogCategory.ACTION, `[PICK-DEBUG] maxChoices for ${effect.type}: ${finalMax} (count: ${count}, resolved: ${resolved}, cards: ${cards.length})`);
-          return finalMax;
+          const processors = getProcessors(state);
+          const resolved = processors.effect.resolveAmount(state, count, context, cards.map(c => c.id));
+          return Math.min(cards.length, resolved);
         })(),
 
         actionType:

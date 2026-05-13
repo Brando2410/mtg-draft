@@ -87,7 +87,7 @@ export class ChoiceGenerator {
             });
         }
 
-        const res = this.wrap(state, playerId, sourceId, {
+        return this.wrap(state, playerId, sourceId, {
             label: config.label,
             choices: options,
             reveal: config.reveal,
@@ -104,15 +104,6 @@ export class ChoiceGenerator {
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
         }, config.actionType);
-
-        const { logger } = getProcessors(state);
-        // Correctly look in metadata because ActionBuilder moves them there during ingest
-        const finalMin = res.data?.metadata?.minChoices ?? res.data?.minChoices;
-        const finalMax = res.data?.metadata?.maxChoices ?? res.data?.maxChoices;
-        logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Created card choice for ${sourceId}. finalMin: ${finalMin}, finalMax: ${finalMax}`);
-        return res;
-
-
     }
 
     /**
