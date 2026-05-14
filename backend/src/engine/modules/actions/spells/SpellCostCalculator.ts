@@ -47,6 +47,16 @@ export class SpellCostCalculator {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
 
+        // Miracle cost override (Rule 702.93)
+        if (card.isMiracleCast) {
+            const { layer: LayerProcessor } = getProcessors(state);
+            const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
+            const miracleCost = stats.miracleCostOverride || currentDef.miracleCost;
+            const { logger } = getProcessors(state);
+            logger.debug(state, LogCategory.ACTION, `[MIRACLE-COST-DEBUG] Miracle detected on ${card.definition.name}. MiracleOverride: ${stats.miracleCostOverride}, DefMiracle: ${currentDef.miracleCost}, Result: ${miracleCost}`);
+            baseCost = miracleCost || baseCost;
+        }
+
         // Flashback cost override (Rule 702.34)
         // If explicitly forced or if it's a Flashback card in the graveyard, use the alternative cost
         const { layer: LayerProcessor } = getProcessors(state);
@@ -97,7 +107,7 @@ export class SpellCostCalculator {
             const modalAbility = RegistryUtils.getModalAbility(logic, currentDef);
             if (modalAbility?.modes) {
                 const indices = Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex];
-                
+
                 // Check if ANY selected mode is an alternative cost (Rule 118.9)
                 const hasAlternativeMode = indices.some(idx => modalAbility.modes![idx as number]?.isAlternativeCost);
                 if (hasAlternativeMode) {

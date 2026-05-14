@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const RestorationSeminar: CardDefinition = {
     name: "Restoration Seminar",
     manaCost: "{5}{W}{W}",
-
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],

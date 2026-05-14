@@ -1,38 +1,24 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, ContinuousEffectDefinition, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LoreholdtheHistorian: CardDefinition = {
     name: "Lorehold, the Historian",
     manaCost: "{3}{R}{W}",
-
-
-    colors: [
-        "R",
-        "W"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Elder",
-        "Dragon"
-    ],
+    colors: ["R", "W"],
+    supertypes: ["Legendary"],
+    types: ["Creature"],
+    subtypes: ["Elder", "Dragon"],
     keywords: ["Flying", "Haste"],
     oracleText: "Flying, haste\nEach instant and sorcery card in your hand has miracle {2}. (You may cast a card for its miracle cost when you draw it if it's the first card you drew this turn.)\nAt the beginning of each opponent's upkeep, you may discard a card. If you do, draw a card.",
     abilities: [
         {
             type: AbilityType.Static,
             effects: [
-                {
+                <ContinuousEffectDefinition>{
                     type: EffectType.ApplyContinuousEffect,
-                    layer: 6,
-                    targetMapping: TargetMapping.MatchingCards,
-                    activeZones: ['Hand'],
-                    restrictions: [
-                        Restriction.InstantOrSorcery,
-                        Restriction.YouControl
-                    ],
-                    keywordsToAdd: ['Miracle {2}']
+                    restrictions: [Restriction.InstantOrSorcery],
+                    targetMapping: TargetMapping.Controller,
+                    abilitiesToAdd: ['Miracle'],
+                    miracleCostOverride: '{2}' 
                 }
             ]
         },

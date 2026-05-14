@@ -13,6 +13,7 @@ export interface PlayCardOptions {
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     forceFlashback?: boolean;
     exileOnResolution?: boolean;
     parentContext?: EngineFrame;
@@ -45,6 +46,7 @@ export interface FinalizeCastOptions {
     isFirstInstantOrSorcery?: boolean;
     isInstantOrSorcery?: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     parentContext?: EngineFrame;
 }
 

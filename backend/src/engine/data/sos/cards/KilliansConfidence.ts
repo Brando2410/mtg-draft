@@ -47,8 +47,7 @@ export const KilliansConfidence: CardDefinition = {
                             effects: [
                                 { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Self }
                             ]
-                        },
-                        { label: "Decline", effects: [] }
+                        }
                     ]
                 }
             ]

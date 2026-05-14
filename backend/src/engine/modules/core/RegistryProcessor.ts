@@ -195,6 +195,7 @@ export class RegistryProcessor {
                     colorsToAdd: eff.colorsToAdd,
                     colorSet: eff.colorSet,
                     flashbackCostOverride: eff.flashbackCostOverride,
+                    miracleCostOverride: eff.miracleCostOverride,
                     playerModifier: eff.playerModifier,
                     multiplier: eff.multiplier,
                     isNotLegendary: eff.isNotLegendary,

@@ -116,12 +116,23 @@ export class ChoiceGenerator {
         choices: { label: string, value: any, costs?: any[], effects?: any[] }[]
     ) {
         const { cost: CostProcessor } = getProcessors(state);
+        const mappedChoices: any[] = choices.map(c => ({
+            ...c,
+            selectable: c.costs ? CostProcessor.canPay(state, c.costs, config.sourceId, config.playerId) : true
+        }));
+
+        if (config.optional) {
+            mappedChoices.push({
+                label: "None / Skip",
+                value: "none",
+                selectable: true,
+                effects: []
+            });
+        }
+
         return this.wrap(state, config.playerId, config.sourceId, {
             label: config.label,
-            choices: choices.map(c => ({
-                ...c,
-                selectable: c.costs ? CostProcessor.canPay(state, c.costs, config.sourceId, config.playerId) : true
-            })),
+            choices: mappedChoices,
             hideUndo: config.hideUndo,
             lookingCards: config.lookingCards,
             allowDuplicates: config.allowDuplicates,

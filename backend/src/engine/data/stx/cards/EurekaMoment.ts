@@ -14,10 +14,9 @@ export const EurekaMoment: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller },
                 {
                     type: EffectType.Choice,
-                    label: "Put a land onto the battlefield?",
                     optional: true,
                     choices: [{
-                        label: "Put Land",
+                        label: "Put Land onto Battlefield",
                         effects: [{
                             type: EffectType.MoveToZone,
                             zone: Zone.Battlefield,

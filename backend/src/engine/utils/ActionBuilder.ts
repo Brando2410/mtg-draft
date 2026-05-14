@@ -100,6 +100,7 @@ export class ActionBuilder {
     public withContext(context: {
         parentContext?: EngineFrame,
         isFreeCast?: boolean,
+        isMiracleCast?: boolean,
         exileOnResolution?: boolean,
         stackObj?: any,
         abilityIndex?: number,

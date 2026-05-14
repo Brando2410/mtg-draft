@@ -17,7 +17,7 @@ export const StadiumTidalmage: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Choose an option:",
+                    optional: true,
                     choices: [
                         {
                             label: "Draw 1, then discard 1",
@@ -33,10 +33,6 @@ export const StadiumTidalmage: CardDefinition = {
                                     targetMapping: TargetMapping.Controller
                                 }
                             ]
-                        },
-                        {
-                            label: "Decline",
-                            effects: []
                         }
                     ]
                 }

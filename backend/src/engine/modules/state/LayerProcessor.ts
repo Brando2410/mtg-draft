@@ -285,6 +285,10 @@ export class LayerProcessor {
           (e) =>
             this.isTarget(state, e, obj.id) && e.flashbackCostOverride,
         )?.flashbackCostOverride,
+        miracleCostOverride: activeEffects.find(
+          (e) =>
+            this.isTarget(state, e, obj.id) && e.miracleCostOverride,
+        )?.miracleCostOverride,
         isPlayable: false,
         supertypes: Array.from(supertypes),
         abilities: addedAbilities,

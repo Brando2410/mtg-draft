@@ -26,6 +26,11 @@ export class ChoiceEffectHandler {
     const { logger } = getProcessors(state);
     const { sourceId, controllerId, stackObject, parentContext } =
       context;
+
+    if (sourceId?.includes('miracle_trigger') || (stackObject && 'id' in stackObject && String(stackObject.id).includes('miracle_trigger'))) {
+        logger.info(state, LogCategory.ACTION, `[MIRACLE-RESOLVE] Miracle Choice effect resolving for ${sourceId}.`);
+    }
+
     const targets = context.targets || [];
     const originalTargets = stackObject?.targets || targets;
     const { effect: EP } = getProcessors(state);
@@ -383,6 +388,7 @@ export class ChoiceEffectHandler {
         actionType: effect.optional
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
+        optional: !!effect.optional,
         hideUndo: true,
         lookingCards,
         minChoices: EP.resolveAmount(state, (effect.minChoices || 1), context, targets),

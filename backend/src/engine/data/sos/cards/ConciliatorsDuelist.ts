@@ -26,10 +26,10 @@ export const ConciliatorsDuelist: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Exile up to one target creature?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Yes",
+                            label: "Exile up to one target creature?",
                             targetDefinitions: [{ type: TargetType.Creature, count: 1, minCount: 0, optional: true }],
                             effects: [
                                 {
@@ -44,8 +44,7 @@ export const ConciliatorsDuelist: CardDefinition = {
                                     ]
                                 }
                             ]
-                        },
-                        { label: "No", effects: [] }
+                        }
                     ]
                 }
             ]

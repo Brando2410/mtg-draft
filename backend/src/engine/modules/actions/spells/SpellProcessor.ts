@@ -59,10 +59,11 @@ export class SpellProcessor {
         engine: EngineContext,
         options: PlayCardOptions
     ): boolean {
-        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false, xValue, isFreeCast, parentContext, exileOnResolution } = options;
+        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false, xValue, isFreeCast, isMiracleCast, parentContext, exileOnResolution } = options;
         let declaredTargets = options.targets || [];
 
         const { logger, targeting: TargetingProcessor } = getProcessors(state);
+        logger.debug(state, LogCategory.ACTION, `[MIRACLE-TRACE] playCard entry: cardId=${cardInstanceId}, isMiracleCast=${isMiracleCast}, isFreeCast=${isFreeCast}`);
         logger.debug(state, LogCategory.ACTION, `[PLAY-ENTRY-FULL] ${cardInstanceId}: targets=${declaredTargets.length} (${declaredTargets.join(', ')}), x=${xValue}`);
         // 1. Priority Error (Rule 117.1)
         if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
@@ -82,12 +83,8 @@ export class SpellProcessor {
             return false;
         }
 
-        logger.debug(state, LogCategory.ACTION, `[PLAY-ENTRY] playCard for ${cardInstanceId}. bypassPriority=${bypassPriority}, bypassTargeting=${bypassTargeting}, isFreeCast=${isFreeCast}, hasParent=${!!parentContext}`);
-        logger.debug(state, LogCategory.ACTION, `[PLAY-DEBUG] playCard for ${cardInstanceId} (isFreeCast=${isFreeCast}, hasParent=${!!parentContext})`);
-
         const player = state.players[playerId];
         if (player) {
-            logger.debug(state, LogCategory.ACTION, `[DISCARD-CHECK] Player ${playerId} pendingDiscardCount: ${player.pendingDiscardCount}`);
             if (player.pendingDiscardCount > 0) {
                 logger.info(state, LogCategory.ACTION, `Player ${player.name} must finish discarding (${player.pendingDiscardCount} remaining) before playing cards.`);
                 return false;
@@ -102,12 +99,16 @@ export class SpellProcessor {
             cardToPlay.xValue = xValue;
         }
 
-        logger.debug(state, LogCategory.ACTION, `[PLAY-DEBUG] Resolved card to play: ${cardToPlay.definition.name} in zone ${cardToPlay.zone}.`);
-
         if (isFreeCast) {
             cardToPlay.isFreeCast = true;
         } else {
             delete cardToPlay.isFreeCast;
+        }
+
+        if (isMiracleCast) {
+            cardToPlay.isMiracleCast = true;
+        } else {
+            delete cardToPlay.isMiracleCast;
         }
 
         if (exileOnResolution !== undefined) {
@@ -132,7 +133,6 @@ export class SpellProcessor {
                 });
 
                 if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
-                    logger.debug(state, LogCategory.ACTION, `[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
                     return SpellProcessor.activateAbility(state, engine, {
                         playerId,
                         cardId: cardInstanceId,
@@ -247,7 +247,6 @@ export class SpellProcessor {
             // CASE B: Exactly one valid ability and spell is NOT playable -> Auto-redirect
             if (validAbilities.length === 1 && !isSpellPlayable) {
                 const { idx } = validAbilities[0];
-                logger.info(state, LogCategory.ACTION, `[HAND-AUTO] Auto-redirecting to activated ability for ${cardToPlay.definition.name} (Spell not playable).`);
                 return getProcessors(state).spell.activateAbility(state, engine, {
                     playerId,
                     cardId: cardToPlay.id,
@@ -327,9 +326,8 @@ export class SpellProcessor {
         if (needsX && cardToPlay.xValue === undefined) {
             if (isFreeCast) {
                 cardToPlay.xValue = 0;
-                logger.debug(state, LogCategory.ACTION, `[DEBUG] ${cardToPlay.definition.name} cast for free: X is 0 (Rule 107.3b).`);
             } else {
-                return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, parentContext, isFreeCast, exileOnResolution);
+                return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, parentContext, isFreeCast, isMiracleCast, exileOnResolution);
             }
         }
 
@@ -390,7 +388,6 @@ export class SpellProcessor {
                 });
                 if (met) {
                     maxChoices = modalAbility.modes!.length;
-                    logger.debug(state, LogCategory.ACTION, `[MODAL] Condition met: You may choose all ${maxChoices} modes.`);
                 }
             }
 
@@ -407,16 +404,15 @@ export class SpellProcessor {
             });
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, modalAbility.label || 'Choose options')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(choices, minChoices, maxChoices)
                 .withData({ isModeSelection: true, allowDuplicates: modalAbility.allowDuplicates, declaredTargets: declaredTargets || [] })
                 .build();
-            logger.debug(state, LogCategory.ACTION, `[MODAL] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
 
         // Step 2: Check Additional Costs (Casualty, Kicker, etc.) - CR 601.2b
-        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, parentContext, isFreeCast, exileOnResolution);
+        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, parentContext, isFreeCast, isMiracleCast, exileOnResolution);
         if (interactiveResult === null) return false; // Illegal play, stop
         if (interactiveResult === true) return true; // Flow paused for input (Choice or Payment)
 
@@ -424,7 +420,7 @@ export class SpellProcessor {
         const totalTargetCounts = targetDefinitions ? TargetingProcessor.calculateTotalCounts(targetDefinitions, cardToPlay.xValue || 0) : { maxCount: 0 };
 
         if (targetDefinitions && (!declaredTargets || declaredTargets.length < totalTargetCounts.maxCount) && !bypassTargeting) {
-            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinitions, totalMana, cardInstanceId, engine, parentContext, isFreeCast, exileOnResolution, declaredTargets);
+            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinitions, totalMana, cardInstanceId, engine, parentContext, isFreeCast, isMiracleCast, exileOnResolution, declaredTargets);
             if (typeof result === 'boolean') return result;
             declaredTargets = result;
         }
@@ -433,11 +429,10 @@ export class SpellProcessor {
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, choiceEffect.label || 'Choose an option')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(choiceEffect.choices as ChoiceOption[], (choiceEffect.minChoices as number) || 1, (choiceEffect.maxChoices as number) || 1)
                 .withData({ declaredTargets: declaredTargets || [] })
                 .build();
-            logger.debug(state, LogCategory.ACTION, `[CHOICE] Selecting choice for ${cardToPlay.definition.name}...`);
             return true;
         }
 
@@ -453,6 +448,7 @@ export class SpellProcessor {
             isFirstInstantOrSorcery,
             isInstantOrSorcery,
             isFreeCast,
+            isMiracleCast,
             parentContext
         });
     }
@@ -484,7 +480,6 @@ export class SpellProcessor {
         if (!player) return false;
 
         if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
-            logger.debug(state, LogCategory.ACTION, `Tried to activate ability without priority.`);
             return false;
         }
 
@@ -493,7 +488,6 @@ export class SpellProcessor {
         // pending actions. This is necessary because land-tapping often triggers 
         // sub-effects (like choice modals) which we have already pre-resolved.
         if (state.pendingAction && !bypassPriority) {
-            logger.debug(state, LogCategory.ACTION, `Cannot activate ability: Pending action ${state.pendingAction.type} must be resolved first.`);
             return false;
         }
 
@@ -528,13 +522,11 @@ export class SpellProcessor {
         }
 
         if (!abilities[abilityIndex]) {
-            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} not found for ${definition.name}`);
             return false;
         }
 
         const ability = abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) {
-            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} for ${definition.name} is not an activated ability (found ${ability.type})`);
             return false;
         }
 
@@ -582,7 +574,7 @@ export class SpellProcessor {
         engine: EngineContext,
         options: FinalizeCastOptions
     ): boolean {
-        const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinitions, isFirstInstantOrSorcery, isInstantOrSorcery, isFreeCast, parentContext } = options;
+        const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinitions, isFirstInstantOrSorcery, isInstantOrSorcery, isFreeCast, isMiracleCast, parentContext } = options;
         const player = state.players[playerId];
         const { logger, action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
 
@@ -610,12 +602,12 @@ export class SpellProcessor {
                     metadata: {
                         isSpellCasting: true,
                         isFreeCast,
+                        isMiracleCast,
                         parentContext
                     },
                     declaredTargets: declaredTargets || []
                 }
             };
-            logger.debug(state, LogCategory.ACTION, `[CHOICE] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
 
@@ -630,14 +622,11 @@ export class SpellProcessor {
 
         const { mana: ManaProcessor } = getProcessors(state);
         if (isFreeCast) {
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] Finalizing free cast for ${cardToPlay.definition.name}. Bypassing mana check.`);
         } else if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
             if (ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, cardToPlay)) {
                 if (hasConfirmedAutoTap) {
-                    logger.debug(state, LogCategory.ACTION, `Using pre-confirmed auto-tap for ${totalMana}...`);
                     ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
                 } else {
-                    logger.debug(state, LogCategory.ACTION, `Auto-tapping lands to pay ${totalMana}...`);
                     const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
                     const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
                     const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
@@ -648,6 +637,7 @@ export class SpellProcessor {
                             .ingest({
                                 isSpellCasting: true,
                                 isFreeCast: isFreeCast,
+                                isMiracleCast: isMiracleCast,
                                 parentContext,
                                 confirmedAutoTap: true,
                                 tappedLandIds: tappedIds,
@@ -660,25 +650,19 @@ export class SpellProcessor {
                             .build();
                         return true;
                     } else {
-                        logger.info(state, LogCategory.ACTION, `[MANA] Auto-tap could not satisfy cost ${totalMana} for ${cardToPlay.definition.name}.`);
                         return false;
                     }
                 }
             } else {
-                logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
                 return false;
             }
         }
 
         // Final sanity check: Can we actually pay now?
         if (!isFreeCast && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
-            logger.info(state, LogCategory.ACTION, `[MANA] Payment failed for ${cardToPlay.definition.name} even after auto-tap. (Effective Cost: ${totalMana})`);
             return false;
         }
 
-        logger.debug(state, LogCategory.ACTION, `[FINAL-DEBUG] Proceeding with finalization for ${cardToPlay.definition.name}.`);
-
-        logger.debug(state, LogCategory.ACTION, isFreeCast ? `Casting ${cardToPlay.definition.name} for free...` : `Paying ${totalMana} for ${cardToPlay.definition.name}...`);
         const colorsSpent = isFreeCast ? [] : getProcessors(state).mana.deductManaCost(player, totalMana, state, cardToPlay);
         cardToPlay.colorsSpent = colorsSpent;
         cardToPlay.convergeAmount = colorsSpent.length;
@@ -691,7 +675,6 @@ export class SpellProcessor {
                 if (obj) {
                     TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
-                    logger.debug(state, LogCategory.ACTION, `Paid additional cost: Sacrificed ${obj.definition.name}.`);
                     if (cost.isCasualty && state.interaction) {
                         state.interaction.flags.paidCasualtyFor = cardToPlay.id;
                     }
@@ -702,21 +685,17 @@ export class SpellProcessor {
                 if (obj) {
                     TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, payload: { object: obj, sourceId: cardToPlay.id, targetIds: [obj.id] } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
-                    logger.debug(state, LogCategory.ACTION, `Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
             } else if (cost.type === 'PayLife') {
                 const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (typeof cost.value === 'number' ? cost.value : parseInt(String(cost.value || '0')));
                 player.life -= lifeVal;
                 TriggerProcessor.onEvent(state, { type: TriggerEvent.LifeLoss, playerId, payload: { amount: lifeVal, targetIds: [playerId] } });
-                logger.debug(state, LogCategory.ACTION, `Paid additional cost: ${lifeVal} life.`);
             } else if (cost.type === 'Exile') {
                 const chosenIds = state.interaction?.lastSelections['Exile'] || [];
                 chosenIds.forEach((cid: string) => {
                     const obj = RuleUtils.findObject(state, cid);
                     if (obj) {
                         ActionProcessor.moveCard(state, obj as GameObject, Zone.Exile, playerId);
-                        const cardName = RuleUtils.isEntity(obj) ? obj.definition.name : cid;
-                        logger.debug(state, LogCategory.ACTION, `Paid additional cost: Exiled ${cardName}.`);
                     }
                 });
             } else if (cost.type === 'TapSelection') {
@@ -726,7 +705,6 @@ export class SpellProcessor {
                     if (obj) {
                         obj.isTapped = true;
                         TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
-                        logger.debug(state, LogCategory.ACTION, `Paid additional cost: Tapped ${obj.definition.name}.`);
                     }
                 });
             }
@@ -739,7 +717,6 @@ export class SpellProcessor {
             ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId);
         } else {
             const { registry: RegistryProcessor, lki: LkiProcessor } = getProcessors(state);
-            logger.debug(state, LogCategory.ACTION, `[PREPARED-DEBUG] Casting ${cardToPlay.definition.name} from virtual origin: ${lastZone}`);
             LkiProcessor.saveSnapshot(state, cardToPlay, lastZone);
             cardToPlay.zone = Zone.Stack;
             RegistryProcessor.registerAbilities(state, cardToPlay);
@@ -792,7 +769,6 @@ export class SpellProcessor {
         });
 
         logger.debug(state, LogCategory.ACTION, `[FINAL-PLAY-LOG] Finalizing ${cardToPlay.definition.name} with ${declaredTargets.length} targets: [${declaredTargets.join(', ')}]`);
-
         const stackObj: StackObject = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             controllerId: playerId,
@@ -852,7 +828,6 @@ export class SpellProcessor {
             };
             state.stack.push(casualtyObj);
             getProcessors(state).action.updateEntityCache(state, casualtyObj);
-            logger.info(state, LogCategory.TRIGGER, `[CASUALTY] Copy trigger for ${stackObj.definition.name} placed on stack.`);
         }
 
 
@@ -951,7 +926,6 @@ export class SpellProcessor {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
             if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state, obj)) {
                 if (ManaProcessor.canPayWithTotal(state, playerObj, state.battlefield, effectiveMana, obj)) {
-                    logger.info(state, LogCategory.MANA, `Auto-tapping lands to pay ability cost ${effectiveMana}...`);
                     ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
                 }
             }
@@ -983,7 +957,6 @@ export class SpellProcessor {
                     })
                 });
             });
-            logger.info(state, LogCategory.ACTION, `Activated mana ability of ${obj.definition.name}`);
             return true;
         }
 
@@ -1050,8 +1023,6 @@ export class SpellProcessor {
         state.interaction.manaChoices = state.interaction.manaChoices || {};
 
         if (Object.keys(state.interaction.manaChoices).length > 0) {
-            const { logger } = getProcessors(state);
-            logger.debug(state, LogCategory.ACTION, `[MANA-CHOICE] Skipping hybrid prompt as choices already exist: ${JSON.stringify(state.interaction.manaChoices)}`);
             return false; // Already chosen
         }
 

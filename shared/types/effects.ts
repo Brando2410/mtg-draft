@@ -155,6 +155,7 @@ export interface ContinuousEffect {
     isFreeCast?: boolean;
     isNotLegendary?: boolean;
     isSpellTax?: boolean;
+    miracleCostOverride?: string;
     layer: number;
     limitPerTurn?: number;
     multiplier?: NumericProperty;
@@ -218,6 +219,7 @@ export interface EngineFrame {
     exiledIds?: string[];
     isCopy?: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];
@@ -348,6 +350,7 @@ interface StateProps {
     isDiscard?: boolean;
     isDraw?: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     isParadigmCopy?: boolean;
     isSpellCasting?: boolean;
     tapped?: boolean;
@@ -469,6 +472,7 @@ export interface ContinuousEffectDefinition extends BaseEffect {
     keywordsToAdd?: string[];
     layer?: number;
     limitPerTurn?: number;
+    miracleCostOverride?: string;
     multiplier?: NumericProperty;
     playerModifier?: any;
     powerModifier?: number | string;

@@ -20,11 +20,11 @@ export const Erode: CardDefinition = {
                 },
                 {
                     type: EffectType.Choice,
-                    label: 'Search for a basic land and put it onto the battlefield tapped?',
                     targetMapping: TargetMapping.Target1Controller,
+                    optional: true,
                     choices: [
                         {
-                            label: 'Yes',
+                            label: 'Search for a basic land and put it onto the battlefield tapped',
                             effects: [
                                 {
                                     type: EffectType.SearchLibrary,
@@ -41,10 +41,6 @@ export const Erode: CardDefinition = {
                                     shuffle: true
                                 }
                             ]
-                        },
-                        {
-                            label: 'No',
-                            effects: []
                         }
                     ]
                 }

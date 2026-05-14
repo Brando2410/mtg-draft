@@ -3,16 +3,9 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const ZealousLorecaster: CardDefinition = {
     name: "Zealous Lorecaster",
     manaCost: "{5}{R}",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Giant",
-        "Sorcerer"
-    ],
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Giant", "Sorcerer"],
     keywords: [],
     oracleText: "When this creature enters, return target instant or sorcery card from your graveyard to your hand.",
 

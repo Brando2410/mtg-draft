@@ -34,6 +34,7 @@ export interface CardDefinition {
     loyalty?: string | number;
     manaCost: string;
     manaValue?: number;
+    miracleCost?: string;
     name: string;
     oracleText: string;
     power?: string | number;
@@ -87,6 +88,7 @@ export interface EffectiveStats {
     isVirtual?: boolean;
     keywords: string[];
     manaCost?: string;
+    miracleCostOverride?: string;
     power: number;
     restrictions?: import('./core').RestrictionObject[];
     subtypes?: string[];
@@ -112,6 +114,7 @@ export interface GameObject extends BaseEntity {
     isFreeCast?: boolean;
     isGoaded?: boolean;
     isPTSwitched?: boolean;
+    isMiracleCast?: boolean;
     isCopyTargeting?: boolean;
     bypassTargeting?: boolean;
     isRevealed?: boolean;
@@ -308,6 +311,7 @@ export interface InteractionMetadata {
     effects?: import('./effects').EffectDefinition[];
     exileOnResolution?: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     isSpellCasting?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
@@ -384,6 +388,7 @@ export interface CommonChoiceFields {
 export interface BaseActionData extends CommonResolutionFields, CommonChoiceFields {
     // --- Core Identity ---
     label: string;
+    cardId?: string;
     summary?: string;
     allowDuplicates?: boolean;
     reveal?: boolean;

@@ -473,6 +473,7 @@ export class TargetingProcessor {
                 targets: actionData.declaredTargets || [],
                 bypassPriority: false,
                 isFreeCast: meta.isFreeCast,
+                isMiracleCast: meta.isMiracleCast,
                 parentContext: meta.parentContext
             });
         }
@@ -506,6 +507,7 @@ export class TargetingProcessor {
                     bypassTargeting: true,
                     parentContext: meta.parentContext,
                     isFreeCast: meta.isFreeCast,
+                    isMiracleCast: meta.isMiracleCast,
                     exileOnResolution: meta.exileOnResolution
                 });
             }
@@ -622,7 +624,7 @@ export class TargetingProcessor {
             if (meta.parentContext) {
                 logger.warn(state, LogCategory.TARGETING, `[SAFETY] finaliseTargeting fell through to Case 3 despite having a parentContext. This usually indicates a missing effectIndex, which will cause a resolution restart instead of a resumption.`);
             }
-            logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Case 3: Stack Object Update. Type=${stackObj.type}`);
+            logger.debug(state, LogCategory.TARGETING, `[TARGET-FINAL] Case 3: Stack Object Update. Type=${stackObj.type}, isMiracle=${meta.isMiracleCast}`);
             const finalTargets = (meta.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
@@ -694,6 +696,7 @@ export class TargetingProcessor {
                 bypassTargeting: true,
                 parentContext: meta.parentContext,
                 isFreeCast: meta.isFreeCast,
+                isMiracleCast: meta.isMiracleCast,
                 exileOnResolution: meta.exileOnResolution
             });
             engine.checkAutoPass(playerId);

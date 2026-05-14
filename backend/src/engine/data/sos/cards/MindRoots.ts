@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const MindRoots: CardDefinition = {
     name: "Mind Roots",
     manaCost: "{1}{B}{G}",
-
-
     colors: ["B", "G"],
     types: ["Sorcery"],
     subtypes: [],

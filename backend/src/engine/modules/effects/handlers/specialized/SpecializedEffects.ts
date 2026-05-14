@@ -21,9 +21,10 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
 
     const spellName = effect.value;
     const isFree = effect.isFreeCast;
+    const isMiracle = effect.isMiracleCast;
     let targetId = (effect.targetIds && effect.targetIds.length > 0) ? effect.targetIds[0] : targets[0];
 
-    logger.debug(state, LogCategory.ACTION, `[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree})`);
+    logger.debug(state, LogCategory.ACTION, `[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree}, Miracle: ${isMiracle})`);
 
     if (spellName && !targetId) {
       const { oracle } = getProcessors(state);
@@ -65,6 +66,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
           targets: [],
           bypassPriority: true,
           isFreeCast: isFree,
+          isMiracleCast: isMiracle,
           parentContext: parentContext,
           exileOnResolution: effect.exileOnResolution
         },

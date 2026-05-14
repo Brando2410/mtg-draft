@@ -249,6 +249,7 @@ export class EffectProcessor {
           ...(existingData.metadata || {}),
           effects: context.effects.map((e) => ({ ...e })),
           effectIndex: context.effectIndex,
+          isMiracleCast: context.isMiracleCast ?? (existingData.metadata || {}).isMiracleCast,
           isResumption: true,
           parentContext: pruneContext(parentContext),
           stackObj: slimStackObj || undefined,

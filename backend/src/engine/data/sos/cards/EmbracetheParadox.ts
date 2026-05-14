@@ -18,11 +18,11 @@ export const EmbracetheParadox: CardDefinition = {
                 },
                 {
                     type: EffectType.Choice,
-                    label: 'You may put a land card from hand onto battlefield tapped',
+                    optional: true,
                     targetMapping: TargetMapping.Controller,
                     choices: [
                         {
-                            label: 'Yes',
+                            label: "Put a land card from hand onto battlefield tapped",
                             effects: [
                                 {
                                     type: EffectType.PutOnBattlefield,
@@ -35,8 +35,7 @@ export const EmbracetheParadox: CardDefinition = {
                                     tapped: true
                                 }
                             ]
-                        },
-                        { label: 'Decline', effects: [] }
+                        }
                     ]
                 }
             ]

@@ -150,6 +150,9 @@ export class TriggerProcessor {
               // Rule 603.3: Queue triggers in pending state. 
               // They will be moved to the stack in APNAP order by processPendingTriggers.
               state.pendingTriggers.push(stackObj);
+              if (trigger.id?.startsWith('miracle_trigger')) {
+                logger.info(state, LogCategory.TRIGGER, `[MIRACLE-STACK] Miracle trigger for ${sourceObj && 'definition' in sourceObj ? sourceObj.definition.name : 'unknown'} PUSHED TO STACK. (ID: ${stackObj.id})`);
+              }
               logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-QUEUE] ${trigger.oracleText || 'Ability'} queued (ID: ${stackObj.id}).`);
 
               if (event.type !== 'ON_TRIGGER_QUEUED') {
@@ -558,7 +561,12 @@ export class TriggerProcessor {
         }
       }
 
-      if (!this.checkZone(state, t, event.type)) return false;
+      if (!this.checkZone(state, t, event.type)) {
+        if (event.type === TriggerEvent.MiracleReveal) {
+          logger.debug(state, LogCategory.TRIGGER, `Trigger ${t.id} failed zone check. ActiveZone: ${t.activeZone}, SourceId: ${t.sourceId}`);
+        }
+        return false;
+      }
 
       // Rule 603.4: Intervening If
       const condition = t.condition;
@@ -610,12 +618,19 @@ export class TriggerProcessor {
    * CR 603.2: Check if a triggered ability is active in its current zone.
    */
   private static isAbilityActive(state: GameState, ability: TriggeredAbility): boolean {
+    const { logger } = getProcessors(state);
     if (ability.isDelayed || ability.isGlobal) return true;
     const source = RuleUtils.findObject(state, ability.sourceId);
     if (!source) return false;
 
     const activeZone = ability.activeZone || (RuleUtils.isType(source, 'instant') || RuleUtils.isType(source, 'sorcery') ? Zone.Stack : Zone.Battlefield);
     const currentZone = RuleUtils.isEntity(source) ? source.zone : undefined;
-    return currentZone === activeZone || activeZone === Zone.Any;
+    const isActive = currentZone === activeZone || activeZone === Zone.Any;
+
+    if (ability.id?.startsWith('miracle_trigger')) {
+      logger.debug(state, LogCategory.TRIGGER, `[MIRACLE-ZONE-CHECK] Trigger: ${ability.name}, Required: ${activeZone}, Current: ${currentZone}, Result: ${isActive}`);
+    }
+
+    return isActive;
   }
 }

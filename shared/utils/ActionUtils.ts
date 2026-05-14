@@ -6,7 +6,7 @@ import type { InteractionMetadata, PendingAction } from '../types/state';
  * Centralized here so ActionBuilder and getActionMeta are always in sync.
  */
 export const TRANSIENT_FIELDS: (keyof InteractionMetadata)[] = [
-    'isSpellCasting', 'isFreeCast', 'exileOnResolution', 'parentContext', 'stackObj',
+    'isSpellCasting', 'isFreeCast', 'isMiracleCast', 'exileOnResolution', 'parentContext', 'stackObj',
     'manaSnapshot', 'restrictedSnapshot', 'producedMana', 'tappedLandIds',
     'isCopyTargeting', 'isCostTargeting', 'isResolutionX', 'xValueConfirmed',
     'discardAmount', 'xValue', 'lookingCards', 'targets', 'abilityIndex',

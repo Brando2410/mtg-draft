@@ -1,20 +1,11 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, Restriction, TriggerEvent } from '@shared/engine_types';
 export const MicaReaderofRuins: CardDefinition = {
     name: "Mica, Reader of Ruins",
     manaCost: "{3}{R}",
-
-
-    colors: [
-        "R"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Artificer"
-    ],
+    colors: ["R"],
+    supertypes: ["Legendary"],
+    types: ["Creature"],
+    subtypes: ["Human", "Artificer"],
     keywords: ["Ward—Pay 3 life"],
     oracleText: "Ward—Pay 3 life. (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays 3 life.)\nWhenever you cast an instant or sorcery spell, you may sacrifice an artifact. If you do, copy that spell and you may choose new targets for the copy.",
     abilities: [
@@ -25,17 +16,15 @@ export const MicaReaderofRuins: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Sacrifice an artifact to copy the spell?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Sacrifice an artifact",
+                            label: "Sacrifice an artifact to copy the spell",
                             effects: [
                                 {
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.Controller,
-                                    restrictions: [
-                                        "Artifact"
-                                    ]
+                                    restrictions: [Restriction.Artifact]
                                 },
                                 {
                                     type: EffectType.CopySpellOnStack,
@@ -43,8 +32,7 @@ export const MicaReaderofRuins: CardDefinition = {
                                     chooseNewTargets: true
                                 }
                             ]
-                        },
-                        { label: "Decline", effects: [] }
+                        }
                     ]
                 }
             ]

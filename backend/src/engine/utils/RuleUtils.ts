@@ -192,8 +192,14 @@ export class RuleUtils {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = keyword.toLowerCase().replace(/\s/g, '');
-        const printed = (def.keywords || []).some((k) => k.toLowerCase().replace(/\s/g, '') === search);
-        const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some((k) => k.toLowerCase().replace(/\s/g, '') === search);
+        
+        const check = (k: string) => {
+            const normalized = k.toLowerCase().replace(/\s/g, '');
+            return normalized === search || normalized.startsWith(search + '{') || (normalized.startsWith(search) && !isNaN(Number(normalized.substring(search.length, search.length + 1))));
+        };
+
+        const printed = (def.keywords || []).some(check);
+        const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some(check);
 
         if (printed || effective) return true;
 

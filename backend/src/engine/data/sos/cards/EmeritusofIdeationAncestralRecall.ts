@@ -18,10 +18,10 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Exile eight cards from your graveyard to prepare?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Yes",
+                            label: "Exile eight cards from your graveyard to prepare",
                             costs: [
                                 {
                                     type: CostType.Exile,
@@ -35,10 +35,6 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
                                     targetMapping: TargetMapping.Self
                                 }
                             ]
-                        },
-                        {
-                            label: "No",
-                            effects: []
                         }
                     ]
                 }

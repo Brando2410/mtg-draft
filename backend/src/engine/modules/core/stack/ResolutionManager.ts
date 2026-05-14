@@ -123,6 +123,7 @@ export class ResolutionManager {
                 lastMilledIds: meta.lastMilledIds,
                 lastDiscardedIds: meta.lastDiscardedIds,
                 isFreeCast: meta.isFreeCast,
+                isMiracleCast: meta.isMiracleCast,
                 paidManaValue: meta.paidManaValue,
                 xValue: meta.xValue,
                 exileOnResolution: meta.exileOnResolution ?? stackObj?.exileOnResolution ?? meta.parentContext?.exileOnResolution

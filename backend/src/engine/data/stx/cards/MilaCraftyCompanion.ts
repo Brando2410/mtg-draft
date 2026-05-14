@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, CounterType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const MilaCraftyCompanion: CardDefinition = {
     name: "Mila, Crafty Companion",
@@ -29,7 +29,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                     condition: 'OpponentAttacksYourPlaneswalker',
                     effects: [{
                         type: EffectType.AddCounters,
-                        counterType: 'loyalty',
+                        counterType: CounterType.Loyalty,
                         amount: 1,
                         targetMapping: TargetMapping.AllPlaneswalkersYouControl
                     }]
@@ -40,11 +40,10 @@ export const MilaCraftyCompanion: CardDefinition = {
                     condition: 'OpponentTargetsYourPermanent',
                     effects: [{
                         type: EffectType.Choice,
-                        label: "Draw a card?",
+                        optional: true,
                         targetMapping: TargetMapping.Controller,
                         choices: [
-                            { label: "Yes", effects: [{ type: EffectType.DrawCards, amount: 1 }] },
-                            { label: "No", effects: [] }
+                            { label: "Draw a card", effects: [{ type: EffectType.DrawCards, amount: 1 }] }
                         ]
                     }]
                 }
@@ -62,13 +61,13 @@ export const MilaCraftyCompanion: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: 'Loyalty', value: 1 }],
+                    costs: [{ type: CostType.Loyalty, value: 1 }],
                     effects: [{
                         type: EffectType.Choice,
-                        label: "Discard a card?",
+                        optional: true,
                         choices: [
                             {
-                                label: "Discard",
+                                label: "Discard a card",
                                 effects: [
                                     { type: EffectType.DiscardCards, amount: 1 },
                                     {
@@ -78,8 +77,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                                         onFailureEffects: [{ type: EffectType.DrawCards, amount: 1 }]
                                     }
                                 ]
-                            },
-                            { label: "Decline", effects: [] }
+                            }
                         ]
                     }]
                 },

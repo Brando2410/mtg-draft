@@ -48,21 +48,16 @@ export const CodieVociferousCodex: CardDefinition = {
                             shuffleRemainder: true,
                             next: {
                                 type: EffectType.Choice,
-                                label: "Cast revealed card?",
+                                optional: true,
                                 choices: [
                                     {
-                                        label: "Yes",
+                                        label: "Cast revealed card",
                                         value: "yes",
                                         effects: [{
                                             type: EffectType.CastSpell,
                                             targetMapping: TargetMapping.Target1,
                                             isFreeCast: true
                                         }]
-                                    },
-                                    {
-                                        label: "No",
-                                        value: "no",
-                                        effects: []
                                     }
                                 ]
                             }

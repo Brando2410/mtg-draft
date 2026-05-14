@@ -27,10 +27,10 @@ export const HeatedArgument: CardDefinition = {
                 },
                 {
                     type: EffectType.Choice,
-                    label: "Exile a card from your graveyard to deal 2 damage to target's controller?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Yes",
+                            label: "Exile a card from your graveyard to deal 2 damage to target's controller",
                             condition: "GRAVEYARD_COUNT_GE:1",
                             costs: [
                                 {
@@ -46,10 +46,6 @@ export const HeatedArgument: CardDefinition = {
                                     targetMapping: TargetMapping.Target1Controller
                                 }
                             ]
-                        },
-                        {
-                            label: "No",
-                            effects: []
                         }
                     ],
                     targetMapping: TargetMapping.Controller

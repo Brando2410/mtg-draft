@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityDefinition, AbilityType, ActionType, ChoiceOption, ChoicePayload, EffectDefinition, EffectType, GameObject, GameState, PendingAction, PlayerId, EngineFrame, StackObject, TargetType, Zone, ModalActionData, XChoiceActionData, BatchActionData, CostActionData, InteractionMetadata } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, AbilityType, ActionType, ChoiceOption, ChoicePayload, EffectDefinition, EffectType, GameObject, GameState, PendingAction, PlayerId, EngineFrame, StackObject, TargetType, TriggerEvent, Zone, ModalActionData, XChoiceActionData, BatchActionData, CostActionData, InteractionMetadata } from '@shared/engine_types';
 import { isModalData, isXChoiceData, isBatchData, isCostData } from '../../utils/ActionTypeGuards';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
@@ -118,8 +118,9 @@ export class ChoiceProcessor {
         const isTargeting = action.type === ActionType.Targeting;
         const isMulligan = action.type === ActionType.Mulligan;
         const isStartingPlayer = action.type === ActionType.StartingPlayerSelection;
+        const isMiracleReveal = action.type === ActionType.MiracleReveal;
 
-        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting && !isMulligan && !isStartingPlayer) return false;
+        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting && !isMulligan && !isStartingPlayer && !isMiracleReveal) return false;
         if (!action.data) return false;
         const actionData = action.data;
         const meta = getActionMeta(action);
@@ -166,6 +167,10 @@ export class ChoiceProcessor {
 
         if (isChoosingX) {
             return this.handleXChoice(state, playerId, action, payload, engine);
+        }
+
+        if (isMiracleReveal) {
+            return this.handleMiracleReveal(state, playerId, action, payload, engine);
         }
 
         // Handle multi-choice (batch selection) or empty selection via 'confirm'/'done'
@@ -225,7 +230,7 @@ export class ChoiceProcessor {
             if (allEffects.length === 0 && !finalChoice && !isEmptyConfirm) return false;
 
             state.pendingAction = undefined; // Clear modal before resolving effects
-            
+
             // Cleanup: ensure the player's discard count is cleared since they just finished their choice
             if (action.type === ActionType.Discard) {
                 state.players[playerId].pendingDiscardCount = 0;
@@ -281,8 +286,8 @@ export class ChoiceProcessor {
 
             // Resume parent resolution, advancing index since this effect sequence is complete
             const resumeIndex = (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined;
-            return ResolutionManager.resume(state, engine, undefined, undefined, { 
-                ...meta.parentContext, 
+            return ResolutionManager.resume(state, engine, undefined, undefined, {
+                ...meta.parentContext,
                 targets: [], // Clear targets from previous effect sequence to allow re-mapping
                 effectIndex: resumeIndex
             }, action);
@@ -297,7 +302,7 @@ export class ChoiceProcessor {
         if (!isNaN(choiceIdx) && isResolution && action.type !== ActionType.ResolutionChoice && action.type !== ActionType.OptionalAction && !meta.isSpellCasting && !actionData.isCostChoice) {
             state.interaction.lastChoiceIndex = choiceIdx;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-PERSIST] Stored lastChoiceIndex: ${choiceIdx}`);
-            
+
             // If we are here, it's a single-choice resolution that didn't go through the batch block above.
             // We should treat it exactly like a batch of one to ensure consistency.
             const choice = actionData.choices?.[choiceIdx];
@@ -318,13 +323,13 @@ export class ChoiceProcessor {
                         skipFizzleCheck: true
                     });
                 }
-                
+
                 if (this.processNextPlayerHandOff(state, engine, action, meta)) {
                     return true;
                 }
 
-                return ResolutionManager.resume(state, engine, undefined, undefined, { 
-                    ...meta.parentContext, 
+                return ResolutionManager.resume(state, engine, undefined, undefined, {
+                    ...meta.parentContext,
                     targets: [],
                     effectIndex: (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined
                 }, action);
@@ -371,6 +376,54 @@ export class ChoiceProcessor {
 
         // 4. Handle Resolution-Phase Choices (Effects, Search, Scry,)
         return this.handleResolutionChoice(state, sourceId, choice, action, engine, payload);
+    }
+
+    private static handleMiracleReveal(
+        state: GameState,
+        playerId: PlayerId,
+        action: PendingAction,
+        payload: ChoicePayload,
+        engine: EngineContext
+    ): boolean {
+        const { logger, trigger: TrP, action: AP } = getProcessors(state);
+        const actionData = action.data;
+        const selections = payload.selections;
+        const selection = selections[0];
+
+        const choiceIdx = typeof selection === 'number' ? selection : parseInt(String(selection).replace('CHOICE_', ''));
+        const choice = actionData?.choices?.[choiceIdx];
+
+        const cardId = actionData?.cardId;
+        const card = RuleUtils.findObject(state, cardId as string) as GameObject;
+
+        if (!card) {
+            logger.error(state, LogCategory.ACTION, `[MIRACLE-ERROR] Card ${cardId} not found for reveal.`);
+            state.pendingAction = undefined;
+            return ResolutionManager.resume(state, engine);
+        }
+
+        if (choice?.value === 'reveal') {
+            logger.info(state, LogCategory.ACTION, `[MIRACLE] Player ${playerId} revealed ${card.definition.name}.`);
+            card.isRevealed = true;
+
+            // Fire the reveal event which will be picked up by SystemKeywordTriggers
+            TrP.onEvent(state, {
+                type: TriggerEvent.MiracleReveal,
+                playerId,
+                payload: { object: card, targetIds: [card.id] }
+            });
+        } else {
+            logger.debug(state, LogCategory.ACTION, `[MIRACLE] Player ${playerId} declined to reveal.`);
+        }
+
+        state.pendingAction = undefined;
+
+        // Finish the draw operation that was interrupted
+        // We call moveCard with bypassMiracle = true to prevent re-interruption
+        AP.moveCard(state, card, Zone.Hand, playerId, 'top', true, false, true);
+
+        // Resume whatever was happening (e.g. DrawCardsHandler loop)
+        return ResolutionManager.resume(state, engine);
     }
 
     private static handleScrySurveil(
@@ -808,7 +861,8 @@ export class ChoiceProcessor {
                 forceFlashback: isFlashback,
                 isModeSelected: true,
                 parentContext: meta.parentContext,
-                exileOnResolution: meta.exileOnResolution
+                exileOnResolution: meta.exileOnResolution,
+                isMiracleCast: meta.isMiracleCast as boolean
             });
         } else {
             if (typeof firstSelection === 'number') state.interaction.lastChoiceIndex = firstSelection;
@@ -823,7 +877,8 @@ export class ChoiceProcessor {
                 cardId: sourceId,
                 targets: savedTargets,
                 bypassPriority: true,
-                isAbilitySelectionBypassed: true // Avoid infinite loop
+                isAbilitySelectionBypassed: true, // Avoid infinite loop
+                isMiracleCast: meta.isMiracleCast as boolean
             });
         }
 
@@ -969,7 +1024,8 @@ export class ChoiceProcessor {
                 bypassTargeting: false,
                 parentContext: meta.parentContext as EngineFrame,
                 isFreeCast: meta.isFreeCast as boolean,
-                exileOnResolution: meta.exileOnResolution as boolean
+                exileOnResolution: meta.exileOnResolution as boolean,
+                isMiracleCast: meta.isMiracleCast as boolean
             }
         );
     }
@@ -1198,7 +1254,7 @@ export class ChoiceProcessor {
         if (RuleUtils.isEntity(card)) {
             card.xValue = x;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Set xValue=${x} on ${card.id}.`);
-            
+
             // CRITICAL: Also propagate to the stack object if this is a triggered/activated ability resolution.
             // Effects like MoveCounters look at the stackObj.xValue during resolveAmount('X').
             if (meta.stackObj && meta.stackObj.id !== card.id) {
@@ -1216,7 +1272,7 @@ export class ChoiceProcessor {
                 }
                 actionData.originalActionData.metadata.xValueConfirmed = true;
                 actionData.originalActionData.metadata.xValue = x;
-                
+
                 // Also ensure the stack object in the original metadata gets the update
                 if (actionData.originalActionData.metadata.stackObj) {
                     actionData.originalActionData.metadata.stackObj.xValue = x;
@@ -1329,10 +1385,10 @@ export class ChoiceProcessor {
         } else {
             // Fallback to resume if no known sequence is detected
             getProcessors(state).logger.warn(state, LogCategory.ACTION, `[CHOICE-HANDOFF] Unknown sequence type for ${sourceId}. Resuming parent context.`);
-            ResolutionManager.resume(state, engine, undefined, undefined, { 
-                ...meta.parentContext, 
+            ResolutionManager.resume(state, engine, undefined, undefined, {
+                ...meta.parentContext,
                 targets: [],
-                effectIndex: meta.effectIndex 
+                effectIndex: meta.effectIndex
             }, action);
         }
 

@@ -2,6 +2,7 @@ import {
   AbilityDefinition,
   AbilityType,
   ActionResult,
+  ActionType,
   BaseEntity,
   CounterType,
   DurationType,
@@ -102,6 +103,7 @@ export class ActionProcessor {
     position: number | "top" | "bottom" = "top",
     isDraw: boolean = false,
     isDiscard: boolean = false,
+    bypassMiracle: boolean = false,
   ): ActionResult {
     console.log(`[MOVE-DEBUG] moveCard: ${card.definition.name} (${card.id}) from ${card.zone} to ${to}. Target: ${targetPlayerId}`);
     const { logger, lki: LkiProcessor, trigger: TrP } = getProcessors(state);
@@ -232,8 +234,48 @@ export class ActionProcessor {
 
     // CR 121: Drawing a card
     if (isDraw && fromZone === Zone.Library && to === Zone.Hand) {
-      state.turnState.cardsDrawnThisTurn[effectiveTargetId!] =
-        (state.turnState.cardsDrawnThisTurn[effectiveTargetId!] || 0) + 1;
+      const draws = state.turnState.cardsDrawnThisTurn[effectiveTargetId!] || 0;
+      const isFirstDraw = draws === 0;
+
+      // MIRACLE CHECK (CR 702.93)
+      // If it's the first draw of the turn and the card has Miracle, we must prompt for reveal
+      const { layer: LayerProcessor } = getProcessors(state);
+      const effectiveStats = LayerProcessor.getEffectiveStats(card, state);
+      const hasMiracle = RuleUtils.hasKeyword({ ...card, effectiveStats }, "Miracle");
+      
+      if (isFirstDraw) {
+        logger.debug(state, LogCategory.ACTION, `[MIRACLE-DEBUG] First draw of turn: ${card.definition.name}. Has Miracle: ${hasMiracle}`);
+      }
+
+      if (isFirstDraw && hasMiracle && !bypassMiracle) {
+        logger.debug(state, LogCategory.ACTION, `[MIRACLE] Detected miracle card ${card.definition.name} on first draw. Prompting for reveal.`);
+
+        // Inject a PendingAction to ask for reveal
+        // Note: We don't increment cardsDrawnThisTurn yet, because the draw is being interrupted.
+        // The DrawCardsHandler will handle resumption.
+        this.prepareAction(state, {
+          type: ActionType.MiracleReveal,
+          playerId: effectiveTargetId!,
+          sourceId: card.id,
+          data: {
+            cardId: card.id,
+            label: `Reveal the drawn card for its Miracle cost?`,
+            choices: [
+              { label: "Reveal", value: "reveal" },
+              { label: "Don't Reveal", value: "skip" }
+            ]
+          }
+        });
+
+        return {
+          success: false,
+          affectedIds: [card.id],
+          actualAmount: 0,
+          stoppedBy: 'MiraclePrompt'
+        };
+      }
+
+      state.turnState.cardsDrawnThisTurn[effectiveTargetId!] = draws + 1;
       state.turnState.lastCardsDrawnAmount = 1;
       TriggerProcessor.onEvent(
         state,
@@ -241,12 +283,12 @@ export class ActionProcessor {
       );
 
       // Jolrael support: Emit ON_SECOND_DRAW
-      if (state.turnState.cardsDrawnThisTurn[effectiveTargetId] === 2) {
+      if (state.turnState.cardsDrawnThisTurn[effectiveTargetId!] === 2) {
         TriggerProcessor.onEvent(
           state,
           {
             type: TriggerEvent.SecondDraw,
-            playerId: effectiveTargetId,
+            playerId: effectiveTargetId!,
             payload: { object: card, targetIds: [card.id] },
           },
         );

@@ -17,10 +17,10 @@ export const WitherbloomCharm: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.Choice,
-                            label: "Sacrifice a permanent?",
+                            optional: true,
                             choices: [
                                 {
-                                    label: "Yes",
+                                    label: "Sacrifice a permanent",
                                     costs: [{ type: CostType.Sacrifice, restrictions: [Restriction.Permanent] }],
                                     effects: [
                                         {
@@ -29,8 +29,7 @@ export const WitherbloomCharm: CardDefinition = {
                                             targetMapping: TargetMapping.Controller
                                         }
                                     ]
-                                },
-                                { label: "No", effects: [] }
+                                }
                             ]
                         }
                     ]

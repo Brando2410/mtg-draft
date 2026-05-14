@@ -120,6 +120,7 @@ export class ContinuousEffectHandler {
                 colorSet: ceDef.colorSet,
                 removeAllAbilities: ceDef.removeAllAbilities,
                 flashbackCostOverride: ceDef.flashbackCostOverride,
+                miracleCostOverride: ceDef.miracleCostOverride,
                 spendAnyMana: ceDef.spendAnyMana,
                 exileOnMoveToGraveyard: ceDef.exileOnMoveToGraveyard,
                 playerModifier: ceDef.playerModifier,

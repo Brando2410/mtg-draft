@@ -1,9 +1,8 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, CounterType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const TesteroftheTangential: CardDefinition = {
     name: "Tester of the Tangential",
     manaCost: "{1}{U}",
- // placeholder,
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Djinn", "Wizard"],
@@ -19,15 +18,15 @@ export const TesteroftheTangential: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Pay {X} to move X +1/+1 counters onto another target creature?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Pay {X}",
+                            label: "Pay {X} to move X +1/+1 counters from this creature onto another target creature",
                             costs: [{ type: CostType.Mana, value: '{X}' }],
                             effects: [
                                 {
                                     type: EffectType.MoveCounters,
-                                    counterType: '+1/+1',
+                                    counterType: CounterType.P1P1,
                                     amount: 'X',
                                     targetDefinitions: [{
                                         type: TargetType.Creature,
@@ -37,8 +36,7 @@ export const TesteroftheTangential: CardDefinition = {
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]
-                        },
-                        { label: "Decline", effects: [] }
+                        }
                     ]
                 }
             ]

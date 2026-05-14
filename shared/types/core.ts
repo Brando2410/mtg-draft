@@ -44,7 +44,8 @@ const _Keyword = {
   Reach: 'Reach',
   FirstStrike: 'FirstStrike',
   DoubleStrike: 'DoubleStrike',
-  Defender: 'Defender'
+  Defender: 'Defender',
+  Miracle: 'Miracle'
 } as const;
 
 /**
@@ -361,6 +362,7 @@ export const ActionType = {
   LegendRule: "LEGEND_RULE",
   Mulligan: "MULLIGAN",
   StartingPlayerSelection: "STARTING_PLAYER_SELECTION",
+  MiracleReveal: "MIRACLE_REVEAL",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

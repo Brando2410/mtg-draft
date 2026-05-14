@@ -19,10 +19,10 @@ export const AzizaMageTowerCaptain: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Aziza: Tap 3 creatures to copy spell?",
+                    optional: true,
                     choices: [
                         {
-                            label: "Yes",
+                            label: "Aziza: Tap 3 creatures to copy spell?",
                             costs: [
                                 {
                                     type: CostType.TapSelection,
@@ -37,10 +37,6 @@ export const AzizaMageTowerCaptain: CardDefinition = {
                                     chooseNewTargets: true
                                 }
                             ]
-                        },
-                        {
-                            label: "No",
-                            effects: []
                         }
                     ]
                 }

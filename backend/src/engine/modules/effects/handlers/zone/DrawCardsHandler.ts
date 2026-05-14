@@ -7,7 +7,7 @@ import { IEffectHandler } from '../../IEffectHandler';
 
 export const DrawCardsHandler: IEffectHandler<DrawEffect> = {
     handle(state, effect, context) {
-        const { effect: EP } = getProcessors(state);
+        const { effect: EP, logger } = getProcessors(state);
         const { targets, controllerId } = context;
         
         const playerIds = targets.filter(tid => state.players[tid as PlayerId]) as PlayerId[];
@@ -15,6 +15,24 @@ export const DrawCardsHandler: IEffectHandler<DrawEffect> = {
 
         playerIds.forEach(pid => {
             const amount = EP.resolveAmount(state, effect.amount, context, [pid]);
+            
+            if (amount > 1) {
+                logger.debug(state, LogCategory.ACTION, `[DRAW-DECOMPOSE] Decomposing draw ${amount} into single draws to support interruptions.`);
+                // Decompose into N "Draw 1" effects
+                // Rule 608.2c: Decomposed effects are added to the list of remaining effects.
+                // We add them in reverse order so they resolve 1 by 1 in the correct order?
+                // Actually injectPostEffect(context, effect) adds at index+1.
+                // If I want 3 draws, I should inject 3 times.
+                // Loop 1: i=0. Inject D1 at i+1. [OriginalD3, D1]
+                // Loop 2: i=1. Inject D1 at i+1. [OriginalD3, D1, D1]
+                // Loop 3: i=2. Inject D1 at i+1. [OriginalD3, D1, D1, D1]
+                // After OriginalD3 finishes, it moves to the first D1.
+                for (let i = 0; i < amount; i++) {
+                    EP.injectPostEffect(context, { ...effect, amount: 1 });
+                }
+                return;
+            }
+
             drawCards(state, pid, amount, context, effect);
         });
     }

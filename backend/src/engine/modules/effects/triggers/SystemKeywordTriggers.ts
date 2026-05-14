@@ -38,6 +38,7 @@ export class SystemKeywordTriggers {
     this.processParadigm(state, event, matchingTriggers);
     this.processLandfall(state, event, matchingTriggers);
     this.processOpus(state, event, matchingTriggers);
+    this.processMiracle(state, event, matchingTriggers);
   }
 
   private static processProwess(
@@ -475,6 +476,49 @@ export class SystemKeywordTriggers {
             }
           }
         }
+      });
+    }
+  }
+
+  private static processMiracle(
+    state: GameState,
+    event: GameEvent,
+    matchingTriggers: TriggeredAbility[],
+  ) {
+    if (event.type === TriggerEvent.MiracleReveal && event.playerId) {
+      const card = event.payload?.object;
+      if (!card || !RuleUtils.isGameObject(card)) return;
+
+      const { logger } = getProcessors(state);
+      logger.debug(state, LogCategory.TRIGGER, `[MIRACLE-LOG] Generating Miracle reveal trigger for ${card.definition.name} (Source: ${card.id}). ActiveZone: Hand`);
+
+      matchingTriggers.push({
+        id: `miracle_trigger_${card.id}_${Date.now()}`,
+        name: `Miracle: ${card.definition.name}`,
+        sourceId: card.id,
+        controllerId: event.playerId,
+        eventMatch: TriggerEvent.MiracleReveal,
+        activeZone: Zone.Hand,
+        effects: [
+          {
+            type: EffectType.Choice,
+            label: `Cast ${card.definition.name} for its Miracle cost?`,
+            choices: [
+              {
+                label: `Cast for Miracle cost`,
+                effects: [
+                  {
+                    type: EffectType.CastSpell,
+                    targetMapping: TargetMapping.Self,
+                    isMiracleCast: true,
+                  },
+                ],
+              },
+              { label: "Decline", effects: [] },
+            ],
+          },
+        ],
+        targets: [],
       });
     }
   }

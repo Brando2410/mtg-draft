@@ -65,6 +65,7 @@ export const TriggerEvent = {
   OnTrigger: "ON_TRIGGER",
   OnShrineTrigger: "ON_SHRINE_TRIGGER",
   OnTriggerQueued: "ON_TRIGGER_QUEUED",
+  MiracleReveal: "ON_MIRACLE_REVEAL",
   Mill: "ON_MILL",
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];

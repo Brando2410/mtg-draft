@@ -27,9 +27,9 @@ export class SpellInteractiveManager {
      * The player must choose a numeric value before mana can be calculated (Rule 107.3b).
      * @returns Always true (flow is paused for UI input).
      */
-    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: EngineFrame, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
+    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: EngineFrame, isFreeCast?: boolean, isMiracleCast?: boolean, exileOnResolution?: boolean): boolean {
         state.pendingAction = ActionBuilder.chooseX(playerId, cardToPlay.id, `Choose X value for: ${cardToPlay.definition.name}`)
-            .withContext({ parentContext, isFreeCast, exileOnResolution })
+            .withContext({ parentContext, isFreeCast, isMiracleCast, exileOnResolution })
             .withData({ declaredTargets: declaredTargets || [] })
             .build();
         const { logger } = getProcessors(state);
@@ -61,6 +61,7 @@ export class SpellInteractiveManager {
         engine: any,
         parentContext?: EngineFrame,
         isFreeCast?: boolean,
+        isMiracleCast?: boolean,
         exileOnResolution?: boolean,
         existingTargets: string[] = []
     ): boolean | string[] {
@@ -84,6 +85,7 @@ export class SpellInteractiveManager {
             xValue: cardToPlay.xValue || 0,
             isSpellCasting: true,
             isFreeCast,
+            isMiracleCast,
             exileOnResolution,
             parentContext
         });
@@ -116,6 +118,7 @@ export class SpellInteractiveManager {
         cardInstanceId: string,
         parentContext?: EngineFrame,
         isFreeCast?: boolean,
+        isMiracleCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | null {
         const { logger, targeting: TargetingProcessor } = getProcessors(state);
@@ -139,7 +142,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.choice(playerId, cardToPlay.id, choiceCost.label || "Choose an additional cost")
                 .asCost('Choice')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withData({ sourceObject: cardToPlay, choices: choices })
                 .build();
             logger.info(state, LogCategory.ACTION, `[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
@@ -168,7 +171,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Sacrifice a creature to cast " + cardToPlay.definition.name)
                 .asCost('Sacrifice')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(legalSacrificeIds.map(id => {
                     const obj = state.battlefield.find(o => o.id === id)!;
                     return { label: `Sacrifice ${obj.definition.name}`, value: id, cardData: obj, selectable: true }
@@ -202,7 +205,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, "Discard a card to cast " + cardToPlay.definition.name)
                 .asCost('Discard')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(legalDiscardIds.map(id => {
                     const c = player.hand.find(o => o.id === id)!;
                     return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
@@ -244,7 +247,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Exile ${amount} card(s) to cast ` + cardToPlay.definition.name)
                 .asCost('Exile')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(legalExileIds.map((id: string) => {
                     const obj = pool.find((o: GameObject) => o.id === id);
                     return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
@@ -278,7 +281,7 @@ export class SpellInteractiveManager {
 
             state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Tap ${amount} permanents to cast ` + cardToPlay.definition.name)
                 .asCost('TapSelection')
-                .withContext({ isSpellCasting: true, isFreeCast, parentContext, exileOnResolution })
+                .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(legalTapIds.map(id => {
                     const sObj = state.battlefield.find(o => o.id === id);
                     return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }

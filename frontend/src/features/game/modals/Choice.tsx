@@ -77,7 +77,8 @@ export const Choice = memo(({
     ActionType.Surveil,
     ActionType.LegendRule,
     ActionType.OrderTriggers,
-    ActionType.StartingPlayerSelection
+    ActionType.StartingPlayerSelection,
+    ActionType.MiracleReveal
   ] as string[]).includes(pendingAction.type);
 
   const isCostChoice = pendingAction?.data?.isCostChoice;

@@ -13,6 +13,7 @@ export interface TargetingDispatchOptions {
     xValue: number;
     isSpellCasting: boolean;
     isFreeCast?: boolean;
+    isMiracleCast?: boolean;
     exileOnResolution?: boolean;
     parentContext?: EngineFrame;
     abilityIndex?: number;
@@ -32,7 +33,7 @@ export class TargetingDispatcher {
      * - `string[]` of targets if targeting is automatically completed or skipped
      */
     public static dispatchTargetingStep(options: TargetingDispatchOptions): boolean | string[] {
-        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting, isChangeTargeting } = options;
+        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, isMiracleCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting, isChangeTargeting } = options;
         const { logger } = getProcessors(state);
 
         const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
@@ -97,6 +98,7 @@ export class TargetingDispatcher {
                     metadata: {
                         isSpellCasting,
                         isFreeCast,
+                        isMiracleCast,
                         exileOnResolution,
                         xValue,
                         parentContext,
@@ -212,6 +214,7 @@ export class TargetingDispatcher {
                     metadata: {
                         isSpellCasting,
                         isFreeCast,
+                        isMiracleCast,
                         exileOnResolution,
                         xValue,
                         parentContext,
@@ -244,6 +247,7 @@ export class TargetingDispatcher {
                 metadata: {
                     isSpellCasting,
                     isFreeCast,
+                    isMiracleCast,
                     exileOnResolution,
                     xValue,
                     parentContext,
