@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 
 export const LocustSpray: CardDefinition = {
     name: "Locust Spray",
-    manaCost: "{B}",
+    manaCost: "{B}",
+
+
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],

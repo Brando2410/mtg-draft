@@ -42,7 +42,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
-        type_line: "Instant",
+        typeLine: "Instant",
 
         oracleText: "Draw three cards, then put two cards from your hand on top of your library in any order.",
         abilities: [

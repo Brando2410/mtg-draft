@@ -15,7 +15,7 @@ export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],
-        type_line: "Sorcery",
+        typeLine: "Sorcery",
         oracleText: "Target creature gets +1/+0 and gains double strike until end of turn.",
         abilities: [
             {

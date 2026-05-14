@@ -1,7 +1,6 @@
 import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, PlayerId, EngineFrame, SearchEffect, SelectionType, TargetDefinition, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { ChoiceGenerator } from '../../ChoiceGenerator';
 import { IEffectHandler } from '../../IEffectHandler';
 
 export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
@@ -61,6 +60,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
             return;
         }
 
+        const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
         state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
             label: `${effect.label || "Search your library"}`,
             playerId: affectedPlayerId,

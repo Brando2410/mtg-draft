@@ -19,7 +19,6 @@ import {
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
-import { ManaProcessor } from "../magic/ManaProcessor";
 import { getActionMeta } from '@shared/utils/ActionUtils';
 
 
@@ -683,6 +682,7 @@ export class EffectProcessor {
         c.id
       );
       if (!isLegal) {
+        const { mana: ManaProcessor } = getProcessors(state);
         const mv = ManaProcessor.getEffectiveManaValue(c);
         logger.info(state, LogCategory.ACTION, `[RESOLVE-INTERACTIVE-DEBUG] Card ${c.definition.name} (MV=${mv}) is NOT legal. Zone=${c.zone}`);
       }

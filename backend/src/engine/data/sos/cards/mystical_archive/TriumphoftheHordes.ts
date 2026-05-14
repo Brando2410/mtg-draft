@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
 
 export const TriumphoftheHordes: CardDefinition = {
     name: "Triumph of the Hordes",
-    manaCost: "{2}{G}{G}",
+    manaCost: "{2}{G}{G}",
+
+
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],

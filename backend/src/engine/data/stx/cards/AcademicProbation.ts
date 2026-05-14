@@ -11,7 +11,7 @@ import {
 export const AcademicProbation: CardDefinition = {
     name: 'Academic Probation',
     manaCost: '{1}{W}',
-    type_line: 'Sorcery',
+    typeLine: 'Sorcery',
     types: ['Sorcery'],
     colors: ["W"],
     oracleText: "Choose one —\n• Choose a nonland card name. Until your next turn, spells with the chosen name can't be cast and activated abilities of permanents with that name can't be activated.\n• Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated.",

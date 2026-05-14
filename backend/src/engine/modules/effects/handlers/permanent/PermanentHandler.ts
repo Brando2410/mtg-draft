@@ -15,11 +15,7 @@ import {
 import { IdUtils } from '@shared/utils/IdUtils';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
-import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { LayerProcessor } from '../../../state/LayerProcessor';
-import { ChoiceGenerator } from '../../ChoiceGenerator';
-import { TriggerProcessor } from '../../triggers/TriggerProcessor';
 
 /**
  * Strategy for CR 110: Permanents and CR 701: Keyword Actions
@@ -38,6 +34,7 @@ export class PermanentHandler {
                 }
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} was successfully destroyed.`);
                 state.turnState.lastDestroyedCount = (state.turnState.lastDestroyedCount || 0) + 1;
+                const { action: ActionProcessor } = getProcessors(state);
                 ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).ownerId);
             }
         });
@@ -62,6 +59,7 @@ export class PermanentHandler {
 
             // Apply GreatestPower restriction (Professor Onyx)
             if (effect?.restrictions?.includes('GreatestPower')) {
+                const { layer: LayerProcessor } = getProcessors(state);
                 const powers = candidates.map((c: GameObject) => LayerProcessor.getEffectiveStats(c, state).power);
                 const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
                 candidates = candidates.filter((c: GameObject) => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
@@ -70,6 +68,7 @@ export class PermanentHandler {
             const amount = effect?.amount !== undefined ? (typeof effect.amount === 'number' ? effect.amount : (EP.resolveAmount(state, effect.amount, context, [tid]))) : 1;
 
             if (candidates.length <= amount && amount > 0) {
+                const { action: ActionProcessor } = getProcessors(state);
                 candidates.forEach((c: GameObject) => ActionProcessor.moveCard(state, c, Zone.Graveyard, tid as PlayerId));
                 this.handleSacrifice(state, effect, { ...context, targets: nextTargets });
                 return;
@@ -80,6 +79,7 @@ export class PermanentHandler {
                 return;
             }
 
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
             state.pendingAction = ChoiceGenerator.createCardChoice(state, candidates, {
                 label: effect?.label || `Choose ${amount} object(s) to sacrifice`,
                 playerId: tid as PlayerId,
@@ -101,6 +101,7 @@ export class PermanentHandler {
                 }
             });
         } else {
+            const { action: ActionProcessor } = getProcessors(state);
             const obj = RuleUtils.findObject(state, tid);
             if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).controllerId);
             this.handleSacrifice(state, effect, { ...context, targets: nextTargets });
@@ -126,6 +127,7 @@ export class PermanentHandler {
         targets.forEach((tid: string) => {
             const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
+                const { trigger: TriggerProcessor } = getProcessors(state);
                 obj.isPrepared = true;
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} is now prepared.`);
                 TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', payload: { targetIds: [obj.id], sourceId: obj.id, object: obj } });
@@ -159,7 +161,7 @@ export class PermanentHandler {
     }
 
     public static handleFight(state: GameState, effect: EffectDefinition, context: EngineFrame) {
-        const { logger, damage: DP } = getProcessors(state);
+        const { logger, layer: LayerProcessor, damage: DP } = getProcessors(state);
         const { targets } = context;
         if (targets.length < 2) return;
         const c1 = RuleUtils.findObject(state, targets[0]);
@@ -198,6 +200,7 @@ export class PermanentHandler {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
                 }
+                const { trigger: TriggerProcessor } = getProcessors(state);
                 logger.info(state, LogCategory.ACTION, `[COUNTERS] Added ${amount} ${finalType} counter(s) to ${obj.definition.name}.`);
                 TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [obj.id], amount, counterType: finalType, object: obj } });
 
@@ -218,6 +221,7 @@ export class PermanentHandler {
             const obj = RuleUtils.findObject(state, tid);
             if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 const counterKey = finalType as CounterType;
+                const { trigger: TriggerProcessor } = getProcessors(state);
                 const amount = obj.counters[counterKey] || 0;
                 if (amount > 0) {
                     obj.counters[counterKey] = amount * 2;
@@ -269,6 +273,7 @@ export class PermanentHandler {
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {
+                const { trigger: TriggerProcessor } = getProcessors(state);
                 const targetObj = RuleUtils.findObject(state, tid);
                 if (RuleUtils.isEntity(targetObj) && targetObj.zone === Zone.Battlefield) {
                     targetObj.counters[counterKey] = (targetObj.counters[counterKey] || 0) + amount;
@@ -433,6 +438,7 @@ export class PermanentHandler {
         state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);
         RP.registerAbilities(state, token);
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_ETB', payload: { targetIds: [token.id], sourceId: token.id, object: token } });
         return token;
     }

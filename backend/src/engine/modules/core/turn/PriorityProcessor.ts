@@ -528,7 +528,7 @@ export class PriorityProcessor {
 
     // 2. Cost Validation
     const { spell: SpellProcessor, mana: ManaProcessor, logger } = getProcessors(state);
-    const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face as any);
+    const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
 
     const canPay = player.manaCheat || ManaProcessor.canPayMana(state, player, totalMana, obj);
 

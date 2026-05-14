@@ -1,10 +1,9 @@
-import { ActionType, CopyEffect, GameObject, NeutralizeEffect, PlayerState, StackObject, Zone } from "@shared/engine_types";
+import { CopyEffect, GameObject, PlayerState, StackObject, TargetingActionData, Zone } from "@shared/engine_types";
 import { IdUtils } from "@shared/utils/IdUtils";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
-import { TargetingDispatcher } from "../../../actions/targeting/TargetingDispatcher";
 
 export const CounterSpellHandler: IEffectHandler = {
     handle(state, effect, context) {
@@ -83,7 +82,7 @@ export const CopySpellHandler: IEffectHandler = {
                         ...copy.sourceObject.definition,
                         supertypes: (copy.sourceObject.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
                         types: (copy.sourceObject.definition.types || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
-                        type_line: copy.sourceObject.definition.type_line?.replace(/Legendary /i, '')
+                        typeLine: copy.sourceObject.definition.typeLine?.replace(/Legendary /i, '')
                     };
                 }
 
@@ -152,6 +151,7 @@ export const CopySpellHandler: IEffectHandler = {
                         copy.targetsControllers = [];
 
                         // Use centralized dispatcher to handle modal shifting, auto-targeting, etc.
+                        const { targetingDispatcher: TargetingDispatcher } = getProcessors(state);
                         const targetingResult = TargetingDispatcher.dispatchTargetingStep({
                             state,
                             playerId: controllerId,
@@ -219,6 +219,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                     // Reset effectIndex for the copy to ensure it resolves from the beginning
                     copy.effectIndex = 0;
 
+                    const { targetingDispatcher: TargetingDispatcher } = getProcessors(state);
                     const targetingResult = TargetingDispatcher.dispatchTargetingStep({
                         state,
                         playerId: controllerId,
@@ -234,7 +235,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                     if (Array.isArray(targetingResult)) {
                         copy.targets = targetingResult;
                     } else if (state.pendingAction && state.pendingAction.data) {
-                        const data = state.pendingAction.data as import("@shared/engine_types").TargetingActionData;
+                        const data = state.pendingAction.data as TargetingActionData;
                         if (!data.metadata) data.metadata = {};
                         data.metadata.isCopyTargeting = true;
                         data.metadata.parentSourceId = context.sourceId; // Store parent ID explicitly
@@ -291,6 +292,7 @@ export const ChangeTargetHandler: IEffectHandler = {
                 stackObj.targets = [];
                 stackObj.targetsControllers = [];
 
+                const { targetingDispatcher: TargetingDispatcher } = getProcessors(state);
                 const targetingResult = TargetingDispatcher.dispatchTargetingStep({
                     state,
                     playerId: controllerId,
@@ -306,7 +308,7 @@ export const ChangeTargetHandler: IEffectHandler = {
                 if (Array.isArray(targetingResult)) {
                     stackObj.targets = targetingResult;
                 } else if (state.pendingAction && state.pendingAction.data) {
-                    const data = state.pendingAction.data as import("@shared/engine_types").TargetingActionData;
+                    const data = state.pendingAction.data as TargetingActionData;
                     if (!data.metadata) data.metadata = {};
                     data.metadata.isChangeTargeting = true;
                     data.metadata.parentSourceId = context.sourceId;

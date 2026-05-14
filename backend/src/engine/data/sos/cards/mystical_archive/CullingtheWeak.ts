@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction } from '
 
 export const CullingtheWeak: CardDefinition = {
     name: "Culling the Weak",
-    manaCost: "{B}",
+    manaCost: "{B}",
+
+
     colors: ["B"],
     types: ["Instant"],
     subtypes: [],

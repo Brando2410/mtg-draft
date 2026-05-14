@@ -1,6 +1,5 @@
 import { DrawEffect, EffectType, PlayerId } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { ChoiceGenerator } from '../../ChoiceGenerator';
 import { IEffectHandler } from '../../IEffectHandler';
 
 export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
@@ -25,6 +24,7 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
         if (cards.length === 0) return;
 
         if (effect.type === EffectType.Scry) {
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
             state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
                 label: `Scry ${cards.length}`,
                 playerId: affectedPlayerId,
@@ -35,6 +35,7 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
                 isFreeCast: !!effect.isFreeCast,
             });
         } else if (effect.type === EffectType.Surveil) {
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
             state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
                 label: `Surveil ${cards.length}`,
                 playerId: affectedPlayerId,

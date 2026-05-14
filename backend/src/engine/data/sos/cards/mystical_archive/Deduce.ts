@@ -2,7 +2,9 @@ import { CardDefinition } from '@shared/engine_types';
 
 export const Deduce: CardDefinition = {
     name: "Deduce",
-    manaCost: "{1}{U}",
+    manaCost: "{1}{U}",
+
+
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],

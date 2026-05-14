@@ -1,13 +1,9 @@
-import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, AddManaEffect, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone, TriggeredAbility } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, AddManaEffect, EffectType, GameState, PlayerId, RemoveCounterCost, Zone, TriggeredAbility } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
-import { CombatProcessor } from '../combat/CombatProcessor';
-import { RuleUtils } from "../../utils/RuleUtils";
-import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { getProcessors, getEngine } from '../ProcessorRegistry';
+import { RuleUtils } from "../../utils/RuleUtils";
 import { getActionMeta } from '@shared/utils/ActionUtils';
-import { LayerProcessor } from '../state/LayerProcessor';
-import { ResolutionManager } from '../core/stack/ResolutionManager';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
@@ -32,13 +28,13 @@ export class PlayerActionProcessor {
     // 1. Intercept for special actions (Combat, Targeting)
     if (state.pendingAction?.playerId === playerId) {
       if (state.pendingAction.type === ActionType.Targeting || state.pendingAction.type === 'TARGETING') {
-        return engine.processors.choice.resolveTargeting(state, playerId, cardId, engine);
+        return choice.resolveTargeting(state, playerId, cardId, engine);
       }
       if (state.pendingAction.type === ActionType.DeclareAttackers) {
-        return engine.declareAttacker(playerId, cardId);
+        return this.declareAttacker(state, playerId, cardId, undefined);
       }
       if (state.pendingAction.type === ActionType.DeclareBlockers) {
-        return engine.handleBlockSelection(playerId, cardId);
+        return this.handleBlockSelection(state, playerId, cardId);
       }
       if (state.pendingAction.type === ActionType.LegendRule) {
         const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
@@ -121,6 +117,7 @@ export class PlayerActionProcessor {
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
     const allActivated = [...(obj.definition.abilities || [])];
 
+    const { layer: LayerProcessor } = getProcessors(state);
     const stats = LayerProcessor.getEffectiveStats(obj, state);
     if (stats.abilities) {
       stats.abilities.forEach((a: any) => {
@@ -159,6 +156,7 @@ export class PlayerActionProcessor {
     const hasPriority = state.priorityPlayerId === playerId;
     const isPayingCost = state.pendingAction && state.pendingAction.playerId === playerId;
 
+    const { priority: PriorityProcessor } = getProcessors(state);
     const filtered = allActivated
       .map((a, index) => ({ ability: a as AbilityDefinition, index }))
       .filter((entry) => {
@@ -335,6 +333,7 @@ export class PlayerActionProcessor {
     if (!card || card.controllerId !== playerId || card.zone !== Zone.Battlefield) return false;
 
     // CR 302.1: A creature can't attack unless its controller has controlled it... (Summoning Sickness)
+    const { layer: LayerProcessor } = getProcessors(state);
     const stats = LayerProcessor.getEffectiveStats(card, state);
     const isCreature = RuleUtils.isCreature(card);
 
@@ -414,6 +413,7 @@ export class PlayerActionProcessor {
       return false;
     }
 
+    const { combat: CombatProcessor } = getProcessors(state);
     const { legal, reason } = CombatProcessor.isLegalBlocker(state, blockerId, cardId);
     if (!legal) {
       logger.warn(state, LogCategory.COMBAT, `${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
@@ -549,6 +549,7 @@ export class PlayerActionProcessor {
       }
 
       // Brand New Resolution System: Hand off to ResolutionManager to automate extraction and resumption.
+      const { resolution: ResolutionManager } = getProcessors(state);
       ResolutionManager.resume(state, getEngine(state));
       return { finished: true, success: true };
     }
@@ -625,6 +626,7 @@ export class PlayerActionProcessor {
     state.pendingAction = undefined;
 
     // Use ResolutionManager to handle the stacking queue and any subsequent suspensions
+    const { resolution: ResolutionManager } = getProcessors(state);
     ResolutionManager.stackTriggers(state, orderedTriggers);
 
     // If no new pending action was created (e.g. more triggers to order), reset priority

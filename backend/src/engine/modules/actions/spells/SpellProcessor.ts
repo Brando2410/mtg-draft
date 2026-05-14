@@ -148,7 +148,7 @@ export class SpellProcessor {
                 sourceId: cardToPlay.id,
                 actionType: ActionType.ModalSelection
             }, cardToPlay.definition.faces.map((face, idx) => ({
-                label: `${face.name} (${face.type_line})`,
+                label: `${face.name} (${face.typeLine})`,
                 value: `FACE_SELECTION_${idx}`
             }))));
             state.priorityPlayerId = null;

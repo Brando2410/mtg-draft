@@ -1,6 +1,5 @@
 import { DrawEffect, EffectDefinition, GameState, PlayerId, EngineFrame, Zone, TriggerEvent } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { IEffectHandler } from '../../IEffectHandler';
 import { LogCategory } from '../../../../utils/EngineLogger';
 
@@ -36,6 +35,7 @@ function millCards(state: GameState, playerId: PlayerId, amount: number, context
     for (let i = 0; i < amount && player.library.length > 0; i++) {
         const card = player.library[player.library.length - 1];
         // ActionProcessor.removeFromCurrentZone(state, card); // Redundant, moveCard handles this
+        const { action: ActionProcessor } = getProcessors(state);
         const result = ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, 'top', false);
         if (result.success) {
             milledIds.push(card.id);

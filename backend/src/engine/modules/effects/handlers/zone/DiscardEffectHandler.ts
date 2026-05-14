@@ -1,6 +1,5 @@
 import { EffectDefinition, PlayerId } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { ChoiceGenerator } from '../../ChoiceGenerator';
 import { IEffectHandler } from '../../IEffectHandler';
 
 export const DiscardEffectHandler: IEffectHandler<EffectDefinition> = {
@@ -18,6 +17,7 @@ export const DiscardEffectHandler: IEffectHandler<EffectDefinition> = {
         if (amount === 0) return;
         
         if (playerIds.length > 0) {
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
             state.pendingAction = ChoiceGenerator.createDiscardChoice(
                 state,
                 playerIds,

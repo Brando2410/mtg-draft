@@ -25,11 +25,6 @@ export interface Card {
     // --- UI/Logic Helpers ---
     types: string[];
     supertypes: string[];
-    
-    // --- Legacy / Deprecated (To be removed after migration) ---
-    mana_cost?: string;
-    type_line?: string;
-    card_colors?: string[];
 }
 
 export interface Player {

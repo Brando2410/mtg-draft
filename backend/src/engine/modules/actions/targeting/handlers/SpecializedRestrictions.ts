@@ -10,15 +10,15 @@ const FROMHAND: IRestrictionHandler = {
         if (isGameObject(targetObj)) {
             // Virtual IDs (v_...) are used in the tray for non-hand cards.
             // Zaffai's permission is strictly for cards cast from the hand.
-            if (targetObj.id.startsWith('v_') || (targetObj as any).isVirtual) return false;
-            
+            if (targetObj.id.startsWith('v_') || targetObj.isVirtual) return false;
+
             if (targetObj.zone === Zone.Hand) return true;
 
             // For objects already on the stack, check where they came from via LKI
             const processors = getProcessors(state);
             const lki = processors.lki.getLki(state, targetObj.id, Zone.Hand);
             if (lki) return true;
-            
+
             return false;
         }
 
@@ -82,7 +82,7 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     },
     "HAS_SINGLE_TARGET": {
         matches(state, targetObj) {
-            return (targetObj as any).targets?.length === 1;
+            return isGameObject(targetObj) && targetObj.targets?.length === 1;
         }
     },
     "ANY": {
@@ -190,7 +190,7 @@ SpecializedRestrictions["OWNED_BY_TARGET_1"] = {
     }
 };
 
-
+//da cambiare in un futuro
 const subtypesToRegister = ['Liliana', 'Garruk', 'Basri', 'Teferi', 'Chandra', 'Zombie', 'Cat', 'Dog', 'Spirit', 'Shrine', 'Forest', 'Island', 'Mountain', 'Plains', 'Swamp', 'Lesson', 'Pest', 'Bat', 'Insect', 'Snake', 'Spider'];
 subtypesToRegister.forEach(st => {
     SpecializedRestrictions[st.toUpperCase()] = gameObjectRestriction((state, obj) => {

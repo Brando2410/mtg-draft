@@ -1,7 +1,6 @@
 import { DrawEffect, EffectDefinition, GameState, PlayerId, EngineFrame, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { RestrictionValidator } from '../../../core/RestrictionValidator';
 import { IEffectHandler } from '../../IEffectHandler';
 
@@ -56,6 +55,7 @@ function drawCards(state: GameState, playerId: PlayerId, amount: number, context
             break;
         }
         const card = player.library[player.library.length - 1];
+        const { action: ActionProcessor } = getProcessors(state);
         ActionProcessor.removeFromCurrentZone(state, card);
         ActionProcessor.moveCard(state, card, Zone.Hand, playerId, 'top', true);
     }

@@ -19,10 +19,10 @@ import type { ReplacementProcessor as ReplacementProcessorType } from "./effects
 import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
 import type { ChoiceGenerator } from "./effects/ChoiceGenerator";
 import type { CostProcessor } from "./magic/CostProcessor";
-import { ManaProcessor } from "./magic/ManaProcessor";
-import { SpellValidator } from "./actions/spells/SpellValidator";
-import { SpellCostCalculator } from "./actions/spells/SpellCostCalculator";
-import { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManager";
+import type { ManaProcessor } from "./magic/ManaProcessor";
+import type { SpellValidator } from "./actions/spells/SpellValidator";
+import type { SpellCostCalculator } from "./actions/spells/SpellCostCalculator";
+import type { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManager";
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";

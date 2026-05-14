@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
 export const WildgrowthArchaic: CardDefinition = {
     name: "Wildgrowth Archaic",
     manaCost: "{2/G}{2/G}",
-
-
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Avatar"],

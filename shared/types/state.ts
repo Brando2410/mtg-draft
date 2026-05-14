@@ -47,7 +47,7 @@ export interface CardDefinition {
     targetDefinitions?: TargetDefinition[];
     toughness?: string | number;
     typeMask?: number;
-    type_line?: string;
+    typeLine?: string;
     types: string[];
 }
 

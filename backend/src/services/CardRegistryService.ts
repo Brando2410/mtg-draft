@@ -33,8 +33,17 @@ export class CardRegistryService {
     const subtypes = raw.subtypes || [];
     const supertypes = raw.supertypes || [];
 
-    // Construct typeLine if missing
-    let typeLine = raw.typeLine || raw.type_line || '';
+    // 1. Resolve standard names from common aliases
+    const name = raw.name || 'Unknown Card';
+    const scryfall_id = raw.scryfall_id || raw.id || '';
+    const manaCost = (raw.manaCost || raw.mana_cost || '').trim();
+    const image_url = raw.image_url || raw.image_uris?.normal || raw.image_uris?.large || '';
+    const back_image_url = raw.back_image_url || raw.card_faces?.[1]?.image_uris?.normal || '';
+    const colors = raw.colors || raw.card_colors || [];
+    const keywords = raw.keywords || [];
+
+    // 2. Type Line Resolution
+    let typeLine = raw.typeLine || '';
     if (!typeLine && types.length > 0) {
       const parts = [];
       if (supertypes.length > 0) parts.push(supertypes.join(' '));
@@ -47,23 +56,23 @@ export class CardRegistryService {
     }
 
     return {
-      id: raw.id || `${raw.scryfall_id || 'c'}-${Math.random().toString(36).substring(2, 9)}`,
-      scryfall_id: raw.scryfall_id || '',
-      name: raw.name || 'Unknown Card',
-      image_url: raw.image_url || raw.image_uris?.normal || '',
-      back_image_url: raw.back_image_url || (raw as any).card_faces?.[1]?.image_uris?.normal,
+      id: raw.id || `${scryfall_id}-${Math.random().toString(36).substring(2, 9)}`,
+      scryfall_id,
+      name,
+      image_url,
+      back_image_url,
       rarity: raw.rarity || 'common',
-      manaCost: raw.manaCost || raw.mana_cost || '',
-      cmc: typeof raw.cmc === 'number' ? raw.cmc : (raw.manaCost ? ManaProcessor.getManaValue(raw.manaCost) : 0),
-      colors: raw.colors || raw.card_colors || [],
-      typeLine: typeLine,
-      oracleText: raw.oracleText || '',
+      manaCost,
+      cmc: typeof raw.cmc === 'number' ? raw.cmc : (manaCost ? ManaProcessor.getManaValue(manaCost) : 0),
+      colors,
+      typeLine,
+      oracleText: raw.oracleText || raw.oracle_text || '',
       power: raw.power?.toString(),
       toughness: raw.toughness?.toString(),
       loyalty: raw.loyalty?.toString(),
-      keywords: raw.keywords || [],
-      types: types,
-      supertypes: supertypes
+      keywords,
+      types,
+      supertypes
     };
   }
 

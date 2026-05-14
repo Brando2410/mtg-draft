@@ -37,7 +37,7 @@ export class SealedService {
                 if (preparedFaces.has(def)) return;
 
                 // Ensure card has an image (Rule 5)
-                if (!def.image_url && !def.image_uris) return;
+                if (!def.image_url) return;
                 
                 // Strictly cards from the specific set (Rule 2)
                 if (def.isMysticalArchive || def.set?.toLowerCase() === 'sta' || def.set?.toLowerCase() === 'soa') return;

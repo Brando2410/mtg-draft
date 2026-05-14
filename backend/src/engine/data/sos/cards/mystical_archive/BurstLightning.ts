@@ -2,7 +2,9 @@ import { CardDefinition } from '@shared/engine_types';
 
 export const BurstLightning: CardDefinition = {
     name: "Burst Lightning",
-    manaCost: "{R}",
+    manaCost: "{R}",
+
+
     colors: ["R"],
     types: ["Instant"],
     subtypes: [],

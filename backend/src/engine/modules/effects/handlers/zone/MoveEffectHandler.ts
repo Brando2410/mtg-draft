@@ -23,14 +23,8 @@ import {
 import { IEffectHandler } from "../../IEffectHandler";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
-import { ActionProcessor } from "../../../actions/ActionProcessor";
-import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
-import { RestrictionValidator } from "../../../core/RestrictionValidator";
 import { getProcessors } from "../../../ProcessorRegistry";
-import { ChoiceGenerator } from "../../ChoiceGenerator";
-import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 import { SearchEffectHandler } from "./SearchEffectHandler";
-import { EffectProcessor } from "../../EffectProcessor";
 import { DrawCardsHandler } from "./DrawCardsHandler";
 
 /**
@@ -180,6 +174,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     };
 
     const restrictions = getRestrictions(firstDef);
+    const { targeting: TargetingProcessor } = getProcessors(state);
     const validCandidates = pool.filter((c) =>
       TargetingProcessor.isLegalTarget(
         state,
@@ -215,6 +210,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       context,
     );
 
+    const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
     state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
       label:
         effect.label ||
@@ -272,6 +268,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
       totalMV += mv;
       cards.push(card);
+      const { action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
       ActionProcessor.moveCard(state, card, Zone.Exile, controllerId);
       TriggerProcessor.onEvent(
         state,
@@ -286,6 +283,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     if (cards.length > 0) {
+      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
       logger.info(state, LogCategory.ACTION,
         `[EXILE-UNTIL] Exiled ${cards.length} cards with total MV ${totalMV} (Threshold: ${threshold}).`,
       );
@@ -363,11 +361,13 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     while (player.library.length > 0) {
       const card = player.library.pop()!;
+      const { action: ActionProcessor } = getProcessors(state);
       ActionProcessor.moveCard(state, card, Zone.Exile, controllerId);
 
       card.isRevealed = true;
       revealed.push(card);
 
+      const { targeting: TargetingProcessor } = getProcessors(state);
       if (
         TargetingProcessor.matchesRestrictions(
           state,
@@ -394,6 +394,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const shuffle = effect.shuffleRemainder || effect.remainderPosition === 'random';
       const remainderPos = effect.remainderPosition === 'random' ? 'bottom' : (effect.remainderPosition || "bottom");
 
+      const { action: ActionProcessor } = getProcessors(state);
       if (shuffle) {
         ActionProcessor.shuffle(remaining);
       }
@@ -420,6 +421,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           const modalEffect = nextEffect as ModalEffect;
           const choicesArr = modalEffect.choices || [];
 
+          const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
           state.pendingAction = ChoiceGenerator.createCardChoice(
             state,
             [targetCard],
@@ -476,6 +478,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         const oldHand = [...player.hand];
         const oldGY = [...player.graveyard];
         logger.info(state, LogCategory.ACTION, `[EXCHANGE] Swapping hand/graveyard for ${player.name}.`);
+        const { action: ActionProcessor } = getProcessors(state);
         oldGY.forEach((c) =>
           ActionProcessor.moveCard(state, c, Zone.Hand, pid),
         );
@@ -513,6 +516,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const obj = this.findObject(state, tid, context);
       logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler.resolveMoveTargets: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
       if (obj) {
+        const { action: ActionProcessor } = getProcessors(state);
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
         ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId!, moveEff.position as number | "top" | "bottom", false, isDiscard);
@@ -542,6 +546,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         }
 
         if (zone === Zone.Exile) {
+          const { trigger: TriggerProcessor } = getProcessors(state);
           TriggerProcessor.onEvent(
             state,
             {
@@ -586,6 +591,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         // --- NESTED EFFECTS SUPPORT ---
         if (effect.effects && effect.effects.length > 0) {
           effect.effects.forEach(subEff => {
+            const { effect: EffectProcessor } = getProcessors(state);
             let subTargetIds = [tid];
             if (subEff.targetMapping === TargetMapping.Target1Controller) {
               subTargetIds = [RuleUtils.getController(obj as GameObject)];
@@ -617,6 +623,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     const cards: GameObject[] = [];
 
     // CR 121.2: If a player is forbidden from drawing cards, draw effects are ignored.
+    const { restriction: RestrictionValidator } = getProcessors(state);
     if (effect.isDraw && !RestrictionValidator.canDrawCards(state, controllerId)) {
       logger.info(state, LogCategory.ACTION, `${player.name} cannot draw cards due to a restriction.`);
       return;
@@ -636,6 +643,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     if (effect.type === EffectType.LookAtTopAndPick) {
+      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
       state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
         label: effect.label || `Choose a card from the top ${cards.length}`,
         playerId: controllerId,
@@ -725,12 +733,14 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       );
 
       if (!alreadyHasRemainder) {
+        const { effect: EffectProcessor } = getProcessors(state);
         EffectProcessor.injectPostEffect(context, remainderMove as EffectDefinition);
       }
       return;
     }
 
     if (effect.type === EffectType.Scry) {
+      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
       state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
         label: `Scry ${cards.length}`,
         playerId: controllerId,
@@ -744,6 +754,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     if (effect.type === EffectType.Surveil) {
+      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
       state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
         label: `Surveil ${cards.length}`,
         playerId: controllerId,
@@ -764,12 +775,13 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       state.turnState.lastMilledIds = cards.map((c) => c.id);
     }
     cards.forEach((c) => {
+      const { action: ActionProcessor } = getProcessors(state);
       const from = c.zone;
       ActionProcessor.moveCard(state, c, zone as Zone, controllerId, "top", effect.type === EffectType.DrawCards);
       if (zone === Zone.Battlefield) {
         if (moveEff.tapped) c.isTapped = true;
       }
-        if (zone === Zone.Exile) {
+      if (zone === Zone.Exile) {
         if (stackObject) {
           if (!stackObject.exiledIds) stackObject.exiledIds = [];
           if (!stackObject.exiledIds.includes(c.id)) {
@@ -784,6 +796,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             parentContext.exiledIds.push(c.id);
           }
         }
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(
           state,
           {
@@ -858,6 +871,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     // 2. Apply restrictions if present (Secondary filter)
     if (effect.restrictions) {
+      const { targeting: TargetingProcessor } = getProcessors(state);
       cardsToMove = cardsToMove.filter((o) =>
         TargetingProcessor.matchesRestrictions(state, o, effect.restrictions!, {
           sourceId: context.sourceId || stackObject?.id || "",
@@ -870,12 +884,14 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     // 3. Shuffle if requested
     if (moveEff.shuffle) {
+      const { action: ActionProcessor } = getProcessors(state);
       ActionProcessor.shuffle(cardsToMove);
     }
 
     // 4. Move the cards
     cardsToMove.forEach((c) => {
       const from = c.zone;
+      const { action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
       ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, moveEff.position as number | "top" | "bottom", false, isDiscard);
       if (zone === Zone.Exile) {
         TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, payload: { targetIds: [c.id], sourceId: stackObject?.sourceId || "", sourceZone: from } });
@@ -890,6 +906,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const reversedCards = [...cardsToMove].reverse();
       reversedCards.forEach(c => {
         effect.effects!.forEach(subEff => {
+          const { effect: EffectProcessor } = getProcessors(state);
           let subTargetIds = [c.id];
           if (subEff.targetMapping === TargetMapping.Target1Controller) {
             subTargetIds = [RuleUtils.getController(c)];
@@ -936,6 +953,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const from = obj.zone;
       const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
       logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
+      const { action: ActionProcessor } = getProcessors(state);
       ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.position as number | "top" | "bottom", false, isDiscard);
 
       if (
@@ -951,6 +969,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           if (!parentContext.exiledIds) parentContext.exiledIds = [];
           parentContext.exiledIds.push(obj.id);
         }
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(
           state,
           {
@@ -967,6 +986,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const subEffects = effect.next ? [effect.next] : effect.effects;
       if (subEffects && subEffects.length > 0) {
         subEffects.forEach(subEff => {
+          const { effect: EffectProcessor } = getProcessors(state);
           let subTargetIds = [tid];
           if (subEff.targetMapping === TargetMapping.Target1Controller) {
             subTargetIds = [RuleUtils.getController(obj as GameObject)];

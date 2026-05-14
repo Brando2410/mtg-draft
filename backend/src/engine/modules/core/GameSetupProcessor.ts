@@ -2,6 +2,7 @@ import { GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { oracle } from '../../OracleLogicMap';
 import { LogCategory, EngineLogger } from '../../utils/EngineLogger';
+import { getProcessors } from '../ProcessorRegistry';
 
 export class GameSetupProcessor {
   public static initializePlayers(
@@ -50,14 +51,14 @@ export class GameSetupProcessor {
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = oracle.getCard(cardRef.name);
-    let typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
+    let typeLine = cardRef.typeLine || logicData?.typeLine || '';
 
     // Normalize legacy "Enchant Creature" to "Enchantment — Aura"
     if (typeLine.toLowerCase().trim() === 'enchant creature') {
       typeLine = 'Enchantment — Aura';
     }
     const colorMap: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
-    const rawColors = cardRef.colors || cardRef.card_colors || (cardRef as any).color || logicData?.colors || [];
+    const rawColors = cardRef.colors || logicData?.colors || [];
     const normalizedColors = rawColors.map((c: string) => colorMap[c.toUpperCase()] || c.toLowerCase());
 
     const baseKeywords = logicData?.keywords || cardRef.keywords || [];
@@ -78,21 +79,21 @@ export class GameSetupProcessor {
       zone: Zone.Library,
       definition: {
         name: cardRef.name || 'Unknown Card',
-        manaCost: (cardRef.manaCost || (cardRef as any).mana_cost || logicData?.manaCost || '').split('//')[0].trim(),
+        manaCost: (cardRef.manaCost || logicData?.manaCost || '').split('//')[0].trim(),
         colors: normalizedColors,
         supertypes: supertypes.length > 0 ? supertypes : (logicData?.supertypes || []),
         types: types.length > 0 ? types : (logicData?.types || []),
         subtypes: subtypes.length > 0 ? subtypes : (logicData?.subtypes || []),
         oracleText: cardRef.oracleText || logicData?.oracleText || '',
-        type_line: typeLine,
-        image_url: cardRef.image_url || (cardRef as any).image_uris?.normal || (cardRef as any).image_uris?.large || logicData?.image_url,
-        scryfall_id: cardRef.scryfall_id || cardRef.id || logicData?.scryfall_id,
+        typeLine,
+        image_url: cardRef.image_url || logicData?.image_url || '',
+        scryfall_id: cardRef.scryfall_id || logicData?.scryfall_id,
         power: cardRef.power || logicData?.power,
         toughness: cardRef.toughness || logicData?.toughness,
         loyalty: cardRef.loyalty || logicData?.loyalty,
         keywords: baseKeywords,
         abilities: logicData?.abilities || [],
-        flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost || (cardRef as any).flashback_cost,
+        flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost,
         entersWithXCounters: logicData?.entersWithXCounters,
         entersTapped: logicData?.entersTapped,
         entersTappedCondition: logicData?.entersTappedCondition,
@@ -119,7 +120,8 @@ export class GameSetupProcessor {
   public static shuffleLibrary(state: GameState, playerId: PlayerId) {
     const player = state.players[playerId];
     if (!player) return;
-    EngineLogger.info(state, LogCategory.ACTION, `Shuffling library for: ${player.name}`);
+    const { logger } = getProcessors(state);
+    logger.info(state, LogCategory.ACTION, `Shuffling library for: ${player.name}`);
     for (let i = player.library.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [player.library[i], player.library[j]] = [player.library[j], player.library[i]];

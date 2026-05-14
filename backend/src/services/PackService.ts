@@ -12,7 +12,7 @@ export class PackService {
         const rares = pool.filter(c => c.rarity?.toLowerCase() === 'rare');
         const uncommons = pool.filter(c => c.rarity?.toLowerCase() === 'uncommon');
         const commons = pool.filter(c => c.rarity?.toLowerCase() === 'common');
-        const lands = pool.filter(c => (c.type_line?.toLowerCase().includes('basic land') || c.types?.includes('Land')));
+        const lands = pool.filter(c => (c.typeLine?.toLowerCase().includes('basic land') || c.types?.includes('Land')));
 
         // Combined rare/mythic pool (1/8 mythic rule)
         const rarePool = [...rares, ...mythics];

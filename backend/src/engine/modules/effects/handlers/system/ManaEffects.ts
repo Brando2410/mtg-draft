@@ -1,6 +1,5 @@
 import { AddManaEffect, EffectType, PlayerId, ManaPool } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
-import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
@@ -42,6 +41,7 @@ export const ManaHandler: IEffectHandler = {
               } as AddManaEffect]
             }));
 
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
             state.pendingAction = ChoiceGenerator.createModalChoice(state, {
               label: "Choose a color of mana to add",
               playerId: tid,

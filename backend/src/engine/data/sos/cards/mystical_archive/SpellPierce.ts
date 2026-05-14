@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetType } from
 
 export const SpellPierce: CardDefinition = {
     name: "Spell Pierce",
-    manaCost: "{U}",
+    manaCost: "{U}",
+
+
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],

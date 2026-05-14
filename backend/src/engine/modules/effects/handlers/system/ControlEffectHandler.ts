@@ -64,7 +64,7 @@ export class ControlEffectHandler {
                                 ...copy.sourceObject.definition,
                                 supertypes: (copy.sourceObject.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
                                 types: (copy.sourceObject.definition.types || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
-                                type_line: copy.sourceObject.definition.type_line?.replace(/Legendary /i, '')
+                                typeLine: copy.sourceObject.definition.typeLine?.replace(/Legendary /i, '')
                             };
                         }
                     }

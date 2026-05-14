@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType } fro
 
 export const GiantGrowth: CardDefinition = {
     name: "Giant Growth",
-    manaCost: "{G}",
+    manaCost: "{G}",
+
+
     colors: ["G"],
     types: ["Instant"],
     subtypes: [],

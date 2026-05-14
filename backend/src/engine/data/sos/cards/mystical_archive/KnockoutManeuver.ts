@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 
 export const KnockoutManeuver: CardDefinition = {
     name: "Knockout Maneuver",
-    manaCost: "{2}{G}",
+    manaCost: "{2}{G}",
+
+
     colors: ["G"],
     types: ["Sorcery"],
     subtypes: [],

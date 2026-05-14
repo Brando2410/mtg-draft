@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetType } from
 
 export const HelpingHand: CardDefinition = {
     name: "Helping Hand",
-    manaCost: "{W}",
+    manaCost: "{W}",
+
+
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: [],

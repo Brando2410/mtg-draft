@@ -2,7 +2,9 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, Ta
 
 export const FeedtheSwarm: CardDefinition = {
     name: "Feed the Swarm",
-    manaCost: "{1}{B}",
+    manaCost: "{1}{B}",
+
+
     colors: ["B"],
     types: ["Sorcery"],
     subtypes: [],
