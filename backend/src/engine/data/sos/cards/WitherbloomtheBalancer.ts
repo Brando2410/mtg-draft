@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const WitherbloomtheBalancer: CardDefinition = {
     name: "Witherbloom the Balancer",
     manaCost: "{6}{B}{G}",
- // Placeholder URL,
     colors: ["B", "G"],
     types: ["Creature"],
     subtypes: ["Elder", "Dragon"],

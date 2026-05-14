@@ -98,7 +98,7 @@ export const useActionButtonLogic = ({
         const canConfirm = selected.length >= minCount;
 
         if (canConfirm) {
-          text = "Confirm";
+          text = isSpellCasting ? "Cast" : (isAbility ? "Activate" : "Confirm");
           orange = true;
           disabled = false;
         } else {

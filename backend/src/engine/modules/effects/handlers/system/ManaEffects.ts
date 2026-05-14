@@ -18,29 +18,40 @@ export const ManaHandler: IEffectHandler = {
       const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
 
       if (isFlexible) {
-        const tid = effectiveTargets[0];
-        const p = state.players[tid as PlayerId];
-        if (p) {
+        const preChoice = stackObject?.preSelectedChoice;
+        if (preChoice !== undefined) {
           const colors = ['W', 'U', 'B', 'R', 'G'];
-          const choices = colors.map(c => ({
-            label: `{${c}}`,
-            value: c,
-            effects: [{
-              ...effect,
-              manaType: c,
-              amount: effect.amount || 1
-            } as AddManaEffect]
-          }));
+          const chosenColor = colors[preChoice as number];
+          if (chosenColor) {
+            manaStr = chosenColor;
+          } else {
+            manaStr = 'C';
+          }
+        } else {
+          const tid = effectiveTargets[0];
+          const p = state.players[tid as PlayerId];
+          if (p) {
+            const colors = ['W', 'U', 'B', 'R', 'G'];
+            const choices = colors.map(c => ({
+              label: `{${c}}`,
+              value: c,
+              effects: [{
+                ...effect,
+                manaType: c,
+                amount: effect.amount || 1
+              } as AddManaEffect]
+            }));
 
-          state.pendingAction = ChoiceGenerator.createModalChoice(state, {
-            label: "Choose a color of mana to add",
-            playerId: tid,
-            sourceId: sourceId || "",
-            stackObj: stackObject,
-            parentContext: parentContext
-          }, choices);
+            state.pendingAction = ChoiceGenerator.createModalChoice(state, {
+              label: "Choose a color of mana to add",
+              playerId: tid,
+              sourceId: sourceId || "",
+              stackObj: stackObject,
+              parentContext: parentContext
+            }, choices);
+          }
+          return;
         }
-        return;
       }
 
       effectiveTargets.forEach(tid => {

@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, EnginePrefix, GameObject, GameState, ManaCost, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, ConditionDefinition, ContinuousEffect, CostModifierEffect, CostType, EffectDefinition, EffectType, EnginePrefix, GameObject, GameState, ManaCost, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -197,11 +197,11 @@ export class SpellCostCalculator {
                 a.effects?.forEach((e: EffectDefinition) => {
                     if (e.type === EffectType.AdditionalCost && e.targetMapping === 'SELF') {
                         const costEffect = e as CostModifierEffect;
-                        const { condition: ConditionProcessor } = getProcessors(state);
-                        const conditionMatches = !costEffect.condition || ConditionProcessor.matchesCondition(state, costEffect.condition, {
+                        const conditionMatches = this.evaluateCondition(state, card, costEffect.condition, targets, {
                             sourceId: card.id,
-                            controllerId: card.controllerId,
-                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
+                            controllerId: card.controllerId || card.ownerId,
+                            allowPotentialMatches: targets.length === 0,
+                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId || card.ownerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
                             effects: [],
                             targets: []
                         });
@@ -215,7 +215,7 @@ export class SpellCostCalculator {
                             id: `temp_${card.id}`,
                             timestamp: Date.now(),
                             sourceId: card.id,
-                            controllerId: card.controllerId
+                            controllerId: card.controllerId || card.ownerId
                         } as ContinuousEffect);
                     }
                 });
@@ -306,7 +306,6 @@ export class SpellCostCalculator {
             if (!impacts) continue;
 
             const restrictions = mod.restrictions || [];
-            const { condition: ConditionProcessor } = getProcessors(state);
 
             const matches = TargetingProcessor.matchesRestrictions(state, card, restrictions, {
                 sourceId: mod.sourceId,
@@ -314,11 +313,12 @@ export class SpellCostCalculator {
                 effects: [],
                 targets: []
             });
-            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, {
+            const conditionMatches = this.evaluateCondition(state, card, mod.condition, targets, {
                 sourceId: mod.sourceId,
-                controllerId: card.controllerId,
+                controllerId: card.controllerId || card.ownerId,
+                allowPotentialMatches: targets.length === 0,
                 cardToPlay: { ...card, isFlashbackCast: isFlashback },
-                event: { type: TriggerEvent.CastSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
+                event: { type: TriggerEvent.CastSpell, playerId: card.controllerId || card.ownerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } },
                 effects: [],
                 targets: []
             });
@@ -425,5 +425,50 @@ export class SpellCostCalculator {
         }
 
         return { totalMana: costStr, additionalCosts, isFlashback };
+    }
+    private static evaluateCondition(state: GameState, card: GameObject, condition: ConditionDefinition | undefined, targets: string[], context: any): boolean {
+        const { condition: ConditionProcessor, targeting: TargetingProcessor } = getProcessors(state);
+        
+        // 1. Initial Evaluation
+        let matches = !condition || ConditionProcessor.matchesCondition(state, condition, context);
+        if (matches) return true;
+
+        // 2. DEDUCTION LOGIC: If we are checking potential (no targets chosen)
+        // and the condition is target-based, check if ANY legal target would satisfy it.
+        const conditionStr = typeof condition === 'string' ? condition : JSON.stringify(condition);
+        if (targets.length === 0 && conditionStr.includes('TARGET_')) {
+            let targetDefinitions = card.definition.targetDefinitions;
+            if (!targetDefinitions || targetDefinitions.length === 0) {
+                // Look into abilities for Spell or Activated ability target definitions
+                const ability = card.definition.abilities?.find(a => typeof a !== 'string' && (a.type === AbilityType.Spell || a.type === AbilityType.Activated));
+                if (ability && typeof ability !== 'string') {
+                    targetDefinitions = ability.targetDefinitions;
+                }
+            }
+
+            if (targetDefinitions && targetDefinitions.length > 0) {
+                // Get all legal targets for the first slot
+                const controllerId = card.controllerId || card.ownerId;
+                const pool = TargetingProcessor.getLegalTargetPool(state, card.id, targetDefinitions, controllerId, 0);
+                
+                for (const targetId of pool) {
+                    const testContext = {
+                        ...context,
+                        event: {
+                            ...context.event,
+                            payload: {
+                                ...context.event?.payload,
+                                targetIds: [targetId]
+                            }
+                        }
+                    };
+                    if (ConditionProcessor.matchesCondition(state, condition, testContext)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }

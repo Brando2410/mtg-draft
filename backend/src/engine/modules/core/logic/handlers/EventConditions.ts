@@ -149,13 +149,15 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targetIdx = parseInt(params[0] as string);
             const restrictions = params.slice(1) as string[];
 
-            const targetId = RuleUtils.getTargets(event)[targetIdx];
+            const targets = RuleUtils.getTargets(event);
+            const targetId = targets?.[targetIdx];
             if (!targetId) return false;
 
             const targetObj = RuleUtils.findObject(state, targetId);
             if (!targetObj) return false;
 
-            return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject, effects: [], targets: [] });
+            const matchResult = TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject, effects: [], targets: [] });
+            return matchResult;
         }
     },
     "TARGET_1_COUNTERS_P1P1": {

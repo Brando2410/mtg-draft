@@ -105,9 +105,11 @@ export class ChoiceEffectHandler {
             effects: allEffects,
             targets,
             stackObject,
-            parentContext
+            parentContext: context
           })
         });
+
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-RESOLVE] Handled pre-selected choice for ${sourceId}. Sub-effects: ${allEffects.length}. Targets: ${targets.length}. Original: ${context.originalTargets?.length || 0}`);
         return;
       }
     }
@@ -342,9 +344,11 @@ export class ChoiceEffectHandler {
           effects: effect.effects,
           targets: [firstTargetId],
           stackObject,
-          parentContext
+          parentContext: context
         })
       });
+
+      logger.debug(state, LogCategory.ACTION, `[AUTO-SEQUENCE] Sequential resolution for ${sourceId}. Remaining targets: ${nextTargets.length}. Original: ${context.originalTargets?.length || 0}`);
 
       if (!state.pendingAction && nextTargets.length > 0) {
         return this.handleChoice(state, effect, {

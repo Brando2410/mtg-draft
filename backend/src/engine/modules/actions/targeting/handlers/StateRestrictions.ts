@@ -53,10 +53,10 @@ const BLOCKING = gameObjectRestriction((state, obj) => {
 const OTHER: IRestrictionHandler = {
     matches(state, targetObj, r, context) {
         const id = targetObj.id;
-        
+
         // Basic check: is it the exact same object?
         if (id === context.sourceId) return false;
-        
+
         const stackObj = context.stackObject;
         if (stackObj && id === stackObj.sourceId) {
             getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} for stack object ${stackObj.id}. sourceId match: ${stackObj.sourceId}`);
@@ -65,15 +65,15 @@ const OTHER: IRestrictionHandler = {
 
         const sourceObj = RuleUtils.findObject(state, context.sourceId);
         if (sourceObj && RuleUtils.isStackObject(sourceObj) && id === sourceObj.sourceId) {
-             getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via sourceObj lookup for ${context.sourceId}. Object sourceId: ${sourceObj.sourceId}`);
-             return false;
+            getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via sourceObj lookup for ${context.sourceId}. Object sourceId: ${sourceObj.sourceId}`);
+            return false;
         }
 
         // Final fallback: check the actual source of the trigger if it's a copy
         const sObj = stackObj || sourceObj;
         if (sObj && RuleUtils.isStackObject(sObj) && (sObj.isCopy || sObj.type.includes('Ability')) && sObj.sourceId === id) {
-             getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via final fallback. sObj ID: ${sObj.id}, sObj sourceId: ${sObj.sourceId}`);
-             return false;
+            getProcessors(state).logger.debug(state, LogCategory.TARGETING, `[OTHER-FAIL] Excluding source permanent ${id} via final fallback. sObj ID: ${sObj.id}, sObj sourceId: ${sObj.sourceId}`);
+            return false;
         }
 
         // Log EVERY check for a while to see what's happening

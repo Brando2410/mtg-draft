@@ -58,6 +58,7 @@ export interface BaseResolveInputs {
   effectIndex?: number;
   isResumption?: boolean;
   exileOnResolution?: boolean;
+  originalTargets?: string[];
 }
 
 export class EffectProcessor {
@@ -126,8 +127,12 @@ export class EffectProcessor {
       sourceObject: (sourceObj as GameObject),
       stackObject,
       targets,
+      originalTargets: options.originalTargets || parentContext?.originalTargets || targets,
       xValue: transient.xValue ?? stackObject?.xValue ?? parentContext?.xValue,
     };
+
+    const { logger } = getProcessors(state);
+    logger.debug(state, LogCategory.EFFECT, `[FRAME-CREATE] Source: ${sourceId} | Depth: ${frame.depth} | Targets: ${frame.targets?.length || 0} | Original: ${frame.originalTargets?.length || 0} | X: ${frame.xValue}`);
 
     if ((frame.depth || 0) > 20) {
       const { logger } = getProcessors(state);
@@ -147,10 +152,11 @@ export class EffectProcessor {
 
   public static resolveEffects(options: ResolveEffectsOptions): boolean {
     const { state, context, skipFizzleCheck } = options;
-    const { effects, sourceId, targets, stackObject, parentContext } = context;
-    const { logger } = getProcessors(state);
+    const { effects, sourceId, targets, originalTargets, effectIndex: startIndex = 0, depth, stackObject, parentContext } = context;
+    const { logger, targeting: TP } = getProcessors(state);
 
-    const startIndex = context.effectIndex ?? 0;
+    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Source: ${sourceId} (Depth: ${depth}) | StartIndex: ${startIndex} | Targets: [${targets?.join(', ')}] | Original: [${originalTargets?.join(', ')}]`);
+
     // Clone effects to prevent permanent modification of the source array (e.g. stackObject.effects)
     // when injecting sub-effects like SearchLibrary or conditional follow-ups.
     const activeEffects = [...effects];
@@ -470,7 +476,7 @@ export class EffectProcessor {
       return handler.handle(state, effect, {
         ...context,
         targets: allResolvedTargets,
-        originalTargets: targets, // Preserve original targets for secondary mapping resolution
+        originalTargets: context.originalTargets || targets, // Preserve original targets for secondary mapping resolution
       });
     } else {
       if (effect.targetMapping && effect.targetMapping !== "") {

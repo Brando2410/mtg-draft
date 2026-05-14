@@ -234,12 +234,12 @@ export class PriorityProcessor {
     const shouldSkip = !canAct || (isSkipActive && !hasManualStop) || (isAutoSkipStep && !hasManualStop);
 
     if (player && !player.fullControl && !hasManualStop && shouldSkip) {
-      logger.info(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Skipping priority for ${player.name}. canAct=${canAct}, isSkipActive=${isSkipActive}, hasManualStop=${hasManualStop}. StopKey=${stopKey}`);
-      logger.info(state, LogCategory.ACTION, `[AUTO-PASS] Skipping priority for ${player.name} (${canAct ? "Yield" : "No actions"}).`);
+      // logger.info(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Skipping priority for ${player.name}. canAct=${canAct}, isSkipActive=${isSkipActive}, hasManualStop=${hasManualStop}. StopKey=${stopKey}`);
+      //logger.info(state, LogCategory.ACTION, `[AUTO-PASS] Skipping priority for ${player.name} (${canAct ? "Yield" : "No actions"}).`);
 
       // Safety: If skip was triggered by "No actions", do a deeper scan log for debugging
       if (!canAct) {
-        logger.debug(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Deeper scan: HandSize=${player.hand.length}, BattlefieldSize=${state.battlefield.length}, StackSize=${state.stack.length}, PlayedLand=${player.hasPlayedLandThisTurn}`);
+        //logger.debug(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Deeper scan: HandSize=${player.hand.length}, BattlefieldSize=${state.battlefield.length}, StackSize=${state.stack.length}, PlayedLand=${player.hasPlayedLandThisTurn}`);
       }
 
       this.passPriority(state, playerId, engine, true);
@@ -415,11 +415,11 @@ export class PriorityProcessor {
     if (!cardToPlay) return false;
 
     if (state.pendingAction) {
-        // If there's a pending action, you can ONLY "play" (glow/click) if it's a DISCARD action for YOU.
-        // This is specifically to support the London Mulligan and standard discard effects via hand interaction.
-        if (state.pendingAction.type !== ActionType.Discard || state.pendingAction.playerId !== playerId) {
-            return false;
-        }
+      // If there's a pending action, you can ONLY "play" (glow/click) if it's a DISCARD action for YOU.
+      // This is specifically to support the London Mulligan and standard discard effects via hand interaction.
+      if (state.pendingAction.type !== ActionType.Discard || state.pendingAction.playerId !== playerId) {
+        return false;
+      }
     }
 
     if (!this.validateTiming(state, playerId, cardToPlay, false, checkPriority)) {
@@ -434,7 +434,7 @@ export class PriorityProcessor {
     // 4. Affordability (Mana and Additional Costs)
     const { layer: LayerProc } = getProcessors(state);
     const stats = preComputedStats || cardToPlay!.effectiveStats || LayerProc.getEffectiveStats(cardToPlay!, state);
-    
+
     // Capture both mana and additional costs from the calculator
     const costSummary = SpellCostCalculator.getEffectiveCosts(state, cardToPlay!, [], undefined, isFlashback, stats);
     const effectiveCost = preComputedCost || stats.manaCost || costSummary.totalMana;
@@ -448,7 +448,7 @@ export class PriorityProcessor {
     } else if (!player.manaCheat) {
       const { priority: PriorityProcessor } = getProcessors(state);
       const canFreeCast = PriorityProcessor.findFreeCastPermission(state, playerId, cardToPlay!.id);
-      
+
       // Mana Check
       if (!canFreeCast && !ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay!)) {
         return false;
@@ -465,16 +465,16 @@ export class PriorityProcessor {
             return player.hand.some((c: GameObject) => c.id !== cardToPlay!.id && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
           }
           if (cost.type === 'PayLife') {
-             const lifeVal = cost.value === 'X' ? 0 : (parseInt(cost.value || '0'));
-             return player.life >= lifeVal;
+            const lifeVal = cost.value === 'X' ? 0 : (parseInt(cost.value || '0'));
+            return player.life >= lifeVal;
           }
           if (cost.type === 'Exile') {
             const zones = cost.sourceZones || [Zone.Battlefield];
             const pool = zones.flatMap((z: Zone) => {
-                if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
-                if (z === Zone.Graveyard) return player.graveyard;
-                if (z === Zone.Hand) return player.hand;
-                return [] as GameObject[];
+              if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
+              if (z === Zone.Graveyard) return player.graveyard;
+              if (z === Zone.Hand) return player.hand;
+              return [] as GameObject[];
             });
             return pool.some((o: GameObject) => o.id !== cardToPlay!.id && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
           }

@@ -220,6 +220,7 @@ export interface EngineFrame {
     isCopy?: boolean;
     isFreeCast?: boolean;
     isMiracleCast?: boolean;
+    allowPotentialMatches?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];

@@ -291,7 +291,7 @@ export class LayerProcessor {
         )?.miracleCostOverride,
         isPlayable: false,
         supertypes: Array.from(supertypes),
-        abilities: addedAbilities,
+        abilities: [...(currentDefinition.abilities || []), ...addedAbilities],
       };
 
       // CACHE RESULT

@@ -11,16 +11,36 @@ export class ManaParser {
     let generic = 0;
     let xCount = 0;
     
-    // Rule 107.4: Mana symbols are enclosed in braces
-    const matches = costStr.match(/\{([^}]+)\}/g) || [];
-    if (matches.length === 0 && costStr.length === 1) {
-        let symbol = costStr.toUpperCase().trim();
-        if (['W', 'U', 'B', 'R', 'G', 'C'].includes(symbol)) {
-            colored[symbol] = 1;
-            return { colored, generic: 0, xCount: 0 };
-        } else if (!isNaN(parseInt(symbol, 10))) {
-            return { colored, generic: parseInt(symbol, 10), xCount: 0 };
+    // Rule 107.4: Mana symbols are usually enclosed in braces, but we support raw strings for engine flexibility
+    const matches = costStr.match(/\{([^}]+)\}/g);
+    
+    if (!matches) {
+        // Handle raw strings like "R", "RR", "ANY", "1", "2"
+        const upper = costStr.toUpperCase().trim();
+        if (upper === 'ANY') {
+            colored['ANY'] = 1;
+        } else if (['W', 'U', 'B', 'R', 'G', 'C'].includes(upper)) {
+            colored[upper] = 1;
+        } else if (!isNaN(parseInt(upper, 10)) && /^\d+$/.test(upper)) {
+            generic = parseInt(upper, 10);
+        } else {
+            // Try to parse as a sequence of symbols: "RR" -> {R: 2}
+            const symbols = upper.split('');
+            let allValid = true;
+            const tempColored: Record<string, number> = {};
+            for (const s of symbols) {
+                if (['W', 'U', 'B', 'R', 'G', 'C'].includes(s)) {
+                    tempColored[s] = (tempColored[s] || 0) + 1;
+                } else {
+                    allValid = false;
+                    break;
+                }
+            }
+            if (allValid && symbols.length > 0) {
+                Object.assign(colored, tempColored);
+            }
         }
+        return { colored, generic, xCount: 0 };
     }
 
     for (const m of matches) {

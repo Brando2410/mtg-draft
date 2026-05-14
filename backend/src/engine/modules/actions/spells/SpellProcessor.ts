@@ -18,7 +18,7 @@ import {
     TargetDefinition
 } from '@shared/engine_types';
 import { ModalEffect, EngineFrame } from '@shared/types/effects';
-import { LogCategory } from '../../../utils/EngineLogger';
+import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import {
     ActivateAbilityOptions,
     EngineContext,
@@ -611,7 +611,7 @@ export class SpellProcessor {
             return true;
         }
 
-        const preSelectedChoice = state.interaction?.lastChoiceIndex;
+        const preSelectedChoice = choiceEffectIndex !== -1 ? state.interaction?.lastChoiceIndex : undefined;
         if (state.interaction) {
             delete state.interaction.lastChoiceIndex;
         }
@@ -622,36 +622,38 @@ export class SpellProcessor {
 
         const { mana: ManaProcessor } = getProcessors(state);
         if (isFreeCast) {
-        } else if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+        } else if (!hasConfirmedAutoTap && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
             if (ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, cardToPlay)) {
-                if (hasConfirmedAutoTap) {
-                    ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
-                } else {
-                    const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
-                    const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
-                    const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
+                const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
+                const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
+                const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
 
-                    if (tappedIds.length > 0) {
-                        state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
-                            .withChoices([{ label: `Confirm Cast (${totalMana})`, value: 'confirm' }])
-                            .ingest({
-                                isSpellCasting: true,
-                                isFreeCast: isFreeCast,
-                                isMiracleCast: isMiracleCast,
-                                parentContext,
-                                confirmedAutoTap: true,
-                                tappedLandIds: tappedIds,
-                                producedMana,
-                                manaSnapshot,
-                                restrictedSnapshot,
-                                totalMana,
-                                declaredTargets: declaredTargets || []
-                            })
-                            .build();
-                        return true;
-                    } else {
-                        return false;
-                    }
+                if (tappedIds.length > 0) {
+                    state.pendingAction = ActionBuilder.targeting(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
+                        .ingest({
+                            isSpellCasting: true,
+                            isFreeCast: isFreeCast,
+                            isMiracleCast: isMiracleCast,
+                            parentContext,
+                            confirmedAutoTap: true,
+                            tappedLandIds: tappedIds,
+                            producedMana,
+                            manaSnapshot,
+                            restrictedSnapshot,
+                            totalMana,
+                            declaredTargets: declaredTargets || [],
+                            // TARGETING SPECIFIC FIELDS to satisfy ActionButton logic
+                            selectedTargets: declaredTargets || [],
+                            targetDefinitions: targetDefinitions || [],
+                            minCount: (declaredTargets || []).length,
+                            maxCount: (declaredTargets || []).length,
+                            count: (declaredTargets || []).length,
+                            targets: [] // No new targets to select
+                        })
+                        .build();
+                    return true;
+                } else {
+                    return false;
                 }
             } else {
                 return false;
@@ -660,6 +662,7 @@ export class SpellProcessor {
 
         // Final sanity check: Can we actually pay now?
         if (!isFreeCast && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+            EngineLogger.error(state, LogCategory.ACTION, `[ACTION] [FAIL] finalizeSpellCast: Cannot pay final mana cost ${totalMana} for ${cardToPlay.definition.name}. (Floating: ${JSON.stringify(player.manaPool)})`);
             return false;
         }
 

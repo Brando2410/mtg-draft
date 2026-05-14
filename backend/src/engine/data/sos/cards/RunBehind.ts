@@ -11,11 +11,10 @@ export const RunBehind: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Hand,
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    amount: 1,
+                    reductionAmount: 1,
                     targetMapping: TargetMapping.Self,
                     condition: ConditionType.Target1Matches + ':attacking'
                 }

@@ -14,6 +14,7 @@ export interface ChoiceConfig {
     stackObj?: StackObject;
     parentContext?: EngineFrame;
     targets?: string[];
+    originalTargets?: string[];
     isSpellCasting?: boolean;
     isCostChoice?: boolean;
     costType?: string;
@@ -87,7 +88,7 @@ export class ChoiceGenerator {
             });
         }
 
-        return this.wrap(state, playerId, sourceId, {
+        const result = this.wrap(state, playerId, sourceId, {
             label: config.label,
             choices: options,
             reveal: config.reveal,
@@ -96,6 +97,7 @@ export class ChoiceGenerator {
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
             targets: config.targets,
+            originalTargets: config.originalTargets || config.parentContext?.originalTargets,
             isSpellCasting: config.isSpellCasting,
             isCostChoice: config.isCostChoice,
             costType: config.costType,
@@ -105,6 +107,10 @@ export class ChoiceGenerator {
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
             metadata: config.metadata
         }, config.actionType);
+
+        const { logger } = getProcessors(state);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-CREATE] CardChoice for ${sourceId} | Targets: ${config.targets?.length || 0} | Original: ${config.originalTargets?.length || 0} | Parent: ${!!config.parentContext}`);
+        return result;
     }
 
     /**
@@ -130,7 +136,7 @@ export class ChoiceGenerator {
             });
         }
 
-        return this.wrap(state, config.playerId, config.sourceId, {
+        const result = this.wrap(state, config.playerId, config.sourceId, {
             label: config.label,
             choices: mappedChoices,
             hideUndo: config.hideUndo,
@@ -139,6 +145,7 @@ export class ChoiceGenerator {
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
             targets: config.targets,
+            originalTargets: config.originalTargets || config.parentContext?.originalTargets,
             isSpellCasting: config.isSpellCasting,
             isCostChoice: config.isCostChoice,
             costType: config.costType,
@@ -147,6 +154,10 @@ export class ChoiceGenerator {
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? 1),
         }, config.actionType);
+
+        const { logger } = getProcessors(state);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-CREATE] ModalChoice for ${config.sourceId} | Targets: ${config.targets?.length || 0} | Original: ${config.originalTargets?.length || 0} | Parent: ${!!config.parentContext}`);
+        return result;
     }
 
     /**
@@ -376,6 +387,10 @@ export class ChoiceGenerator {
         const finalAction = ActionBuilder.fromType(type, playerId, sourceId)
             .ingest(data)
             .build();
+
+        const { logger } = getProcessors(state);
+        const meta = data.parentContext || data.stackObj || {};
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-WRAP] Wrapped Action: ${type} | Source: ${sourceId} | Targets: ${data.targets?.length || 0} | Original: ${data.originalTargets?.length || 0} | Depth: ${meta.depth}`);
 
         return ActionProcessor.prepareAction(state, finalAction);
     }

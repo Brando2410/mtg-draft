@@ -40,7 +40,7 @@ export interface ManaProductionYield {
 
 export interface ManaSourceCandidate {
     obj: import('@shared/engine_types').GameObject;
-    abilities: import('@shared/engine_types').AbilityDefinition[];
+    abilities: { ability: import('@shared/engine_types').AbilityDefinition, originalIndex: number }[];
     allPossibleColors: Set<ManaColor>;
     allPossibleColorsArray: ManaColor[];
     choiceColors: string[];

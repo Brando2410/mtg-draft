@@ -204,6 +204,18 @@ export class TargetingProcessor {
                 state.priorityPlayerId = playerId;
 
                 // CLEANUP TEMPORARY CASTING STATE
+                // Revert Auto-tap lands if we were in the confirmation step
+                if (meta.tappedLandIds && Array.isArray(meta.tappedLandIds)) {
+                    const { mana: ManaProcessor } = getProcessors(state);
+                    ManaProcessor.untapLands(state, meta.tappedLandIds);
+
+                    const player = state.players[playerId];
+                    if (player && meta.manaSnapshot) {
+                        player.manaPool = meta.manaSnapshot;
+                        player.restrictedMana = meta.restrictedSnapshot || [];
+                    }
+                }
+
                 state.interaction.lastChoiceIndex = undefined;
                 state.interaction.lastChoiceValue = undefined;
                 state.interaction.lastSelections = {};
@@ -482,6 +494,9 @@ export class TargetingProcessor {
         // We MUST go through playCard/activateAbility to ensure the object reaches the stack 
         // and all ETB/Cast triggers fire correctly.
         if (meta.isSpellCasting && !meta.isCopyTargeting) {
+            if (meta.confirmedAutoTap) {
+                state.interaction.flags.confirmedAutoTap = true;
+            }
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
 

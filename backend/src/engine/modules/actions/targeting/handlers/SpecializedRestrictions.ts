@@ -154,12 +154,7 @@ SpecializedRestrictions["EXILEDWITHSOURCE"] = gameObjectRestriction((state, obj,
     return obj.exiledBy === sourceId;
 });
 
-SpecializedRestrictions["ATTACKING"] = gameObjectRestriction((state, obj) => {
-    return !!obj.isAttacking;
-});
-SpecializedRestrictions["BLOCKING"] = gameObjectRestriction((state, obj) => {
-    return !!obj.isBlocking;
-});
+
 SpecializedRestrictions["HASCOUNTER_P1P1"] = gameObjectRestriction((state, obj) => {
     return (obj.counters?.['+1/+1'] || 0) > 0;
 });
