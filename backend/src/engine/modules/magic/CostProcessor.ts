@@ -78,7 +78,7 @@ export class CostProcessor {
       case CostType.Mana:
         const effectiveMana = this.getEffectiveManaCost(state, cost, source, stackObject);
         const { mana: ManaProcessor } = getProcessors(state);
-        return ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveMana, source, excludeSourceFromMana);
+        return ManaProcessor.canPayMana(state, player, effectiveMana, source);
 
       case CostType.Loyalty: {
         const loyaltyCost = cost as LoyaltyCost;

@@ -450,7 +450,7 @@ export class PriorityProcessor {
       const canFreeCast = PriorityProcessor.findFreeCastPermission(state, playerId, cardToPlay!.id);
 
       // Mana Check
-      if (!canFreeCast && !ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay!)) {
+      if (!canFreeCast && !ManaProcessor.canPayMana(state, player, effectiveCost, cardToPlay!)) {
         return false;
       }
 
@@ -527,7 +527,7 @@ export class PriorityProcessor {
     const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
     const { mana: ManaProcessor, logger } = getProcessors(state);
 
-    const canPay = player.manaCheat || ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, obj);
+    const canPay = player.manaCheat || ManaProcessor.canPayMana(state, player, totalMana, obj);
 
     if (canPay) {
       // 3. Target Validation (Rule 601.2c)

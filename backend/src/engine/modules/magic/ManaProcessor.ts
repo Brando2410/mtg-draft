@@ -4,7 +4,6 @@ import { EngineContext } from '../../interfaces/EngineContext';
 import { AutoTapEngine } from './mana/AutoTapEngine';
 import { ManaParser } from './mana/ManaParser';
 import { ManaPoolManager } from './mana/ManaPoolManager';
-import { ManaValidator } from './mana/ManaValidator';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)
@@ -20,17 +19,11 @@ export class ManaProcessor {
   }
 
   /**
-   * Checks if a player can pay a specific mana cost using only currently floating mana.
+   * Unified check: Can the player pay a cost using all available sources (floating + battlefield)?
+   * This is the master validation function for all mana payments.
    */
-  public static canPayManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject): boolean {
-    return ManaValidator.canPayManaCost(player, costStr, state, payingFor);
-  }
-
-  /**
-   * Checks if a player can pay a cost using both floating mana and untapped sources (greedy check).
-   */
-  public static canPayWithTotal(state: GameState, player: PlayerState, battlefield: any[], costStr: string, payingFor?: GameObject, excludePayingFor = false): boolean {
-    return ManaValidator.canPayWithTotal(state, player, battlefield, costStr, payingFor, excludePayingFor);
+  public static canPayMana(state: GameState, player: PlayerState, costStr: string, payingFor?: GameObject): boolean {
+    return AutoTapEngine.canPayMana(state, player.id, costStr, payingFor);
   }
 
   /**
@@ -101,4 +94,5 @@ export class ManaProcessor {
   public static autoTapLandsForCost(state: any, playerId: string, costStr: string, engine: EngineContext, payingFor?: GameObject): { tappedIds: string[], producedMana: any } {
     return AutoTapEngine.autoTapLandsForCost(state, playerId, costStr, engine, payingFor);
   }
+
 }

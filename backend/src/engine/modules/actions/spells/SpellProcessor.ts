@@ -622,47 +622,42 @@ export class SpellProcessor {
 
         const { mana: ManaProcessor } = getProcessors(state);
         if (isFreeCast) {
-        } else if (!hasConfirmedAutoTap && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
-            if (ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, cardToPlay)) {
+        } else if (!hasConfirmedAutoTap && ManaProcessor.canPayMana(state, player, totalMana, cardToPlay)) {
+            const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
+
+            if (tappedIds.length > 0) {
                 const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
                 const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
-                const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
 
-                if (tappedIds.length > 0) {
-                    state.pendingAction = ActionBuilder.targeting(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
-                        .ingest({
-                            isSpellCasting: true,
-                            isFreeCast: isFreeCast,
-                            isMiracleCast: isMiracleCast,
-                            parentContext,
-                            confirmedAutoTap: true,
-                            tappedLandIds: tappedIds,
-                            producedMana,
-                            manaSnapshot,
-                            restrictedSnapshot,
-                            totalMana,
-                            declaredTargets: declaredTargets || [],
-                            // TARGETING SPECIFIC FIELDS to satisfy ActionButton logic
-                            selectedTargets: declaredTargets || [],
-                            targetDefinitions: targetDefinitions || [],
-                            minCount: (declaredTargets || []).length,
-                            maxCount: (declaredTargets || []).length,
-                            count: (declaredTargets || []).length,
-                            targets: [] // No new targets to select
-                        })
-                        .build();
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
+                state.pendingAction = ActionBuilder.targeting(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
+                    .ingest({
+                        isSpellCasting: true,
+                        isFreeCast: isFreeCast,
+                        isMiracleCast: isMiracleCast,
+                        parentContext,
+                        confirmedAutoTap: true,
+                        tappedLandIds: tappedIds,
+                        producedMana,
+                        manaSnapshot,
+                        restrictedSnapshot,
+                        totalMana,
+                        declaredTargets: declaredTargets || [],
+                        selectedTargets: declaredTargets || [],
+                        targetDefinitions: targetDefinitions || [],
+                        minCount: (declaredTargets || []).length,
+                        maxCount: (declaredTargets || []).length,
+                        count: (declaredTargets || []).length,
+                        targets: [] 
+                    })
+                    .build();
+                return true;
             }
+        } else if (!isFreeCast && !hasConfirmedAutoTap && !ManaProcessor.canPayMana(state, player, totalMana, cardToPlay)) {
+            return false;
         }
 
-        // Final sanity check: Can we actually pay now?
-        if (!isFreeCast && !ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
-            EngineLogger.error(state, LogCategory.ACTION, `[ACTION] [FAIL] finalizeSpellCast: Cannot pay final mana cost ${totalMana} for ${cardToPlay.definition.name}. (Floating: ${JSON.stringify(player.manaPool)})`);
+        // Final sanity check
+        if (!isFreeCast && !ManaProcessor.canPayMana(state, player, totalMana, cardToPlay)) {
             return false;
         }
 
@@ -927,11 +922,12 @@ export class SpellProcessor {
         const manaCost = (ability.costs || []).find((cost) => cost.type === 'Mana');
         if (manaCost) {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
-            if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state, obj)) {
-                if (ManaProcessor.canPayWithTotal(state, playerObj, state.battlefield, effectiveMana, obj)) {
-                    ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
-                }
+            if (!ManaProcessor.canPayMana(state, playerObj, effectiveMana, obj)) {
+                return false;
             }
+            // Optional: If we want consistency with Spells, we should trigger the Confirm flow here too.
+            // For now, just ensure the tap engine is called.
+            ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
         }
 
         CostProcessor.pay(state, ability.costs || [], obj, playerId);
