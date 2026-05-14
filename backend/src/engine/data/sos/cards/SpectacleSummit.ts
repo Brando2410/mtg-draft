@@ -12,11 +12,12 @@ export const SpectacleSummit: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
+            id: "{T}: Add {U} or {R}",
             isManaAbility: true,
             effects: [
                 {
                     type: EffectType.Choice,
-                    optional: true,
+                    showCancel: true,
                     label: "Choose a color",
                     choices: [
                         { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
@@ -27,6 +28,7 @@ export const SpectacleSummit: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "{2}{U}{R}, {T}: Surveil 1",
             costs: [
                 { type: CostType.Mana, value: '{2}{U}{R}' },
                 { type: CostType.Tap }

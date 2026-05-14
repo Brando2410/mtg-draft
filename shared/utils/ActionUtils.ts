@@ -10,7 +10,7 @@ export const TRANSIENT_FIELDS: (keyof InteractionMetadata)[] = [
     'manaSnapshot', 'restrictedSnapshot', 'producedMana', 'tappedLandIds',
     'isCopyTargeting', 'isCostTargeting', 'isResolutionX', 'xValueConfirmed',
     'discardAmount', 'xValue', 'lookingCards', 'targets', 'abilityIndex',
-    'preSelectedChoice', 'spellCopyRef', 'confirmedAutoTap', 
+    'preSelectedChoice', 'spellCopyRef', 'confirmedAutoTap', 'isManaAbility',
     'effects', 'isManaChoiceToggle', 'hybridGroups', 'triggers',
     'nextPlayerIds', 'onFailureEffects', 'isOptionalDiscard', 'effectIndex', 'isResumption',
     'involvedIds', 'choiceEffects', 'declaredTargets', 'controllerId', 'exiledIds', 'chosenName', 'nextTriggersToStack',

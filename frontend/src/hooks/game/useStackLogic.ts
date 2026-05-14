@@ -52,7 +52,7 @@ export const useStackLogic = (
   }, [battlefield, exile, me, opponent, stack]);
 
   const effectiveStack = useMemo(() => {
-    const filteredStack = stack.filter(s => s.sourceId || s.name || s.sourceObject || s.definition);
+    const filteredStack = stack.filter(s => (s.sourceId || s.name || s.sourceObject || s.definition) && !s.isManaAbility);
     const result = [...filteredStack];
 
     if (pendingAction?.data?.metadata?.stackObj || pendingAction?.data?.stackObj) {
@@ -62,7 +62,7 @@ export const useStackLogic = (
           s.id === pObj.id || 
           (s.sourceId && s.sourceId === pObj.sourceId && s.type === pObj.type)
         );
-        if (!isAlreadyOnStack) {
+        if (!isAlreadyOnStack && !pObj.isManaAbility) {
             result.push(pObj);
         }
       }

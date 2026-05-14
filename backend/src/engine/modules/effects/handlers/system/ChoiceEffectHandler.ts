@@ -235,7 +235,7 @@ export class ChoiceEffectHandler {
               }
               return effect.effects || [];
             },
-            hideUndo: true,
+            hideUndo: !stackObject?.isManaAbility && !effect.showCancel,
             isSpellCasting: !!effect.isSpellCasting,
             isFreeCast: !!effect.isFreeCast || (effect.effects || []).some((e) => e.isFreeCast),
             exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
@@ -320,7 +320,7 @@ export class ChoiceEffectHandler {
               ...sub,
               targetIds: [c.id],
             })),
-          hideUndo: true,
+          hideUndo: !stackObject?.isManaAbility && !effect.showCancel,
           isSpellCasting: !!effect.isSpellCasting,
           isFreeCast: !!effect.isFreeCast || (effect.effects || []).some((e) => e.isFreeCast),
           exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
@@ -393,7 +393,8 @@ export class ChoiceEffectHandler {
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
         optional: !!effect.optional,
-        hideUndo: true,
+        showCancel: !!effect.showCancel,
+        hideUndo: !stackObject?.isManaAbility && !effect.showCancel,
         lookingCards,
         minChoices: EP.resolveAmount(state, (effect.minChoices || 1), context, targets),
         maxChoices: EP.resolveAmount(state, (effect.maxChoices || 1), context, targets),

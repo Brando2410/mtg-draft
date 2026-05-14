@@ -363,6 +363,7 @@ interface StateProps {
  */
 interface SpecializedAndLegacyProps {
     selectionType?: string;
+    showCancel?: boolean;
     linkKey?: string;
 }
 

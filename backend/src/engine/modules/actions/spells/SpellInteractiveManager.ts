@@ -304,8 +304,9 @@ export class SpellInteractiveManager {
     public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: EngineFrame): boolean {
         const ability = obj.definition.abilities?.[abilityIndex];
         if (!ability || typeof ability === 'string') return false;
-        const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => c.value === 'X')));
-        const xValue = state.interaction?.lastChoiceX;
+        const needsX = (ability.costs || []).some((c: any) => String(c.value).includes('X')) || 
+                      (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => String(c.value).includes('X'))));
+        const xValue = state.interaction?.lastChoiceX ?? obj.xValue;
 
         if (needsX && xValue === undefined) {
             state.pendingAction = {

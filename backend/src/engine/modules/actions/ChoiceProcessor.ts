@@ -119,8 +119,9 @@ export class ChoiceProcessor {
         const isMulligan = action.type === ActionType.Mulligan;
         const isStartingPlayer = action.type === ActionType.StartingPlayerSelection;
         const isMiracleReveal = action.type === ActionType.MiracleReveal;
+        const isConfirmAutoTap = action.type === ActionType.ConfirmAutoTap;
 
-        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting && !isMulligan && !isStartingPlayer && !isMiracleReveal) return false;
+        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting && !isMulligan && !isStartingPlayer && !isMiracleReveal && !isConfirmAutoTap) return false;
         if (!action.data) return false;
         const actionData = action.data;
         const meta = getActionMeta(action);
@@ -142,11 +143,6 @@ export class ChoiceProcessor {
             return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order);
         }
 
-        // Handle "Back/Undo"
-        if (firstSelection === 'undo' || firstSelection === -1) {
-            return this.handleUndo(state, playerId, action);
-        }
-
         if (isStartingPlayer) {
             const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
             const choice = actionData.choices?.[choiceIdx];
@@ -154,6 +150,14 @@ export class ChoiceProcessor {
             state.pendingAction = undefined;
             MulliganProcessor.resolveStartingPlayer(state, engine, chosenId);
             return true;
+        }
+
+        const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
+        const choice = !isNaN(choiceIdx) ? actionData.choices?.[choiceIdx as number] : undefined;
+
+        // Handle "Back/Undo" or "Cancel"
+        if (firstSelection === 'undo' || firstSelection === -1 || firstSelection === 'cancel' || choice?.value === 'cancel') {
+            return this.handleUndo(state, playerId, action);
         }
 
         if (isMulligan) {
@@ -178,9 +182,9 @@ export class ChoiceProcessor {
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelectAction;
 
         const isConfirm = firstSelection === 'confirm' || firstSelection === 'done';
-        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && (firstSelection.includes('|') || firstSelection.startsWith('{'))) || isEmptyConfirm || isConfirm || meta.isManaChoiceToggle) {
+        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && (firstSelection.includes('|') || firstSelection.startsWith('{'))) || isEmptyConfirm || isConfirm || meta.isManaChoiceToggle || isConfirmAutoTap) {
             // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
-            if (actionData.isCostChoice || meta.isSpellCasting || actionData.isTargetingModal || meta.isManaChoiceToggle) {
+            if (actionData.isCostChoice || meta.isSpellCasting || actionData.isTargetingModal || meta.isManaChoiceToggle || isConfirmAutoTap) {
                 // Pass the first selection if it's a legacy string, otherwise pass null as handleModalSelection will use the payload
                 return this.handleModalSelection(state, playerId, action.sourceId as string, null, firstSelection as string, action, engine, payload);
             }
@@ -298,14 +302,12 @@ export class ChoiceProcessor {
             return this.handleScrySurveil(state, playerId, action, payload, engine);
         }
 
-        const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
         if (!isNaN(choiceIdx) && isResolution && action.type !== ActionType.ResolutionChoice && action.type !== ActionType.OptionalAction && !meta.isSpellCasting && !actionData.isCostChoice) {
             state.interaction.lastChoiceIndex = choiceIdx;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-PERSIST] Stored lastChoiceIndex: ${choiceIdx}`);
 
             // If we are here, it's a single-choice resolution that didn't go through the batch block above.
             // We should treat it exactly like a batch of one to ensure consistency.
-            const choice = actionData.choices?.[choiceIdx];
             if (choice) {
                 state.pendingAction = undefined;
                 if (choice.effects && choice.effects.length > 0) {
@@ -338,11 +340,11 @@ export class ChoiceProcessor {
 
         // Handle Legend Rule Choice
         if (action.type === ActionType.LegendRule) {
-            let choice = !isNaN(choiceIdx) ? actionData.choices?.[choiceIdx as number] : undefined;
-            if (!choice && typeof firstSelection === 'string') {
-                choice = actionData.choices?.find((c: ChoiceOption) => c.value === firstSelection);
+            let legendChoice = choice;
+            if (!legendChoice && typeof firstSelection === 'string') {
+                legendChoice = actionData.choices?.find((c: ChoiceOption) => c.value === firstSelection);
             }
-            const keepId = choice?.value as string;
+            const keepId = legendChoice?.value as string;
             const involvedIds = (meta.involvedIds as string[]) || [];
             const discardIds = involvedIds.filter((id) => id !== keepId);
 
@@ -358,7 +360,6 @@ export class ChoiceProcessor {
         }
 
         const sourceId = action.sourceId as string;
-        const choice = !isNaN(choiceIdx) ? actionData.choices?.[choiceIdx as number] : undefined;
 
         if (!choice || !sourceId) return false;
 
@@ -489,26 +490,30 @@ export class ChoiceProcessor {
     private static handleUndo(state: GameState, playerId: PlayerId, action: PendingAction): boolean {
         const { logger } = getProcessors(state);
         const actionData = action.data;
-        if (actionData?.hideUndo || action.type === ActionType.ResolutionChoice) {
+        const meta = getActionMeta(action);
+        const isManaAbility = meta.isManaAbility ?? meta.stackObj?.isManaAbility;
+
+        if (actionData?.hideUndo || (action.type === ActionType.ResolutionChoice && !isManaAbility && !actionData?.showCancel)) {
             return false;
         }
 
         const sourceId = action.sourceId!;
         const savedActionData = action.data;
-        const meta = getActionMeta(action);
 
         // A. Revert Battlefield source (Activated Ability/Planeswalker)
         const objOnBattlefield = state.battlefield.find(o => o.id === sourceId);
         if (objOnBattlefield) {
-            const abilityIndex = meta.abilityIndex;
-            if (objOnBattlefield.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
-                objOnBattlefield.abilitiesUsedThisTurn--;
+            const abilityIndex = meta.abilityIndex ?? meta.stackObj?.abilityIndex;
+            if (abilityIndex !== undefined) {
+                if (objOnBattlefield.abilitiesUsedThisTurn > 0) {
+                    objOnBattlefield.abilitiesUsedThisTurn--;
+                }
 
-                // Refund Loyalty
-                const ability = (objOnBattlefield.definition.abilities as AbilityDefinition[])?.[abilityIndex];
-                const lCost = ability?.costs?.find((c: AbilityCost) => c.type === 'Loyalty')?.value as number;
-                if (lCost !== undefined) {
-                    objOnBattlefield.counters['loyalty'] = (objOnBattlefield.counters['loyalty'] || 0) - lCost;
+                // Use the new centralized refund logic
+                const allAbilities = [...((objOnBattlefield.definition.abilities as AbilityDefinition[]) || [])];
+                const ability = allAbilities[abilityIndex];
+                if (ability && typeof ability !== 'string') {
+                    getProcessors(state).cost.refund(state, ability.costs || [], objOnBattlefield, playerId);
                 }
             }
         }
@@ -529,8 +534,17 @@ export class ChoiceProcessor {
                     ManaProcessor.refundManaCost(player, card.definition.manaCost);
                 } else if (stackObj.type === AbilityType.Activated) {
                     // Refund costs for activated abilities but leave source on battlefield
-                    const { mana: ManaProcessor } = getProcessors(state);
-                    ManaProcessor.refundManaCost(player, card.definition.manaCost);
+                    // We already handled the battlefield object above if it was found there,
+                    // but sometimes the stack object is the only reference for virtual activations.
+                    const allAbilities = [...((card.definition.abilities as AbilityDefinition[]) || [])];
+                    const ability = allAbilities[stackObj.abilityIndex ?? -1];
+                    if (ability && typeof ability !== 'string') {
+                        getProcessors(state).cost.refund(state, ability.costs || [], card, playerId);
+                    } else {
+                        // Fallback to mana refund if ability index is lost
+                        const { mana: ManaProcessor } = getProcessors(state);
+                        ManaProcessor.refundManaCost(player, card.definition.manaCost);
+                    }
                 }
             }
         }
@@ -734,9 +748,7 @@ export class ChoiceProcessor {
         const actionData = action.data;
         const meta = getActionMeta(action);
 
-        if (!actionData || !isModalData(actionData)) return false;
-        const savedTargets = (meta.declaredTargets as string[]) || [];
-        const costType = actionData.costType as string;
+        if (!actionData || (!isModalData(actionData) && action.type !== ActionType.ConfirmAutoTap)) return false;
 
         const selections = payload?.selections || [choiceIndex];
         const firstSelection = selections[0];
@@ -750,7 +762,24 @@ export class ChoiceProcessor {
             choice = actionData.choices?.[idx] || null;
         }
 
-        if (!choice && !isEmptyConfirm && !meta.isManaChoiceToggle) return false;
+        const savedTargets = (meta.declaredTargets as string[]) || [];
+        const costType = actionData.costType as string;
+
+        const isConfirmAutoTap = action.type === ActionType.ConfirmAutoTap;
+        if (!choice && !isEmptyConfirm && !meta.isManaChoiceToggle && !isConfirmAutoTap) return false;
+
+        // --- FLAG PERSISTENCE ---
+        // We must set the confirmedAutoTap flag BEFORE any redirections (like activateAbility)
+        // to ensure the flag is visible when the engine resumes the spell/ability finalization.
+        if (meta.confirmedAutoTap) {
+            if (!state.interaction) {
+                state.interaction = { lastSelections: {}, flags: {} };
+            }
+            if (!state.interaction.flags) {
+                state.interaction.flags = {};
+            }
+            state.interaction.flags.confirmedAutoTap = true;
+        }
 
         // Validate min choices for empty confirm
         if (isEmptyConfirm && (actionData.minChoices || 0) > 0) {
@@ -960,10 +989,6 @@ export class ChoiceProcessor {
             return true;
         }
 
-        if (meta.confirmedAutoTap) {
-            state.interaction.flags.confirmedAutoTap = true;
-        }
-
         let finalTargets = savedTargets;
         if (actionData.isTargetingModal) {
             let newTargets: string[] = [];
@@ -1012,6 +1037,26 @@ export class ChoiceProcessor {
         }
 
         // ARCHITECTURAL NOTE: Metadata Propagation
+        state.pendingAction = undefined; // IMPORTANT: Clear the action so we don't infinitely loop
+        
+        if (meta.abilityIndex !== undefined) {
+            return getProcessors(state).spell.activateAbility(
+                state,
+                engine,
+                {
+                    playerId,
+                    cardId: cardToPlayId,
+                    abilityIndex: meta.abilityIndex,
+                    targets: finalTargets,
+                    xValue: meta.xValue as number,
+                    bypassPriority: true,
+                    bypassTargeting: false,
+                    parentContext: meta.parentContext as EngineFrame,
+                    exileOnResolution: meta.exileOnResolution as boolean
+                }
+            );
+        }
+
         return getProcessors(state).spell.playCard(
             state,
             engine,
@@ -1253,6 +1298,7 @@ export class ChoiceProcessor {
 
         if (RuleUtils.isEntity(card)) {
             card.xValue = x;
+            if (state.interaction) state.interaction.lastChoiceX = x;
             logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Set xValue=${x} on ${card.id}.`);
 
             // CRITICAL: Also propagate to the stack object if this is a triggered/activated ability resolution.

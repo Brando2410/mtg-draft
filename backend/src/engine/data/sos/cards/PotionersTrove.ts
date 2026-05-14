@@ -2,12 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const PotionersTrove: CardDefinition = {
     name: "Potioner's Trove",
     manaCost: "{3}",
-
-
     colors: [],
-    types: [
-        "Artifact"
-    ],
+    types: ["Artifact"],
     subtypes: [],
     keywords: [],
     oracleText: "{T}: Add one mana of any color.\n{T}: You gain 2 life. Activate only if you've cast an instant or sorcery spell this turn.",

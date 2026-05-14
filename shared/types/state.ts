@@ -158,6 +158,7 @@ export interface StackObject extends BaseEntity {
     isResumption?: boolean;
     nextPlayerIds?: PlayerId[];
     onFailureEffects?: EffectDefinition[];
+    isManaAbility?: boolean;
     originalControllerId?: PlayerId;
     preSelectedChoice?: number | string;
     exileOnResolution?: boolean;
@@ -362,6 +363,7 @@ export interface InteractionMetadata {
     isSacrificeSequence?: boolean;
     isDiscardSequence?: boolean;
     isChoiceSequence?: boolean;
+    isManaAbility?: boolean;
 }
 
 export interface CommonResolutionFields {
@@ -383,6 +385,8 @@ export interface CommonChoiceFields {
     minChoices?: number;
     originalActionData?: any;
     selectedChoice?: any;
+    showCancel?: boolean;
+    hideUndo?: boolean;
 }
 
 export interface BaseActionData extends CommonResolutionFields, CommonChoiceFields {

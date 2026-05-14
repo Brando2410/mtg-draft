@@ -623,13 +623,15 @@ export class SpellProcessor {
         const { mana: ManaProcessor } = getProcessors(state);
         if (isFreeCast) {
         } else if (!hasConfirmedAutoTap && ManaProcessor.canPayMana(state, player, totalMana, cardToPlay)) {
+            // TAKE SNAPSHOT BEFORE TAPPING
+            const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
+            const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
+
             const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
 
             if (tappedIds.length > 0) {
-                const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
-                const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
 
-                state.pendingAction = ActionBuilder.targeting(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
+                state.pendingAction = ActionBuilder.confirmAutoTap(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
                     .ingest({
                         isSpellCasting: true,
                         isFreeCast: isFreeCast,
@@ -641,13 +643,7 @@ export class SpellProcessor {
                         manaSnapshot,
                         restrictedSnapshot,
                         totalMana,
-                        declaredTargets: declaredTargets || [],
-                        selectedTargets: declaredTargets || [],
-                        targetDefinitions: targetDefinitions || [],
-                        minCount: (declaredTargets || []).length,
-                        maxCount: (declaredTargets || []).length,
-                        count: (declaredTargets || []).length,
-                        targets: [] 
+                        declaredTargets: declaredTargets || [] 
                     })
                     .build();
                 return true;
@@ -894,6 +890,7 @@ export class SpellProcessor {
             isCopy: obj.isCopy,
             isPreparedCopy: obj.isPreparedCopy,
             xValue: xValue !== undefined ? xValue : obj.xValue,
+            isManaAbility: ability.isManaAbility,
             sourceObject: obj,
             definition: obj.definition,
             exileOnResolution: effectiveExileOnResolution,
@@ -918,6 +915,9 @@ export class SpellProcessor {
 
 
         // Mana Payment
+        const hasConfirmedAutoTap = state.interaction?.flags.confirmedAutoTap;
+        if (state.interaction) delete state.interaction.flags.confirmedAutoTap;
+
         const { cost: CostProcessor, mana: ManaProcessor } = getProcessors(state);
         const manaCost = (ability.costs || []).find((cost) => cost.type === 'Mana');
         if (manaCost) {
@@ -925,9 +925,32 @@ export class SpellProcessor {
             if (!ManaProcessor.canPayMana(state, playerObj, effectiveMana, obj)) {
                 return false;
             }
-            // Optional: If we want consistency with Spells, we should trigger the Confirm flow here too.
-            // For now, just ensure the tap engine is called.
-            ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
+
+            if (!hasConfirmedAutoTap) {
+                // TAKE SNAPSHOT BEFORE TAPPING
+                const manaSnapshot = JSON.parse(JSON.stringify(playerObj.manaPool));
+                const restrictedSnapshot = JSON.parse(JSON.stringify(playerObj.restrictedMana || []));
+
+                const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
+
+                if (tappedIds.length > 0) {
+                    state.pendingAction = ActionBuilder.confirmAutoTap(playerId, obj.id, `Confirm auto-tap for ${obj.definition.name}?`)
+                        .ingest({
+                            isSpellCasting: true,
+                            parentContext,
+                            confirmedAutoTap: true,
+                            tappedLandIds: tappedIds,
+                            producedMana,
+                            manaSnapshot,
+                            restrictedSnapshot,
+                            totalMana: effectiveMana,
+                            abilityIndex,
+                            declaredTargets: declaredTargets || []
+                        })
+                        .build();
+                    return true;
+                }
+            }
         }
 
         CostProcessor.pay(state, ability.costs || [], obj, playerId);
@@ -982,6 +1005,7 @@ export class SpellProcessor {
         }
 
         if (!state.pendingAction) {
+            obj.xValue = undefined;
             engine.checkStateBasedActions();
             engine.resetPriorityToActivePlayer();
         }
@@ -1044,7 +1068,7 @@ export class SpellProcessor {
                 isManaChoiceToggle: true,
                 hybridGroups,
                 declaredTargets,
-                choices: []
+                choices: [{ label: 'Cancel', value: 'cancel' }]
             })
             .build();
 

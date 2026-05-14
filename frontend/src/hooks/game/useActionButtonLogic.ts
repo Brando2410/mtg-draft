@@ -85,6 +85,12 @@ export const useActionButtonLogic = ({
           orange = false;
           disabled = true;
         }
+      } else if (pendingAction.type === ActionType.ConfirmAutoTap) {
+        text = "Confirm Mana";
+        sub = "Pay Costs";
+        orange = true;
+        disabled = false;
+        cancel = true; // Show cancel button
       } else if (pendingAction.type === ActionType.Targeting || (pendingAction.type as any) === 'TARGETING') {
         const selected = pendingAction.data?.selectedTargets || [];
         const targetDef = pendingAction.data?.targetDefinition;

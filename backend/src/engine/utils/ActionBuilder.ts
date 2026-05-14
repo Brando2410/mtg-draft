@@ -59,6 +59,12 @@ export class ActionBuilder {
         return builder;
     }
 
+    public static confirmAutoTap(playerId: PlayerId, sourceId: string, label: string): ActionBuilder {
+        const builder = new ActionBuilder(ActionType.ConfirmAutoTap, playerId, sourceId);
+        builder.action.data!.label = label;
+        return builder;
+    }
+
     /**
      * Ingests a raw data object, automatically moving transient fields to metadata
      * and pruning them from the root. This is the "Magic Sauce" for boilerplate reduction.

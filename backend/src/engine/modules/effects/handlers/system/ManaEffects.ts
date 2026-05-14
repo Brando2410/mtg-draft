@@ -47,7 +47,8 @@ export const ManaHandler: IEffectHandler = {
               playerId: tid,
               sourceId: sourceId || "",
               stackObj: stackObject,
-              parentContext: parentContext
+              parentContext: parentContext,
+              showCancel: true
             }, choices);
           }
           return;

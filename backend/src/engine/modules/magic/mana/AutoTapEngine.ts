@@ -31,8 +31,8 @@ export class AutoTapEngine {
         const requirements = ManaParser.parseManaCost(costStr);
         const localPool = ManaPoolManager.getUsableMana(player, payingFor);
 
-        // Run the actual solver logic in simulation mode
-        const { producedMana } = this.autoTapLandsForCost(state, playerId, costStr, null as any, payingFor, excludeId);
+        // Run the actual solver logic in simulation mode (isSimulation = true)
+        const { producedMana } = this.autoTapLandsForCost(state, playerId, costStr, null as any, payingFor, excludeId, true);
 
         // Combine floating mana and simulated produced mana
         const totalW = (localPool.W || 0) + (producedMana.W || 0);
@@ -57,7 +57,8 @@ export class AutoTapEngine {
         costStr: string,
         engine: EngineContext,
         payingFor?: GameObject,
-        excludeId?: string
+        excludeId?: string,
+        isSimulation = false
     ): { tappedIds: string[], producedMana: ManaPoolRecord } {
         const player = state.players[playerId];
         if (!player) return { tappedIds: [], producedMana: this.emptyPool() };
@@ -75,10 +76,10 @@ export class AutoTapEngine {
         const canSpendAsAnyColor = this.checkSpendAsAnyColor(state, playerId, payingFor);
 
         // 2. Satisfy Colored Requirements
-        this.satisfyColoredRequirements(state, playerId, requirements, localPool, availableSources, tappedIds, producedMana, demandMap, canSpendAsAnyColor, engine, payingFor);
+        this.satisfyColoredRequirements(state, playerId, requirements, localPool, availableSources, tappedIds, producedMana, demandMap, canSpendAsAnyColor, engine, payingFor, isSimulation);
 
         // 3. Satisfy Generic Requirements
-        this.satisfyGenericRequirements(state, playerId, requirements, localPool, availableSources, tappedIds, producedMana, demandMap, canSpendAsAnyColor, engine, payingFor);
+        this.satisfyGenericRequirements(state, playerId, requirements, localPool, availableSources, tappedIds, producedMana, demandMap, canSpendAsAnyColor, engine, payingFor, isSimulation);
 
         return { tappedIds, producedMana };
     }
@@ -177,7 +178,8 @@ export class AutoTapEngine {
         demandMap: Record<string, number>,
         canSpendAsAnyColor: boolean,
         engine: EngineContext,
-        payingFor?: GameObject
+        payingFor?: GameObject,
+        isSimulation = false
     ) {
         const coloredReqs: string[] = [];
         Object.entries(requirements.colored).forEach(([c, amt]) => {
@@ -188,10 +190,10 @@ export class AutoTapEngine {
             if (this.trySatisfyFromPool(localPool, req)) continue;
 
             const options = req.includes('/') ? req.split('/') : [req];
-            const source = this.findBestSource(state, availableSources, tappedIds, options, canSpendAsAnyColor, demandMap, payingFor);
+            const bestSource = this.findBestSource(state, availableSources, tappedIds, options, canSpendAsAnyColor, demandMap, payingFor);
             
-            if (source) {
-                this.executeSourceTapping(state, playerId, source, req, tappedIds, producedMana, localPool, engine, payingFor);
+            if (bestSource) {
+                this.executeSourceTapping(state, playerId, bestSource, req, tappedIds, producedMana, localPool, engine, payingFor, isSimulation);
                 this.trySatisfyFromPool(localPool, req); // Consume the produced mana
             }
         }
@@ -208,7 +210,8 @@ export class AutoTapEngine {
         demandMap: Record<string, number>,
         canSpendAsAnyColor: boolean,
         engine: EngineContext,
-        payingFor?: GameObject
+        payingFor?: GameObject,
+        isSimulation = false
     ) {
         let genericNeeded = requirements.generic;
         const poolOrder: ManaColor[] = ["C", "W", "U", "B", "R", "G"];
@@ -225,10 +228,10 @@ export class AutoTapEngine {
 
         // Tap sources for the rest
         while (genericNeeded > 0) {
-            const source = this.findBestSource(state, availableSources, tappedIds, null, canSpendAsAnyColor, demandMap, payingFor);
-            if (!source) break;
+            const bestSource = this.findBestSource(state, availableSources, tappedIds, null, canSpendAsAnyColor, demandMap, payingFor);
+            if (!bestSource) break;
 
-            this.executeSourceTapping(state, playerId, source, 'C', tappedIds, producedMana, localPool, engine, payingFor);
+            this.executeSourceTapping(state, playerId, bestSource, 'C', tappedIds, producedMana, localPool, engine, payingFor, isSimulation);
 
             for (const c of poolOrder) {
                 if (genericNeeded <= 0) break;
@@ -402,7 +405,8 @@ export class AutoTapEngine {
         producedMana: ManaPoolRecord,
         localPool: ManaPoolRecord,
         engine: EngineContext,
-        payingFor?: GameObject
+        payingFor?: GameObject,
+        isSimulation = false
     ) {
         let actualCIdx = source.cIdx;
         if (actualCIdx === undefined) {
@@ -415,11 +419,13 @@ export class AutoTapEngine {
             }
         }
 
-        engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
-        
-        // Stealth Action Clearance
-        if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE' || state.pendingAction.type === 'OPTIONAL_ACTION')) {
-            state.pendingAction = undefined;
+        if (!isSimulation && engine) {
+            engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
+            
+            // Stealth Action Clearance
+            if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE' || state.pendingAction.type === 'OPTIONAL_ACTION')) {
+                state.pendingAction = undefined;
+            }
         }
 
         tappedIds.push(source.obj.id);

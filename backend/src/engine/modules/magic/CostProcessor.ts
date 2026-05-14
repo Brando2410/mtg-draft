@@ -406,8 +406,54 @@ export class CostProcessor {
     return costStr;
   }
 
-  private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
-    const obj = RuleUtils.findObject(state, id);
-    return (obj && 'isTapped' in obj) ? obj : undefined;
-  }
+    private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
+        const obj = RuleUtils.findObject(state, id);
+        return (obj && 'isTapped' in obj) ? obj : undefined;
+    }
+
+    /**
+     * Reverses the payment of costs.
+     * Used for action cancellation/undo.
+     */
+    public static refund(state: GameState, costs: AbilityCost[], source: GameObject | StackObject | GameObjectId, playerId: PlayerId) {
+        const { logger } = getProcessors(state);
+        const player = state.players[playerId];
+        if (!player) return;
+
+        const validSource = typeof source === 'string' ? (this.findObject(state, source) || { id: source, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object', types: [] }, zone: Zone.Stack, counters: {}, isTapped: false } as unknown as GameObject) : source as GameObject;
+
+        for (const cost of costs) {
+            switch (cost.type) {
+                case CostType.Tap:
+                    if (validSource && 'isTapped' in validSource) {
+                        validSource.isTapped = false;
+                        logger.info(state, LogCategory.ACTION, `[REFUND] Untapped ${validSource.definition.name}.`);
+                    }
+                    break;
+                case CostType.Mana:
+                    const effectiveMana = this.getEffectiveManaCost(state, cost, validSource);
+                    const { mana: ManaProcessor } = getProcessors(state);
+                    ManaProcessor.refundManaCost(player, effectiveMana);
+                    logger.info(state, LogCategory.ACTION, `[REFUND] Refunded ${effectiveMana} to ${player.name}'s pool.`);
+                    break;
+                case CostType.Loyalty:
+                    const loyaltyCost = cost as LoyaltyCost;
+                    const xValue = validSource.xValue ?? 0;
+                    const valStr = String(loyaltyCost.value);
+                    const lVal = (valStr === 'X' || valStr === '-X') ? -Math.abs(xValue) : parseInt(valStr);
+                    if (validSource.counters) {
+                        validSource.counters.loyalty = (validSource.counters.loyalty || 0) - lVal;
+                        logger.info(state, LogCategory.ACTION, `[REFUND] Reverted loyalty on ${validSource.definition.name}.`);
+                    }
+                    break;
+                case CostType.PayLife:
+                    const lifeCost = cost as LifeCost;
+                    player.life += Number(lifeCost.value);
+                    logger.info(state, LogCategory.ACTION, `[REFUND] Refunded ${lifeCost.value} life to ${player.name}.`);
+                    break;
+                // Note: Sacrifice and Exile are generally not refundable as they involve zone changes 
+                // that are complex to roll back without a full state snapshot.
+            }
+        }
+    }
 }

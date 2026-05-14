@@ -363,6 +363,7 @@ export const ActionType = {
   Mulligan: "MULLIGAN",
   StartingPlayerSelection: "STARTING_PLAYER_SELECTION",
   MiracleReveal: "MIRACLE_REVEAL",
+  ConfirmAutoTap: "CONFIRM_AUTO_TAP",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

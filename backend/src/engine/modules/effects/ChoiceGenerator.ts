@@ -23,6 +23,7 @@ export interface ChoiceConfig {
     allowDuplicates?: boolean;
     metadata?: any;
     effectIndex?: number;
+    showCancel?: boolean;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -131,6 +132,15 @@ export class ChoiceGenerator {
             mappedChoices.push({
                 label: "None / Skip",
                 value: "none",
+                selectable: true,
+                effects: []
+            });
+        }
+
+        if (config.showCancel) {
+            mappedChoices.push({
+                label: "Cancel",
+                value: "cancel",
                 selectable: true,
                 effects: []
             });

@@ -25,7 +25,7 @@ interface ActionButtonProps {
   onTogglePassTurn?: () => void;
   onClear?: () => void;
   onUndo?: () => void;
-  onChoiceResolve?: (choice: number) => void;
+  onChoiceResolve?: (choice: number | string) => void;
 }
 
 interface PhaseIndicatorProps {
@@ -127,6 +127,8 @@ export const ActionButton = memo(({
   const handlePass = () => {
     if (pendingAction?.type === ActionType.Mulligan) {
         onChoiceResolve?.(0); // Index 0 is "Keep"
+    } else if (pendingAction?.type === ActionType.ConfirmAutoTap) {
+        onChoiceResolve?.('confirm');
     } else {
         onPass();
     }
@@ -190,6 +192,20 @@ export const ActionButton = memo(({
                         >
                             MULLIGAN
                         </motion.button>
+                    )}
+
+                    {pendingAction?.type === ActionType.ConfirmAutoTap && (
+                        <div className="flex flex-col gap-[var(--sp-1)] w-full items-center">
+                            <motion.button 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={() => onChoiceResolve?.('cancel')}
+                                className="btn-premium-danger"
+                                style={{ height: 'calc(var(--u)*4.5)', fontSize: 'var(--fs-sm)' }}
+                            >
+                                <span>CANCEL ACTIVATION</span>
+                            </motion.button>
+                        </div>
                     )}
 
                     {/* TARGETING CANCELLATION */}
