@@ -10,7 +10,6 @@ export const CreateDelayedTriggerHandler: IEffectHandler<TriggerAbilityEffect> =
     const { sourceId, controllerId, targets } = context;
 
     // Support for capturing data from the current resolution (like MV of countered spell)
-    const data = effect.data || {};
     if (effect.captureTargetMV) {
       const targetId = targets[0];
       let targetObj = RuleUtils.findObject(state, targetId);
@@ -35,14 +34,14 @@ export const CreateDelayedTriggerHandler: IEffectHandler<TriggerAbilityEffect> =
       })();
 
       if (mv !== undefined) {
-        data.capturedMV = mv;
+        effect.capturedMV = mv;
       }
     }
 
 
     return TrP.createDelayedTrigger(
       state,
-      { ...effect, condition: effect.triggerCondition || effect.condition, data, targetIds: targets },
+      { ...effect, condition: effect.triggerCondition || effect.condition, targetIds: targets },
       sourceId,
       controllerId
     );

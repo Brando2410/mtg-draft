@@ -309,7 +309,6 @@ export class EffectProcessor {
         targets: stackObject.targets || [],
         targetsControllers: stackObject.targetsControllers,
         summary: stackObject.summary,
-        data: stackObject.data, // Preserve legacy data for UI components still using it
       } as unknown as StackObject;
     }
     return undefined;

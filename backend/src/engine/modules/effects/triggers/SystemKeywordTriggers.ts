@@ -14,6 +14,7 @@ import {
   Zone,
   CounterType
 } from "@shared/engine_types";
+import { IdUtils } from "@shared/utils/IdUtils";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { oracle } from "../../../OracleLogicMap";
@@ -55,7 +56,7 @@ export class SystemKeywordTriggers {
           RuleUtils.getController(obj) === event.playerId
         ) {
           matchingTriggers.push({
-            id: `prowess_system_${obj.id}_${Date.now()}`,
+            id: IdUtils.generateId(`prowess_system_${obj.id}`),
             sourceId: obj.id,
             controllerId: RuleUtils.getController(obj),
             eventMatch: TriggerEvent.CastNonCreature,
@@ -105,7 +106,7 @@ export class SystemKeywordTriggers {
             )
           ) {
             matchingTriggers.push({
-              id: `increment_system_${obj.id}_${Date.now()}`,
+              id: IdUtils.generateId(`increment_system_${obj.id}`),
               sourceId: obj.id,
               controllerId: RuleUtils.getController(obj),
               eventMatch: TriggerEvent.CastSpell,
@@ -173,7 +174,7 @@ export class SystemKeywordTriggers {
 
             logger.debug(state, LogCategory.TRIGGER, `[WARD] Ward triggering for ${targetObj.definition.name}. Cost: ${labelStr}`);
             matchingTriggers.push({
-              id: `ward_gen_${targetObj.id}_${Date.now()}`,
+              id: IdUtils.generateId(`ward_gen_${targetObj.id}`),
               sourceId: targetObj.id,
               controllerId: targetObj.controllerId,
               eventMatch: TriggerEvent.BecomeTarget,
@@ -222,7 +223,7 @@ export class SystemKeywordTriggers {
       );
       cascadeInstances.forEach((_: any, i: number) => {
         matchingTriggers.push({
-          id: `cascade_system_${card.id}_${Date.now()}_${i}`,
+          id: IdUtils.generateId(`cascade_system_${card.id}_${i}`),
           sourceId: card.id,
           controllerId: event.playerId!,
           eventMatch: TriggerEvent.CastSpell,
@@ -282,7 +283,7 @@ export class SystemKeywordTriggers {
         if (stormCount > 0) {
           for (let i = 0; i < stormCount; i++) {
             matchingTriggers.push({
-              id: `storm_copy_${card.id}_${i}_${Date.now()}`,
+              id: IdUtils.generateId(`storm_copy_${card.id}_${i}`),
               sourceId: card.id,
               controllerId: event.playerId!,
               eventMatch: TriggerEvent.CastSpell,
@@ -399,7 +400,7 @@ export class SystemKeywordTriggers {
             if (reparteeAbility) {
               matchingTriggers.push({
                 ...reparteeAbility,
-                id: `repartee_gen_${obj.id}_${Date.now()}`,
+                id: IdUtils.generateId(`repartee_gen_${obj.id}`),
                 sourceId: obj.id,
                 controllerId: obj.controllerId,
                 targetIds: targets,
@@ -432,7 +433,7 @@ export class SystemKeywordTriggers {
           if (landfallAbility) {
             matchingTriggers.push({
               ...landfallAbility,
-              id: `landfall_${p.id}_${Date.now()}`,
+              id: IdUtils.generateId(`landfall_${p.id}`),
               sourceId: p.id,
               controllerId: p.controllerId,
               targets: []
@@ -463,7 +464,7 @@ export class SystemKeywordTriggers {
             if (opusAbility && !alreadyAdded) {
               matchingTriggers.push({
                 ...opusAbility,
-                id: `opus_gen_${p.id}_${Date.now()}`,
+                id: IdUtils.generateId(`opus_gen_${p.id}`),
                 sourceId: p.id,
                 controllerId: p.controllerId,
                 targetIds: event.payload?.targetIds || [],
@@ -493,7 +494,7 @@ export class SystemKeywordTriggers {
       logger.debug(state, LogCategory.TRIGGER, `[MIRACLE-LOG] Generating Miracle reveal trigger for ${card.definition.name} (Source: ${card.id}). ActiveZone: Hand`);
 
       matchingTriggers.push({
-        id: `miracle_trigger_${card.id}_${Date.now()}`,
+        id: IdUtils.generateId(`miracle_trigger_${card.id}`),
         name: `Miracle: ${card.definition.name}`,
         sourceId: card.id,
         controllerId: event.playerId,

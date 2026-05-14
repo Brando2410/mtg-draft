@@ -1,4 +1,5 @@
 import { AbilityDefinition, AbilityType, ActivatedAbilityDefinition, CardLogic, EffectType, EnginePrefix, GameObject, GameState, Keyword, Phase, PlayerId, TargetMapping, Zone } from '@shared/engine_types';
+import { IdUtils } from '@shared/utils/IdUtils';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
@@ -45,7 +46,7 @@ export class SpellValidator {
                 if (isVirtualPrepared && realObj.zone === Zone.Battlefield && realObj.isPrepared) {
                     const face = realObj.definition.preparedFace || realObj.definition.faces?.[1];
                     if (face) {
-                        const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${realObj.id}_${Date.now()}`;
+                        const copyId = isCopy ? cardInstanceId : IdUtils.generateId(`${EnginePrefix.Copy}${realObj.id}`);
                         if (state.dynamicCopies && state.dynamicCopies[copyId]) return state.dynamicCopies[copyId];
                         
                         const { layer: LayerProcessor } = getProcessors(state);

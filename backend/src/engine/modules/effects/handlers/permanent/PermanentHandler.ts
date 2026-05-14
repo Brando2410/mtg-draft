@@ -12,6 +12,7 @@ import {
     TokenEffect,
     Zone
 } from '@shared/engine_types';
+import { IdUtils } from '@shared/utils/IdUtils';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
@@ -388,7 +389,7 @@ export class PermanentHandler {
     private static createToken(state: GameState, blueprint: import('@shared/engine_types').CardDefinition, controllerId: PlayerId, pOverride?: number | string, tOverride?: number | string, effect?: EffectDefinition): GameObject {
         const { mana: MP, registry: RP } = getProcessors(state);
         const token: GameObject = {
-            id: `token_${Math.random().toString(36).substr(2, 9)}`,
+            id: IdUtils.generateId('token'),
             ownerId: controllerId,
             controllerId: controllerId,
             definition: {
@@ -445,7 +446,7 @@ export class PermanentHandler {
 
         const sourceObj = EP.findObject(state, sourceId, stackObject);
 
-        const emblemId = `emblem_${controllerId}_${Date.now()}`;
+        const emblemId = IdUtils.generateId(`emblem_${controllerId}`);
         const emblem: EmblemDefinition = {
             id: emblemId,
             name: blueprint.name || 'Emblem',

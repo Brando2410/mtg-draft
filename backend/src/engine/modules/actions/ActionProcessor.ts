@@ -18,13 +18,10 @@ import {
   Zone
 } from "@shared/engine_types";
 import { Mutation, MutationType } from "@shared/types/mutations";
-import { RegistryProcessor } from "../core/RegistryProcessor";
-import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+import type { RegistryProcessor } from "../core/RegistryProcessor";
 import { LogCategory } from "../../utils/EngineLogger";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
-import { oracle } from "../../OracleLogicMap";
-import { LifeDamageHandler } from "../effects/handlers/life/LifeDamageHandler";
 
 
 /**
@@ -105,8 +102,7 @@ export class ActionProcessor {
     isDiscard: boolean = false,
     bypassMiracle: boolean = false,
   ): ActionResult {
-    console.log(`[MOVE-DEBUG] moveCard: ${card.definition.name} (${card.id}) from ${card.zone} to ${to}. Target: ${targetPlayerId}`);
-    const { logger, lki: LkiProcessor, trigger: TrP } = getProcessors(state);
+    const { logger } = getProcessors(state);
     const fromZone = card.zone;
 
     // CR 111.8: A token that has left the battlefield can't move to another zone 
@@ -131,6 +127,7 @@ export class ActionProcessor {
 
     // CR 701.8: To discard a card, move it from hand to graveyard.
     if (isDiscard) {
+      const { trigger: TriggerProcessor } = getProcessors(state);
       TriggerProcessor.onEvent(
         state,
         {
@@ -242,7 +239,7 @@ export class ActionProcessor {
       const { layer: LayerProcessor } = getProcessors(state);
       const effectiveStats = LayerProcessor.getEffectiveStats(card, state);
       const hasMiracle = RuleUtils.hasKeyword({ ...card, effectiveStats }, "Miracle");
-      
+
       if (isFirstDraw) {
         logger.debug(state, LogCategory.ACTION, `[MIRACLE-DEBUG] First draw of turn: ${card.definition.name}. Has Miracle: ${hasMiracle}`);
       }
@@ -277,6 +274,7 @@ export class ActionProcessor {
 
       state.turnState.cardsDrawnThisTurn[effectiveTargetId!] = draws + 1;
       state.turnState.lastCardsDrawnAmount = 1;
+      const { trigger: TriggerProcessor } = getProcessors(state);
       TriggerProcessor.onEvent(
         state,
         { type: TriggerEvent.Draw, playerId: effectiveTargetId!, payload: { object: card, targetIds: [card.id] } },
@@ -298,6 +296,7 @@ export class ActionProcessor {
     // SOS: Owlin Historian support
     if (fromZone === Zone.Graveyard && to !== Zone.Graveyard) {
       state.turnState.cardLeftGraveyardThisTurn[card.ownerId] = true;
+      const { trigger: TriggerProcessor } = getProcessors(state);
       TriggerProcessor.onEvent(
         state,
         {
@@ -344,6 +343,7 @@ export class ActionProcessor {
     if (to === Zone.Graveyard && RuleUtils.isCreature(card)) {
       state.turnState.creaturesDiedThisTurn.push(snapshot);
       logger.info(state, LogCategory.ACTION, `[DEATH] ${card.definition.name} died. Total deaths this turn: ${state.turnState.creaturesDiedThisTurn.length}`);
+      const { trigger: TriggerProcessor } = getProcessors(state);
       TriggerProcessor.onEvent(
         state,
         {
@@ -360,6 +360,7 @@ export class ActionProcessor {
     }
 
     // General Leave trigger
+    const { trigger: TriggerProcessor } = getProcessors(state);
     TriggerProcessor.onEvent(
       state,
       {
@@ -381,6 +382,7 @@ export class ActionProcessor {
       console.error('[ActionProcessor] removeFromCurrentZone: state is undefined!');
       return;
     }
+    const { registry: RegistryProcessor } = getProcessors(state);
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
     const realId = cid.startsWith('v_') ? cid.replace('v_', '') : cid;
@@ -440,6 +442,8 @@ export class ActionProcessor {
     position: number | "top" | "bottom" = "top",
   ) {
     const { logger } = getProcessors(state);
+    const { registry: RegistryProcessor } = getProcessors(state);
+
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
       // Rule 110.2: Always sync controllerId when entering battlefield
@@ -465,6 +469,13 @@ export class ActionProcessor {
             },
           )
         ) {
+          entersTapped = true;
+        }
+      }
+
+      // Rule 603.6a: Enters-the-battlefield triggers
+      if (RuleUtils.isPermanent(card)) {
+        if (RuleUtils.hasKeyword(card, "tapped")) {
           entersTapped = true;
         }
       }
@@ -503,6 +514,7 @@ export class ActionProcessor {
           player.library.push(card);
         }
       } else if (to === Zone.Graveyard) {
+        player.library = player.library.filter(c => c.id !== card.id); // Safety check for library leak
         player.graveyard.push(card);
         this.handleEnteringGraveyard(state, card, from);
       }
@@ -523,6 +535,7 @@ export class ActionProcessor {
     to: Zone,
   ) {
     if (from === Zone.Battlefield) {
+      const { registry: RegistryProcessor } = getProcessors(state);
       RegistryProcessor.unregisterAbilities(state, card.id);
       if (to === Zone.Hand) {
         state.turnState.permanentReturnedToHandThisTurn = true;
@@ -649,6 +662,7 @@ export class ActionProcessor {
     });
 
     // Rule 603.6a: Enters-the-battlefield triggers
+    const { trigger: TriggerProcessor } = getProcessors(state);
     TriggerProcessor.onEvent(
       state,
       {
@@ -667,13 +681,6 @@ export class ActionProcessor {
     // Rule 306.5b: Planeswalkers enter with loyalty counters
     if (RuleUtils.isPlaneswalker(card)) {
       let loyaltyValue = card.definition.loyalty;
-      // Fallback to Oracle if missing
-      if (loyaltyValue === undefined || loyaltyValue === null) {
-        const logic = oracle.getCard(card.definition.name);
-        if (logic) {
-          loyaltyValue = logic.loyalty;
-        }
-      }
 
       if (!loyaltyValue && card.definition.types.includes('Planeswalker')) {
         loyaltyValue = 0;

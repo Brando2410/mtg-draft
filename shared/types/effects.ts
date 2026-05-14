@@ -291,7 +291,6 @@ interface CoreProps {
     image_url?: string;
     label?: string;
     layer?: number;
-    metadata?: Record<string, any>;
     next?: EffectDefinition;
     onFailureEffects?: EffectDefinition[];
     optional?: boolean;
@@ -355,6 +354,10 @@ interface StateProps {
     isParadigmCopy?: boolean;
     isSpellCasting?: boolean;
     tapped?: boolean;
+    capturedMV?: number;
+    spent?: number;
+    xValue?: number;
+    lookingCards?: GameObject[];
 }
 
 /**

@@ -4,12 +4,14 @@ import type { ChoiceProcessor } from "./actions/ChoiceProcessor";
 import type { PlayerActionProcessor } from "./actions/PlayerActionProcessor";
 import type { SpellProcessor } from "./actions/spells/SpellProcessor";
 import type { TargetingProcessor } from "./actions/targeting/TargetingProcessor";
+import type { TargetingDispatcher } from "./actions/targeting/TargetingDispatcher";
 import type { CombatProcessor } from "./combat/CombatProcessor";
 import type { DamageProcessor } from "./combat/DamageProcessor";
 import type { ConditionProcessor } from "./core/logic/ConditionProcessor";
 import type { RegistryProcessor } from "./core/RegistryProcessor";
 import type { RestrictionValidator } from "./core/RestrictionValidator";
 import type { StackProcessor } from "./core/stack/StackProcessor";
+import type { ResolutionManager } from "./core/stack/ResolutionManager";
 import type { PriorityProcessor } from "./core/turn/PriorityProcessor";
 import type { TurnProcessor } from "./core/turn/TurnProcessor";
 import type { EffectProcessor } from "./effects/EffectProcessor";
@@ -43,9 +45,11 @@ export interface ProcessorRegistry {
     priority: typeof PriorityProcessor;
     spell: typeof SpellProcessor;
     stack: typeof StackProcessor;
+    resolution: typeof ResolutionManager;
     trigger: typeof TriggerProcessor;
     turn: typeof TurnProcessor;
     targeting: typeof TargetingProcessor;
+    targetingDispatcher: typeof TargetingDispatcher;
     layer: typeof LayerProcessor;
     lki: typeof LkiProcessor;
     sba: typeof StateBasedActionsProcessor;
@@ -90,9 +94,11 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get priority() { return require("./core/turn/PriorityProcessor").PriorityProcessor; },
         get spell() { return require("./actions/spells/SpellProcessor").SpellProcessor; },
         get stack() { return require("./core/stack/StackProcessor").StackProcessor; },
+        get resolution() { return require("./core/stack/ResolutionManager").ResolutionManager; },
         get trigger() { return require("./effects/triggers/TriggerProcessor").TriggerProcessor; },
         get turn() { return require("./core/turn/TurnProcessor").TurnProcessor; },
         get targeting() { return require("./actions/targeting/TargetingProcessor").TargetingProcessor; },
+        get targetingDispatcher() { return require("./actions/targeting/TargetingDispatcher").TargetingDispatcher; },
         get layer() { return require("./state/LayerProcessor").LayerProcessor; },
         get lki() { return require("./state/LkiProcessor").LkiProcessor; },
         get sba() { return require("./state/StateBasedActionsProcessor").StateBasedActionsProcessor; },

@@ -1,7 +1,6 @@
 import { ActionType, GameObject, GameState, PlayerId, Restriction, TargetDefinition, TargetType, Zone, EngineFrame, StackObject, AbilityType } from "@shared/engine_types";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { RuleUtils } from "../../../utils/RuleUtils";
-import { TargetingProcessor } from "./TargetingProcessor";
 import { getProcessors } from "../../ProcessorRegistry";
 
 export interface TargetingDispatchOptions {
@@ -34,7 +33,7 @@ export class TargetingDispatcher {
      */
     public static dispatchTargetingStep(options: TargetingDispatchOptions): boolean | string[] {
         const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, isMiracleCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting, isChangeTargeting } = options;
-        const { logger } = getProcessors(state);
+        const { logger, targeting: TargetingProcessor } = getProcessors(state);
 
         const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
         if (existingTargets.length >= totalCounts.maxCount) {

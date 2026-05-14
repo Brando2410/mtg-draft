@@ -104,7 +104,10 @@ export interface EventPayload {
   sourceZone?: Zone;
   xValue?: number;
   convergeAmount?: number;
-
+  capturedMV?: number;
+  phase?: string;
+  step?: string;
+  [key: string]: any;
 }
 
 export interface GameEvent {

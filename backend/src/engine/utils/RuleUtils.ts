@@ -329,9 +329,8 @@ export class RuleUtils {
         switch (amount) {
             case DynamicAmount.X:
                 return stackObject?.xValue ??
-                    stackObject?.data?.xValue ??
                     context.event?.payload?.xValue ??
-                    stackObject?.data?.event?.payload?.xValue ??
+                    stackObject?.event?.payload?.xValue ??
                     parentContext?.event?.payload?.xValue ??
                     0;
             case DynamicAmount.XPlus1: return (this.resolveAmount(state, DynamicAmount.X, context) || 0) + 1;
@@ -378,9 +377,9 @@ export class RuleUtils {
 
             case DynamicAmount.EventAmount:
                 return context.eventAmount ??
-                    stackObject?.data?.eventAmount ??
-                    stackObject?.data?.event?.payload?.amount ??
-                    stackObject?.data?.event?.payload?.spent ??
+                    stackObject?.eventAmount ??
+                    stackObject?.event?.payload?.amount ??
+                    stackObject?.event?.payload?.spent ??
                     context.event?.payload?.amount ??
                     state.turnState.lastDamageAmount ??
                     0;
@@ -418,7 +417,7 @@ export class RuleUtils {
                         return stackObject?.sourceObject?.paidManaValue ?? context.event?.payload?.amount ?? 0;
                     }
                     if (amount === 'CAPTURED_AMOUNT' || amount === 'CAPTURED_MV') {
-                        const val = stackObject?.data?.capturedMV ?? stackObject?.data?.event?.payload?.metadata?.capturedMV ?? 0;
+                        const val = stackObject?.capturedMV ?? stackObject?.event?.payload?.capturedMV ?? 0;
                         getProcessors(state).logger.debug(state, LogCategory.SYSTEM, `[RESOLVE-AMOUNT] Resolved ${amount} to ${val}`);
 
                         return val;

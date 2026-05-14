@@ -67,7 +67,7 @@ export class ChoiceEffectHandler {
     const preSelectedIdx =
       stackObject?.preSelectedChoice !== undefined
         ? stackObject.preSelectedChoice
-        : stackObject?.data?.preSelectedChoice;
+        : undefined;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
       const rawIndices = String(preSelectedIdx)
@@ -230,8 +230,6 @@ export class ChoiceEffectHandler {
             onSelected: (c: GameObject) => {
               if (stackObject) {
                 stackObject.chosenName = c.definition.name;
-                if (!stackObject.data) stackObject.data = {};
-                stackObject.data.chosenName = c.definition.name; // Legacy sync
               }
               return effect.effects || [];
             },

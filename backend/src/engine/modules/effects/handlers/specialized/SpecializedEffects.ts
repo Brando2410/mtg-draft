@@ -1,14 +1,13 @@
-import { 
-  CastSpellEffect, 
-  DurationType, 
-  EffectType, 
-  GameObject, 
+import {
+  CastSpellEffect,
+  DurationType,
+  EffectType,
+  GameObject,
   MoveEffect,
   Zone,
-  ModalEffect,
   EffectDefinition,
-  BaseEffect
 } from "@shared/engine_types";
+import { IdUtils } from "@shared/utils/IdUtils";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { getProcessors, getEngine } from "../../../ProcessorRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
@@ -34,7 +33,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
         return;
       }
 
-      const copyId = `cast_copy_${Date.now()}`;
+      const copyId = IdUtils.generateId('cast_copy');
       const copy = {
         id: copyId,
         definition: cardDef,
@@ -45,7 +44,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
         isCopy: true,
         isFreeCast: isFree,
         counters: {},
-      } as unknown as GameObject;
+      } as GameObject;
 
       if (!state.paradigmCopies)
         state.paradigmCopies = {};

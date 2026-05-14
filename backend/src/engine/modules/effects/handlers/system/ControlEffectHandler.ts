@@ -1,4 +1,5 @@
 import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhaseOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, EngineFrame, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
+import { IdUtils } from '@shared/utils/IdUtils';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -48,13 +49,13 @@ export class ControlEffectHandler {
 
                     if (!stackObj) return;
                     const copy = JSON.parse(JSON.stringify(stackObj)) as StackObject;
-                    copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                    copy.id = IdUtils.generateCopyId();
                     copy.isCopy = true;
                     copy.controllerId = controllerId;
 
                     // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
                     if (copy.sourceObject) {
-                        copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                        copy.sourceObject.id = IdUtils.generateCardCopyId();
                         copy.sourceId = copy.sourceObject.id;
 
                         // Allow overriding legend status (Double Major)
@@ -109,7 +110,7 @@ export class ControlEffectHandler {
                     });
 
                     if ((effect as CopyEffect).chooseNewTargets) {
-                        const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                        const targetDefinitions = copy.targetDefinitions;
                         if (targetDefinitions) {
                             const { targeting: TP } = getProcessors(state);
                             const pool = [
@@ -158,7 +159,7 @@ export class ControlEffectHandler {
                 const trigEffect = effect as TriggerAbilityEffect;
                 const { duration: trigDuration, ...rest } = trigEffect;
                 state.ruleRegistry.triggeredAbilities.push({
-                    id: `delayed_${Date.now()}`,
+                    id: IdUtils.generateId('delayed'),
                     sourceId: sourceId,
                     controllerId: controllerId,
                     eventMatch: rest.eventMatch || "",
@@ -180,7 +181,7 @@ export class ControlEffectHandler {
                 const { duration: prevDuration, ...rest } = prevEffect;
                 if (!state.ruleRegistry.preventionEffects) state.ruleRegistry.preventionEffects = [];
                 state.ruleRegistry.preventionEffects.push({
-                    id: `prevention_${Date.now()}`,
+                    id: IdUtils.generateId('prevention'),
                     sourceId,
                     controllerId,
                     damageType: (rest.damageType === 'AllDamage' ? 'AllDamage' : 'CombatDamage') as 'CombatDamage' | 'AllDamage',

@@ -1,4 +1,5 @@
 import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, EngineFrame, TargetMapping, Zone } from '@shared/engine_types';
+import { IdUtils } from '@shared/utils/IdUtils';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -89,7 +90,7 @@ export class ContinuousEffectHandler {
                 effDuration.untilTurnOfPlayerId = targetCID;
             }
 
-            const effId = `floating_${sourceId}_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`;
+            const effId = IdUtils.generateEffectId(`${sourceId}_${index}`);
 
             const continuousEff: any = {
                 id: effId,
@@ -151,7 +152,7 @@ export class ContinuousEffectHandler {
             }
 
             // Names (Rule 201)
-            const chosenName = ceDef.chosenName || stackObject?.data?.chosenName;
+            const chosenName = ceDef.chosenName || stackObject?.chosenName;
             if (chosenName) {
                 if (!state.turnState.namedCards) state.turnState.namedCards = {};
                 state.turnState.namedCards[sourceId] = chosenName;
@@ -171,7 +172,7 @@ export class ContinuousEffectHandler {
 
             // Ensure floating ID is set
             if (!finalEffect.id?.startsWith('floating_')) {
-                finalEffect.id = `floating_${sourceId}_${Date.now()}_${index}`;
+                finalEffect.id = IdUtils.generateEffectId(`${sourceId}_${index}`);
             }
 
             state.ruleRegistry.continuousEffects.push(finalEffect);

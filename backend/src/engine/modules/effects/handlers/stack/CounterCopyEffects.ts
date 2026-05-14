@@ -1,4 +1,5 @@
 import { ActionType, CopyEffect, GameObject, NeutralizeEffect, PlayerState, StackObject, Zone } from "@shared/engine_types";
+import { IdUtils } from "@shared/utils/IdUtils";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
@@ -63,7 +64,7 @@ export const CopySpellHandler: IEffectHandler = {
             }
 
             const copy = JSON.parse(JSON.stringify(stackObj)) as StackObject;
-            copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+            copy.id = IdUtils.generateCopyId();
             copy.isCopy = true;
             copy.controllerId = controllerId;
             copy.paidManaValue = 0;
@@ -72,7 +73,7 @@ export const CopySpellHandler: IEffectHandler = {
                 // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
                 // Only do this for spells; abilities should keep their source permanent's identity for restrictions.
                 if (copy.type === 'Spell') {
-                    copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                    copy.sourceObject.id = IdUtils.generateCardCopyId();
                     copy.sourceId = copy.sourceObject.id;
                 }
 
@@ -125,7 +126,7 @@ export const CopySpellHandler: IEffectHandler = {
             });
 
             if (copyEffect.chooseNewTargets) {
-                const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                const targetDefinitions = copy.targetDefinitions;
                 if (targetDefinitions && targetDefinitions.length > 0) {
                     const { targeting: TP } = getProcessors(state);
                     const pool = [
@@ -194,7 +195,7 @@ export const CopyAbilityHandler: IEffectHandler = {
             const stackObj = state.stack.find((s: StackObject) => s.id === tid);
             if (!stackObj) return;
 
-            const copyId = `copy_ability_${stackObj.id}_${Date.now()}`;
+            const copyId = IdUtils.generateId(`copy_ability_${stackObj.id}`);
             const copy = JSON.parse(JSON.stringify(stackObj)) as StackObject;
             copy.id = copyId;
             copy.controllerId = controllerId;
@@ -207,7 +208,7 @@ export const CopyAbilityHandler: IEffectHandler = {
             logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ability. SourceId: ${copy.sourceId}, isCopy: ${copy.isCopy}`);
 
             if (copyEffect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
-                const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                const targetDefinitions = copy.targetDefinitions;
                 if (targetDefinitions && targetDefinitions.length > 0) {
                     const backupTargets = [...(copy.targets || [])];
 
@@ -282,7 +283,7 @@ export const ChangeTargetHandler: IEffectHandler = {
                 return;
             }
 
-            const targetDefinitions = stackObj.data?.targetDefinitions || stackObj.targetDefinitions;
+            const targetDefinitions = stackObj.targetDefinitions;
             if (targetDefinitions && targetDefinitions.length > 0) {
                 const backupTargets = [...(stackObj.targets || [])];
 

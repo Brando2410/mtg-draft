@@ -135,7 +135,7 @@ export class TurnProcessor {
     const stepEvent = {
       type: `ON_${stepName}_STEP`,
       playerId: state.activePlayerId,
-      data: { phase: state.currentPhase, step: state.currentStep }
+      payload: { phase: state.currentPhase, step: state.currentStep }
     };
     logger.info(state, LogCategory.TURN, `[TURN-EVENT] Firing step event: ${stepEvent.type} for step ${state.currentStep}`);
     engine.processors.trigger.onEvent(state, stepEvent);
@@ -146,7 +146,7 @@ export class TurnProcessor {
     const phaseEvent = {
       type: `ON_${phaseName}_PHASE_START`,
       playerId: state.activePlayerId,
-      data: { phase: state.currentPhase, step: state.currentStep }
+      payload: { phase: state.currentPhase, step: state.currentStep }
     };
     engine.processors.trigger.onEvent(state, phaseEvent);
     this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, state.activePlayerId);

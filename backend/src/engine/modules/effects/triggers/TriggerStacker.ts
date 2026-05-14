@@ -7,7 +7,7 @@ import {
 } from "@shared/engine_types";
 import { getProcessors } from "../../ProcessorRegistry";
 import { LogCategory } from "../../../utils/EngineLogger";
-import { TargetingDispatcher } from "../../actions/targeting/TargetingDispatcher";
+import type { TargetingDispatcher } from "../../actions/targeting/TargetingDispatcher";
 
 /**
  * Triggered Abilities Module: Stack Management
@@ -85,7 +85,7 @@ export class TriggerStacker {
       const context = {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
-        event: stackObj.event || stackObj.data?.event,
+        event: stackObj.event,
         stackObject: stackObj,
         effects: [],
         targets: stackObj.targets || []
@@ -103,8 +103,8 @@ export class TriggerStacker {
     getProcessors(state).action.updateEntityCache(state, stackObj);
     state.consecutivePasses = 0;
 
-    const targetDefinitions = stackObj.data?.targetDefinitions || stackObj.targetDefinitions;
-    const sourceName = stackObj.data?.sourceName || stackObj.sourceName;
+    const targetDefinitions = stackObj.targetDefinitions;
+    const sourceName = stackObj.sourceName;
 
     if (targetDefinitions && targetDefinitions.length > 0) {
       this.initializeTriggerTargeting(
@@ -126,7 +126,7 @@ export class TriggerStacker {
     sourceName: string,
     stackObj: StackObject,
   ) {
-    const { logger } = getProcessors(state);
+    const { logger, targetingDispatcher: TargetingDispatcher } = getProcessors(state);
     
     // Phase 4: Use the centralized TargetingDispatcher to handle the first step of targeting.
     // This provides auto-targeting for single opponents and correct UI labels/prompts,

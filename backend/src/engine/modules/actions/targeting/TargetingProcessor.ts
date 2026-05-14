@@ -26,13 +26,8 @@ import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { EngineContext } from '../../../interfaces/EngineContext';
-import { ManaProcessor } from '../../magic/ManaProcessor';
-import { ActionProcessor } from '../ActionProcessor';
 import { TargetMapper } from './TargetMapper';
 import { TargetValidator } from './TargetValidator';
-import { oracle } from '../../../OracleLogicMap';
-import { ResolutionManager } from '../../core/stack/ResolutionManager';
-import { StackProcessor } from '../../core/stack/StackProcessor';
 import { getActionMeta } from '@shared/utils/ActionUtils';
 
 /**
@@ -162,6 +157,7 @@ export class TargetingProcessor {
 
                         // BUG FIX: Only move to hand if it's a SPELL. 
                         // Triggered abilities and Activated abilities should NOT move their source permanent.
+                        const { action: ActionProcessor, mana: ManaProcessor, logger } = getProcessors(state);
                         if (stackObj.type === AbilityType.Spell) {
                             ActionProcessor.moveCard(state, stackObj.sourceObject, Zone.Hand, stackObj.controllerId);
                             ManaProcessor.refundManaCost(player, stackObj.sourceObject.definition.manaCost);
@@ -546,6 +542,7 @@ export class TargetingProcessor {
                 });
 
                 if (!state.pendingAction) {
+                    const { resolution: ResolutionManager } = getProcessors(state);
                     return ResolutionManager.resume(state, engine);
                 }
             } else if (!state.pendingAction) {
@@ -569,6 +566,7 @@ export class TargetingProcessor {
             const savedEffects = meta.effects || [];
 
             // If this is a copy or a target change, we update the spell copy on the stack
+            const { stack: StackProcessor } = getProcessors(state);
             if (stackObj && (meta.isCopyTargeting || meta.isChangeTargeting)) {
                 StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
                 logger.info(state, LogCategory.TARGETING, `[${meta.isCopyTargeting ? 'COPY' : 'CHANGE'}-TARGETING] Updated targets for ${stackObj.id}: ${finalTargets.join(', ')}`);
@@ -609,24 +607,25 @@ export class TargetingProcessor {
                 if (meta.parentContext || meta.parentStackId || meta.parentSourceId || meta.isCopyTargeting || meta.isChangeTargeting) {
                     const parentId = meta.parentStackId || meta.parentContext?.stackObject?.id;
                     const parentSource = meta.parentSourceId || meta.parentContext?.sourceId;
-                    
+
                     // Search stack for the parent spell/ability (search from top to bottom to find the most recent/relevant parent)
                     const reversedStack = [...state.stack].reverse();
-                    const parentObj = (parentId ? reversedStack.find(s => s.id === parentId) : undefined) || 
-                                     (parentSource ? reversedStack.find(s => s.id === parentSource) : undefined);
-                    
+                    const parentObj = (parentId ? reversedStack.find(s => s.id === parentId) : undefined) ||
+                        (parentSource ? reversedStack.find(s => s.id === parentSource) : undefined);
+
                     logger.debug(state, LogCategory.TARGETING, `[RESUME-PARENT] Attempting to resume parent. ParentId: ${parentId}, ParentSource: ${parentSource}. Found: ${parentObj?.id || 'none'}`);
-                    
+
                     if (parentObj || meta.parentContext) {
+                        const { resolution: ResolutionManager } = getProcessors(state);
                         state.pendingAction = undefined;
-                        return ResolutionManager.resume(state, engine, 
-                            parentObj, 
-                            parentObj?.id || parentSource || parentId, 
+                        return ResolutionManager.resume(state, engine,
+                            parentObj,
+                            parentObj?.id || parentSource || parentId,
                             meta.parentContext
                         );
                     }
                 }
-                
+
                 // Final fallback if no parent
                 engine.resetPriorityToActivePlayer();
             }
@@ -646,6 +645,7 @@ export class TargetingProcessor {
 
             stackObj.targets = finalTargets;
 
+            const { stack: StackProcessor } = getProcessors(state);
             // UI METADATA REFRESH via centralized helper
             StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
 
@@ -661,6 +661,7 @@ export class TargetingProcessor {
             state.pendingAction = undefined;
 
             // Brand New: Handle queued triggers via ResolutionManager
+            const { resolution: ResolutionManager } = getProcessors(state);
             if (actionData.nextTriggersToStack && Array.isArray(actionData.nextTriggersToStack)) {
                 ResolutionManager.stackTriggers(state, actionData.nextTriggersToStack);
                 if (state.pendingAction) return true; // Still more interactions needed
@@ -674,6 +675,7 @@ export class TargetingProcessor {
                 const resumeObj = isCopy ? meta.parentContext.stackObject : stackObj;
                 const resumeSourceId = isCopy ? (meta.parentContext.stackObject?.id || sourceId!) : (sourceId || stackObj.sourceId);
 
+                const { resolution: ResolutionManager } = getProcessors(state);
                 if (resumeObj) {
                     return ResolutionManager.resume(state, engine, resumeObj, resumeSourceId, meta.parentContext);
                 }

@@ -532,9 +532,6 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             stackObject.exiledIds.push(tid);
             logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.exiledIds. Current: ${stackObject.exiledIds.join(', ')}`);
           }
-          // Legacy sync
-          if (!stackObject.data) stackObject.data = {};
-          stackObject.data.exiledIds = stackObject.exiledIds;
         }
 
         if (parentContext) {
@@ -772,16 +769,13 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       if (zone === Zone.Battlefield) {
         if (moveEff.tapped) c.isTapped = true;
       }
-      if (zone === Zone.Exile) {
+        if (zone === Zone.Exile) {
         if (stackObject) {
           if (!stackObject.exiledIds) stackObject.exiledIds = [];
           if (!stackObject.exiledIds.includes(c.id)) {
             stackObject.exiledIds.push(c.id);
             logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.exiledIds. Current: ${stackObject.exiledIds.join(', ')}`);
           }
-          // Legacy sync
-          if (!stackObject.data) stackObject.data = {};
-          stackObject.data.exiledIds = stackObject.exiledIds;
         }
 
         if (parentContext) {
@@ -1004,7 +998,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     // Search looking pools (important for library-top interactive choices)
     const looking = (state.pendingAction?.data as BatchActionData)?.lookingCards ||
       context?.lookingCards ||
-      stackObject?.data?.lookingCards ||
+      stackObject?.lookingCards ||
       [];
     const inPool = looking.find((o: GameObject) => o.id === id);
     if (inPool) return inPool;

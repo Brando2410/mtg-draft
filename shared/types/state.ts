@@ -141,8 +141,6 @@ export interface StackObject extends BaseEntity {
     castFromZone?: Zone;
     chosenName?: string;
     condition?: ConditionDefinition;
-    /** @deprecated Use typed root properties or `resolution.transient` instead. Will be removed. */
-    data?: Record<string, any>;
     discardAmount?: number | string;
     effects?: EffectDefinition[];
     event?: import('./events').GameEvent;
@@ -176,6 +174,10 @@ export interface StackObject extends BaseEntity {
     type: AbilityType;
     optional?: boolean;
     xValue?: number;
+    declaredXValue?: number;
+    choices?: ChoiceOption[];
+    capturedMV?: number;
+    metadata?: any;
 }
 
 export interface PlayerState {

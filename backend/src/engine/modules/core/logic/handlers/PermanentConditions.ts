@@ -126,7 +126,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
                 // Identify Subject (e.g. TARGET_1, OPPONENT, TRIGGER_SOURCE)
                 if (prop.startsWith('TARGET_')) {
                     const idx = parseInt(parts[1]) - 1;
-                    const targets = stackObject?.targets || stackObject?.data?.selectedTargets || event?.payload?.targetIds || [];
+                    const targets = stackObject?.targets || event?.payload?.targetIds || [];
                     subjectId = targets[idx];
                     actionIndex = 2;
                 } else if (prop.startsWith('OPPONENT_')) {

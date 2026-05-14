@@ -13,9 +13,11 @@ import {
   TriggerAbilityEffect,
   Zone,
   DurationType,
+  EffectDuration,
   AbilityType,
   CardDefinition,
 } from "@shared/engine_types";
+import { IdUtils } from "@shared/utils/IdUtils";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { getProcessors } from "../../ProcessorRegistry";
@@ -195,16 +197,22 @@ export class TriggerProcessor {
     controllerId: PlayerId,
   ) {
     const { logger } = getProcessors(state);
-    const triggerId = `delayed_${sourceId}_${Date.now()}`;
+    const triggerId = IdUtils.generateId(`delayed_${sourceId}`);
     const delayedTrigger: TriggeredAbility = {
       id: triggerId,
       sourceId,
       controllerId,
       eventMatch: (effect as TriggerAbilityEffect).eventMatch || '', // eventMatch is dynamic for delayed triggers
       effects: effect.effects || [],
-      duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.Permanent },
+      duration: (effect.duration as EffectDuration) || { type: DurationType.Permanent },
       condition: effect.condition,
-      payload: { metadata: effect.data },
+      payload: { 
+        ...(effect.data || {}),
+        capturedMV: effect.capturedMV,
+        spent: effect.spent,
+        xValue: effect.xValue,
+        lookingCards: effect.lookingCards,
+      },
       targetIds: effect.targetIds,
       isDelayed: true,
       oneShot: (effect as TriggerAbilityEffect).oneShot ?? true, // Default to one-shot for delayed triggers unless specified
@@ -264,7 +272,7 @@ export class TriggerProcessor {
     const sourceImage =
       (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.image_url : null) || emblemSource?.image_url || trigger.image_url;
 
-    const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const stackId = IdUtils.generateTriggerId();
 
     const effects = trigger.effects || [];
     const exileOnResolution = trigger.exileOnResolution || (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.exileOnResolution : false) || effects.some((e: EffectDefinition) =>
@@ -294,14 +302,13 @@ export class TriggerProcessor {
       sourceName: sourceName,
       effectIndex: 0,
       exileOnResolution: exileOnResolution,
-      // Phase 4: Data is now just a backup/snapshot of the event, but we must preserve captured metadata
-      data: { ...(trigger.payload?.metadata || {}), event },
       zone: Zone.Stack
     };
-    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with data: ${JSON.stringify(stackObj.data)}`);
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id}`);
     return stackObj;
 
   }
+
   public static stackTrigger(
     state: GameState,
     stackObj: StackObject,
@@ -545,7 +552,7 @@ export class TriggerProcessor {
       if (event.type === TriggerEvent.CastSpell) {
         const castId = RuleUtils.getSource(event);
         const eventObjId = RuleUtils.getEventObject(event, state)?.id;
-        
+
         // Standard trigger (source is card/object itself)
         if (tEvents.includes(TriggerEvent.CastSpell)) {
           if (t.isGlobal) {

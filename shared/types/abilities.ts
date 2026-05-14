@@ -256,8 +256,6 @@ export interface ActivatedAbility extends BaseAbility {
 export interface TriggerPayload {
     /** Fallback definition for virtual triggers (Emblems, Delayed Triggers) */
     definition?: any;
-    /** Additional metadata for specific trigger logic (e.g. storage for LKI or effect params) */
-    metadata?: Record<string, unknown>;
     /** Catch-all for specialized card-logic properties */
     [key: string]: unknown;
 }

@@ -1,7 +1,8 @@
 import { ChoicePayload, EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator, MulliganProcessor } from './modules';
+import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, ResolutionManager, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator, MulliganProcessor } from './modules';
+import { TargetingDispatcher } from './modules/actions/targeting/TargetingDispatcher';
 import { LkiProcessor } from './modules/state/LkiProcessor';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { CostProcessor } from './modules/magic/CostProcessor';
@@ -107,8 +108,10 @@ export class GameEngine implements EngineContext {
       trigger: TriggerProcessor,
       turn: TurnProcessor,
       targeting: TargetingProcessor,
+      targetingDispatcher: TargetingDispatcher,
       layer: LayerProcessor,
       sba: StateBasedActionsProcessor,
+      resolution: ResolutionManager,
       restriction: RestrictionValidator,
       mana: ManaProcessor,
       cost: CostProcessor,

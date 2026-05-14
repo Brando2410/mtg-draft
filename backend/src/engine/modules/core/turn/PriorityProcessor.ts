@@ -1,18 +1,18 @@
 import { AbilityDefinition, AbilityType, ActionType, ContinuousEffect, EffectType, EnginePrefix, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, TriggerEvent, Zone, GameEvent, PlayerState, BaseEntity, TargetDefinition } from '@shared/engine_types';
-import { SpellProcessor } from '../../actions/spells/SpellProcessor';
-import { RestrictionValidator } from '../../core/RestrictionValidator';
-import { CostProcessor } from '../../magic/CostProcessor';
-import { ManaProcessor } from '../../magic/ManaProcessor';
+import type { SpellProcessor } from '../../actions/spells/SpellProcessor';
+import type { RestrictionValidator } from '../../core/RestrictionValidator';
+import type { CostProcessor } from '../../magic/CostProcessor';
+import type { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
-import { LayerProcessor } from '../../state/LayerProcessor';
-import { ConditionProcessor } from '../logic/ConditionProcessor';
+import type { LayerProcessor } from '../../state/LayerProcessor';
+import type { ConditionProcessor } from '../logic/ConditionProcessor';
 import { EngineValidator } from '../logic/EngineValidator';
-import { TurnProcessor } from './TurnProcessor';
+import type { TurnProcessor } from './TurnProcessor';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
-import { ResolutionManager } from '../stack/ResolutionManager';
-import { SpellValidator } from '../../actions/spells/SpellValidator';
-import { SpellCostCalculator } from '../../actions/spells/SpellCostCalculator';
+import type { ResolutionManager } from '../stack/ResolutionManager';
+import type { SpellValidator } from '../../actions/spells/SpellValidator';
+import type { SpellCostCalculator } from '../../actions/spells/SpellCostCalculator';
 
 
 
@@ -74,7 +74,7 @@ export class PriorityProcessor {
     // If we're passing priority while an optional discard is active, it means the player is "Done".
     // Zero out the remaining count and resume the resolution chain.
     if (isOptionalDiscardAction) {
-      const { choice: ChoiceProcessor } = getProcessors(state);
+      const { choice: ChoiceProcessor, resolution: ResolutionManager } = getProcessors(state);
       const actionData = state.pendingAction?.data as Record<string, any>;
       const sourceId = state.pendingAction?.sourceId;
       const stackObj = actionData?.stackObj;
@@ -190,6 +190,7 @@ export class PriorityProcessor {
       const hasManualStop = player?.stops?.[stopKey];
 
       if (!hasManualStop) {
+        const { turn: TurnProcessor } = getProcessors(state);
         if (state.pendingAction?.type === 'DECLARE_ATTACKERS' && !TurnProcessor.hasPotentialAttackers(state, playerId)) {
           engine.confirmAttackers(playerId);
           return;
@@ -341,7 +342,7 @@ export class PriorityProcessor {
     const player = state.players[playerId];
     if (!player) return false;
 
-    const { logger } = getProcessors(state);
+    const { logger, spellValidator: SpellValidator } = getProcessors(state);
 
     // 1. Locate the object and identify its context (Permission check)
     let cardToPlay: GameObject | undefined;
@@ -427,12 +428,13 @@ export class PriorityProcessor {
     }
 
     // 3. Casting Restrictions (Rule 613.11)
+    const { restriction: RestrictionValidator } = getProcessors(state);
     if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) {
       return false;
     }
 
     // 4. Affordability (Mana and Additional Costs)
-    const { layer: LayerProc } = getProcessors(state);
+    const { layer: LayerProc, spellCostCalculator: SpellCostCalculator } = getProcessors(state);
     const stats = preComputedStats || cardToPlay!.effectiveStats || LayerProc.getEffectiveStats(cardToPlay!, state);
 
     // Capture both mana and additional costs from the calculator
@@ -449,6 +451,7 @@ export class PriorityProcessor {
       const { priority: PriorityProcessor } = getProcessors(state);
       const canFreeCast = PriorityProcessor.findFreeCastPermission(state, playerId, cardToPlay!.id);
 
+      const { mana: ManaProcessor } = getProcessors(state);
       // Mana Check
       if (!canFreeCast && !ManaProcessor.canPayMana(state, player, effectiveCost, cardToPlay!)) {
         return false;
@@ -524,8 +527,8 @@ export class PriorityProcessor {
     if (!this.validateTiming(state, player.id, face, false, checkPriority)) return false;
 
     // 2. Cost Validation
-    const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
-    const { mana: ManaProcessor, logger } = getProcessors(state);
+    const { spell: SpellProcessor, mana: ManaProcessor, logger } = getProcessors(state);
+    const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face as any);
 
     const canPay = player.manaCheat || ManaProcessor.canPayMana(state, player, totalMana, obj);
 
@@ -604,6 +607,7 @@ export class PriorityProcessor {
     const dummyEvent: GameEvent = { type: 'NONE', playerId };
     if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId, effects: [], targets: [] })) return false;
 
+    const { condition: ConditionProcessor } = getProcessors(state);
     if (ability.condition && !ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, effects: [], targets: [] })) return false;
 
     if (ability.limitPerTurn) {
@@ -613,6 +617,7 @@ export class PriorityProcessor {
 
     if (RuleUtils.isPlaneswalker(obj) && ('abilitiesUsedThisTurn' in obj) && (obj as any).abilitiesUsedThisTurn > 0) return false;
 
+    const { restriction: RestrictionValidator } = getProcessors(state);
     if (RuleUtils.isGameObject(obj) && !RestrictionValidator.canActivateAbility(state, playerId, ability, obj)) return false;
 
     // Skip mana abilities for auto-pass scan (Optimization)
@@ -620,6 +625,7 @@ export class PriorityProcessor {
     if (!checkPriority && ability.isManaAbility && !state.pendingAction) return false;
 
     // 5. Cost Check
+    const { cost: CostProcessor } = getProcessors(state);
     if (!player.manaCheat && !CostProcessor.canPay(state, ability.costs || [], obj, playerId)) {
       return false;
     }
@@ -715,6 +721,7 @@ export class PriorityProcessor {
       }
 
       // Condition check
+      const { condition: ConditionProcessor } = getProcessors(state);
       if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
         sourceId: e.sourceId,
         controllerId: e.controllerId,
@@ -750,6 +757,7 @@ export class PriorityProcessor {
       }
 
       // 3. Condition check
+      const { condition: ConditionProcessor } = getProcessors(state);
       if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
         sourceId: e.sourceId,
         controllerId: e.controllerId,
@@ -758,6 +766,7 @@ export class PriorityProcessor {
       })) return false;
 
       // 4. Target check (Is this card the target of the permission?)
+      const { layer: LayerProcessor } = getProcessors(state);
       const isTarget = LayerProcessor.isTarget(state, e, targetId);
 
       if (!isTarget) return false;

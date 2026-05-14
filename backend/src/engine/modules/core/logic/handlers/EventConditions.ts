@@ -390,7 +390,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "NOT_CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event, sourceId, stackObject } = context;
-            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            const castFromZone = stackObject?.castFromZone || event?.payload?.fromZone;
             if (castFromZone) return castFromZone !== Zone.Hand;
 
             const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
@@ -403,7 +403,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "CAST_FROM_GRAVEYARD_OR_EXILE": {
         matches(state, params, context) {
             const { event, sourceId, stackObject } = context;
-            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            const castFromZone = stackObject?.castFromZone || event?.payload?.fromZone;
             if (castFromZone) return castFromZone === Zone.Graveyard || castFromZone === Zone.Exile;
 
             const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId;
@@ -417,7 +417,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event, sourceId, stackObject } = context;
-            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            const castFromZone = stackObject?.castFromZone || event?.payload?.fromZone;
             if (castFromZone) return castFromZone === Zone.Hand;
 
             const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
