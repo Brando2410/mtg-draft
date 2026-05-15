@@ -1,4 +1,4 @@
-import { GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, Zone, StackObject } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { oracle } from '../../OracleLogicMap';
 import { LogCategory, EngineLogger } from '../../utils/EngineLogger';
@@ -51,6 +51,11 @@ export class GameSetupProcessor {
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = oracle.getCard(cardRef.name);
+    
+    if (!logicData) {
+        console.warn(`[REGISTRY-WARN] No backend logic found for card: "${cardRef.name}". Falling back to deck JSON data.`);
+    }
+
     let typeLine = cardRef.typeLine || logicData?.typeLine || '';
 
     // Normalize legacy "Enchant Creature" to "Enchantment — Aura"
@@ -72,6 +77,13 @@ export class GameSetupProcessor {
     const types = typePart.filter((t: string) => !knownSupertypes.includes(t.toLowerCase()));
     const subtypes = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
 
+    const rawManaCost = cardRef.manaCost || (cardRef as any).mana_cost || logicData?.manaCost || '';
+    const manaCost = String(rawManaCost).split('//')[0].trim();
+
+    if (cardRef.name && cardRef.name.toLowerCase().includes('witherbloom')) {
+        console.log(`[SETUP-DEBUG] Creating "${cardRef.name}" | Raw: "${rawManaCost}" | Final: "${manaCost}" | LogicFound: ${!!logicData}`);
+    }
+
     return {
       id: `${ownerId}-lib-${index}`,
       ownerId,
@@ -79,18 +91,18 @@ export class GameSetupProcessor {
       zone: Zone.Library,
       definition: {
         name: cardRef.name || 'Unknown Card',
-        manaCost: (cardRef.manaCost || logicData?.manaCost || '').split('//')[0].trim(),
+        manaCost: manaCost,
         colors: normalizedColors,
         supertypes: supertypes.length > 0 ? supertypes : (logicData?.supertypes || []),
         types: types.length > 0 ? types : (logicData?.types || []),
         subtypes: subtypes.length > 0 ? subtypes : (logicData?.subtypes || []),
-        oracleText: cardRef.oracleText || logicData?.oracleText || '',
+        oracleText: cardRef.oracleText || (cardRef as any).oracle_text || logicData?.oracleText || '',
         typeLine,
-        image_url: cardRef.image_url || logicData?.image_url || '',
-        scryfall_id: cardRef.scryfall_id || logicData?.scryfall_id,
-        power: cardRef.power || logicData?.power,
-        toughness: cardRef.toughness || logicData?.toughness,
-        loyalty: cardRef.loyalty || logicData?.loyalty,
+        image_url: cardRef.image_url || (cardRef as any).image_url || logicData?.image_url || '',
+        scryfall_id: cardRef.scryfall_id || (cardRef as any).id || logicData?.scryfall_id,
+        power: cardRef.power || (cardRef as any).power || logicData?.power,
+        toughness: cardRef.toughness || (cardRef as any).toughness || logicData?.toughness,
+        loyalty: cardRef.loyalty || (cardRef as any).loyalty || logicData?.loyalty,
         keywords: baseKeywords,
         abilities: logicData?.abilities || [],
         flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost,
@@ -126,5 +138,41 @@ export class GameSetupProcessor {
       const j = Math.floor(Math.random() * (i + 1));
       [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
     }
+  }
+
+  /**
+   * Refreshes the definitions of all objects in a game state from the Oracle.
+   * Useful for restoring missing data in persistent states after an engine update.
+   */
+  public static refreshDefinitions(state: GameState) {
+    const allObjects: (GameObject | StackObject)[] = [
+      ...state.battlefield,
+      ...state.stack,
+      ...state.exile,
+    ];
+    Object.values(state.players).forEach(p => {
+      allObjects.push(...p.hand);
+      allObjects.push(...p.library);
+      allObjects.push(...p.graveyard);
+    });
+
+    allObjects.forEach(obj => {
+      const def = obj.definition as any;
+      if (!def || !def.name) return;
+      
+      const logicData = oracle.getCard(def.name);
+      if (logicData) {
+        // Fix missing mana costs which are critical for Cascade/Numeric restrictions
+        if (!def.manaCost || def.manaCost === '') {
+            def.manaCost = logicData.manaCost;
+        }
+        // Ensure abilities are up to date
+        def.abilities = logicData.abilities || [];
+        
+        if (def.name.toLowerCase().includes('witherbloom')) {
+             console.log(`[REFRESH-DEBUG] Refreshed ${def.name} | MV: ${def.manaCost}`);
+        }
+      }
+    });
   }
 }

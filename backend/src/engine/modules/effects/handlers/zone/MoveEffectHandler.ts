@@ -24,6 +24,7 @@ import { IEffectHandler } from "../../IEffectHandler";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { getActionMeta } from "@shared/utils/ActionUtils";
 import { SearchEffectHandler } from "./SearchEffectHandler";
 import { DrawCardsHandler } from "./DrawCardsHandler";
 
@@ -351,31 +352,39 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
   }
 
   private resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: EngineFrame) {
-    const { logger } = getProcessors(state);
-    const { controllerId, stackObject } = context;
+    const { logger, action: ActionProcessor, targeting: TargetingProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+    const { controllerId, stackObject, isResumption } = context;
     const player = state.players[controllerId];
     if (!player) return;
+
+    if (isResumption) {
+      // Resumption is now handled by the injected remainderMove effect
+      return true;
+    }
 
     const revealed: GameObject[] = [];
     let targetCard: GameObject | null = null;
 
     while (player.library.length > 0) {
       const card = player.library.pop()!;
-      const { action: ActionProcessor } = getProcessors(state);
       ActionProcessor.moveCard(state, card, Zone.Exile, controllerId);
 
       card.isRevealed = true;
       revealed.push(card);
 
-      const { targeting: TargetingProcessor } = getProcessors(state);
-      if (
-        TargetingProcessor.matchesRestrictions(
-          state,
-          card,
-          effect.restrictions || [],
-          { sourceId: context.sourceId || stackObject?.id || "", controllerId, effects: [], targets: [] },
-        )
-      ) {
+      const restrictions = effect.restrictions || [];
+      const isMatch = TargetingProcessor.matchesRestrictions(
+        state,
+        card,
+        restrictions,
+        {
+          ...context,
+          sourceId: context.sourceId || stackObject?.id || "",
+          effects: [] // Ensure we don't carry over trigger effects into the card matcher
+        },
+      );
+
+      if (isMatch) {
         targetCard = card;
         break;
       }
@@ -387,83 +396,50 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         `[REVEAL-UNTIL] Exiled ${revealed.length} cards from library. Found match: ${found}`,
       );
 
-    // Move non-matching cards (and the match if it wasn't handled) from Exile to bottom
-    const remaining = revealed.filter((c) => c !== targetCard);
-    if (remaining.length > 0) {
-      const remainderZone = effect.remainderZone || Zone.Library;
-      const shuffle = effect.shuffleRemainder || effect.remainderPosition === 'random';
-      const remainderPos = effect.remainderPosition === 'random' ? 'bottom' : (effect.remainderPosition || "bottom");
+    // Prepare the pool for the remainder movement
+    context.lookingCards = revealed;
+    if (stackObject) stackObject.lookingCards = revealed;
 
-      const { action: ActionProcessor } = getProcessors(state);
-      if (shuffle) {
-        ActionProcessor.shuffle(remaining);
-      }
+    const { effect: EP } = getProcessors(state);
 
-      for (const c of remaining) {
-        ActionProcessor.moveCard(
-          state,
-          c,
-          remainderZone as Zone,
-          c.ownerId,
-          remainderPos as number | "top" | "bottom",
-        );
-      }
-    }
+    // --- CR 702.85a (Cascade) ---
+    // "put all cards exiled this way that weren't cast on the bottom of their owner's library in a random order."
+    // We inject a MoveToZone effect targeting REMAINDER_OF_POOL.
+    const remainderMove = {
+      type: EffectType.MoveToZone,
+      selectionType: SelectionType.ALL,
+      targetMapping: "REMAINDER_OF_POOL",
+      zone: effect.remainderZone || Zone.Library,
+      position: effect.remainderPosition || "bottom",
+      shuffle: true, // Batch move to bottom must be randomized
+    } as MoveEffect;
+
+    // We must inject effects in reverse order of desired execution:
+    // Final state should be [NextEffect, RemainderMove]
+    EP.injectPostEffect(context, remainderMove as EffectDefinition);
 
     if (found && targetCard) {
-      // The card is already in Exile now.
-      if (effect.next) {
-        const nextEffect = effect.next;
-        // ARCHITECTURAL NOTE: Cascade Suspension (Rule 702.85)
-        // Cascade requires the player to choose whether to cast the revealed card.
-        // We set state.pendingAction to suspend the resolution loop until the player makes a choice.
-        if (nextEffect.type === EffectType.Choice) {
-          const modalEffect = nextEffect as ModalEffect;
-          const choicesArr = modalEffect.choices || [];
 
-          const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-          ChoiceGenerator.createCardChoice(
-            state,
-            [targetCard],
-            {
-              label:
-                modalEffect.label ||
-                `Cast ${targetCard.definition.name}?`,
-              playerId: controllerId,
-              sourceId: targetCard.id,
-              optional: true,
-              isSpellCasting: modalEffect.isSpellCasting ?? effect.isSpellCasting,
-              isFreeCast: modalEffect.isFreeCast ?? effect.isFreeCast,
-              onSelected: (c: GameObject) => {
-                const yesChoice = choicesArr.find(
-                  (ch: any) => ch.label === "Yes" || ch.value === "yes",
-                );
-                return yesChoice?.effects || [];
-              },
-              onNone: () => {
-                const noChoice = choicesArr.find(
-                  (ch: any) => ch.label === "No" || ch.value === "no",
-                );
-                return noChoice?.effects || [];
-              },
-              targets: [targetCard.id],
-              stackObj: stackObject,
-              parentContext: context,
-            },
-          );
-          return;
-        }
-        const { effect: EP } = getProcessors(state);
-        EP.executeEffect({
-          state,
-          effect: nextEffect,
-          context: EP.createEngineFrame(state, {
-            sourceId: targetCard.id,
-            targets: [targetCard.id],
-            parentContext: context,
-          }),
-        });
-        if (state.pendingAction) return;
+      // PERSIST THE MATCH: originalTargets survives the engine's step-by-step target wiping.
+      context.originalTargets = [targetCard.id];
+      context.targets = [targetCard.id];
+      context.lookingCards = revealed;
+
+
+      if (effect.next) {
+        // Set involvedIds on the context so ChoiceEffectHandler can pick it up
+        context.involvedIds = [targetCard.id];
+
+        EP.injectPostEffect(context, {
+          ...effect.next,
+          targetIds: [targetCard.id],
+          label: effect.next.label || `Cast ${targetCard.definition.name}?`,
+          // Pass the matched card as an involved ID for the choice UI display
+          // but DO NOT override lookingCards so the remainder effect gets the full pool!
+          metadata: {
+            involvedIds: [targetCard.id]
+          }
+        } as unknown as EffectDefinition);
       }
     }
   }
@@ -587,6 +563,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             }
           }
         }
+
 
         // --- NESTED EFFECTS SUPPORT ---
         if (effect.effects && effect.effects.length > 0) {
@@ -1018,7 +995,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     // Search looking pools (important for library-top interactive choices)
-    const looking = (state.pendingAction?.data as BatchActionData)?.lookingCards ||
+    const pendingMeta = getActionMeta(state.pendingAction);
+    const looking = pendingMeta.lookingCards ||
       context?.lookingCards ||
       stackObject?.lookingCards ||
       [];

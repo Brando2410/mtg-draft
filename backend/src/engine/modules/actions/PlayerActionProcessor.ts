@@ -37,7 +37,8 @@ export class PlayerActionProcessor {
         return this.handleBlockSelection(state, playerId, cardId);
       }
       if (state.pendingAction.type === ActionType.LegendRule) {
-        const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
+        const meta = getActionMeta(state.pendingAction);
+        const involvedIds = (meta.involvedIds || []) as string[];
         if (involvedIds.includes(cardId)) {
           return choice.resolveChoice(state, playerId, cardId, engine);
         }
@@ -465,8 +466,9 @@ export class PlayerActionProcessor {
       return { finished: false, success: false };
     }
 
+    const meta = getActionMeta(state.pendingAction);
     const isOptionalDiscard =
-      state.pendingAction?.type === ActionType.Discard && state.pendingAction.data?.minChoices === 0;
+      state.pendingAction?.type === ActionType.Discard && meta.minChoices === 0;
 
     if (player.pendingDiscardCount <= 0 && !isOptionalDiscard) {
       return { finished: false, success: false };
@@ -481,7 +483,7 @@ export class PlayerActionProcessor {
     // CR 701.8: To discard a card, move it from hand to graveyard.
     // MODIFICATION: London Mulligan "put back" moves to Library Bottom.
     const { action: ActionProcessor } = getProcessors(state);
-    const isMulligan = state.pendingAction?.data?.isMulliganPutBack;
+    const isMulligan = meta.isMulliganPutBack;
 
     if (isMulligan) {
       ActionProcessor.moveCard(state, card, Zone.Library, playerId, "bottom", false, true);
@@ -512,12 +514,11 @@ export class PlayerActionProcessor {
       logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
 
       // Handle sequential discards (Next players)
-      const meta = getActionMeta(state.pendingAction);
-      const nextPlayerIds = state.pendingAction.data?.nextPlayerIds || [];
+      const nextPlayerIds = meta.nextPlayerIds || [];
       logger.debug(state, LogCategory.ACTION, `[DISCARD-HANDOFF] ${player.name} done. Next: ${JSON.stringify(nextPlayerIds)}`);
       if (nextPlayerIds.length > 0 && (!state.pendingAction.data?.count || state.pendingAction.data.count <= 0)) {
         const discardAmount = meta.discardAmount || 1;
-        const label = state.pendingAction.data?.label || "Discard";
+        const label = meta.label || "Discard";
         const sourceId = state.pendingAction.sourceId || "";
         const currentPlayerId = nextPlayerIds.shift()!;
         state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
@@ -591,9 +592,8 @@ export class PlayerActionProcessor {
 
   public static resolveTriggerOrdering(state: GameState, playerId: PlayerId, orderedIds: string[]): boolean {
     const { logger, trigger: TrP } = getProcessors(state);
-    if (!state.pendingAction || state.pendingAction.type !== ActionType.OrderTriggers || state.pendingAction.playerId !== playerId) return false;
-
-    const triggers = (state.pendingAction.data?.triggers || []) as TriggeredAbility[];
+    const meta = getActionMeta(state.pendingAction);
+    const triggers = (meta.triggers || []) as unknown as TriggeredAbility[];
 
     // The player sends us the IDs in "Stacking Order" (MTGA UI)
     // index 0 -> Last to resolve (Bottom of stack)

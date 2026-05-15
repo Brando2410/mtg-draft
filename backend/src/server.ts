@@ -24,6 +24,14 @@ async function start() {
    Profiler.initLagMonitor();
    PersistenceService.init();
    const rooms = await PersistenceService.loadRooms();
+    
+   // Refresh all game states with latest Oracle logic to heal persistent states
+   for (const room of rooms.values()) {
+       if (room.gameState) {
+           const { GameSetupProcessor } = await import('./engine/modules/core/GameSetupProcessor');
+           GameSetupProcessor.refreshDefinitions(room.gameState);
+       }
+   }
 
    io.on('connection', (socket: Socket) => {
       SocketHandlers.register(io, socket, rooms);

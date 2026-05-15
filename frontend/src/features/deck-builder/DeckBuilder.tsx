@@ -116,6 +116,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
             manaCost: c.manaCost || '',
             types: c.types || [],
             supertypes: c.supertypes || [],
+            subtypes: c.subtypes || [],
             keywords: c.keywords || []
           },
           total: 0
@@ -415,6 +416,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
                         manaCost: c.manaCost || '',
                         types: c.types || [],
                         supertypes: c.supertypes || [],
+                        subtypes: c.subtypes || [],
                         keywords: c.keywords || []
                       }));
                   }

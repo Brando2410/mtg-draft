@@ -4,26 +4,21 @@ import { getProcessors } from '../ProcessorRegistry';
 import { pruneContext } from './EffectProcessor';
 import { ActionBuilder } from '../../utils/ActionBuilder';
 
-export interface ChoiceConfig {
+import { InteractionMetadata } from '@shared/engine_types';
+
+export interface ChoiceConfig extends Partial<InteractionMetadata> {
     label: string;
     playerId: PlayerId;
     sourceId: string;
     hideUndo?: boolean;
     optional?: boolean;
     actionType?: ActionType;
-    stackObj?: StackObject;
-    parentContext?: EngineFrame;
-    targets?: string[];
+    showCancel?: boolean;
     originalTargets?: string[];
-    isSpellCasting?: boolean;
     isCostChoice?: boolean;
     costType?: string;
-    isFreeCast?: boolean;
-    exileOnResolution?: boolean;
-    allowDuplicates?: boolean;
     metadata?: any;
     effectIndex?: number;
-    showCancel?: boolean;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -378,7 +373,6 @@ export class ChoiceGenerator {
             .withContext({ stackObj: data?.stackObj, parentContext: pruneContext(data?.parentContext), effectIndex: data?.effectIndex })
             .withData({
                 isResolutionX: true,
-                effectIndex: data?.effectIndex,
                 choiceEffects: choice.effects,
                 choiceCosts: choice.costs,
                 selectedChoice: choice,

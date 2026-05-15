@@ -23,7 +23,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
     const isMiracle = effect.isMiracleCast;
     let targetId = (effect.targetIds && effect.targetIds.length > 0) ? effect.targetIds[0] : targets[0];
 
-    logger.debug(state, LogCategory.ACTION, `[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree}, Miracle: ${isMiracle})`);
+    logger.debug(state, LogCategory.ACTION, `[CAST-SPELL-DIAG] Entry: targetId=${targetId}, spellName=${spellName}, isFree=${isFree}, targets=${targets.join(',')}, effectTargetIds=${effect.targetIds?.join(',')}`);
 
     if (spellName && !targetId) {
       const { oracle } = getProcessors(state);
@@ -54,6 +54,8 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
 
     if (targetId) {
       const castObj = EP.findObject(state, targetId, stackObject, parentContext) as GameObject;
+      logger.debug(state, LogCategory.ACTION, `[CAST-SPELL-DIAG] Found object: ${castObj ? castObj.definition?.name : 'NULL'}, zone=${castObj?.zone}, controller=${castObj?.controllerId}, owner=${castObj?.ownerId}`);
+      
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
       const res = SP.playCard(
@@ -70,10 +72,13 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
           exileOnResolution: effect.exileOnResolution
         },
       );
+      logger.debug(state, LogCategory.ACTION, `[CAST-SPELL-DIAG] playCard result: ${res}`);
       if (state.priorityPlayerId === controllerId)
         state.priorityPlayerId = oldPriority;
       return res;
     }
+    
+    logger.warn(state, LogCategory.ACTION, `[CAST-SPELL-DIAG] No targetId resolved. Cannot cast.`);
     return;
   }
 };

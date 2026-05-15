@@ -25,18 +25,14 @@ export interface ScryfallCard {
 
 export type SimplifiedCard = Card;
 
-// 1. Usa la search di Scryfall per ottenere metadati (rarità, costo) già nel dropdown
-// Ora rispetta rigorosamente la lingua selezionata (EN o IT) senza forzare conversioni
 export const fetchSearchCards = async (query: string, lang: 'en' | 'it' = 'en'): Promise<ScryfallCard[]> => {
   if (!query || query.length < 2) return [];
   try {
-    // Cerchiamo specificatamente nella lingua scelta. Scryfall tradurrà internamente se usiamo fuzzy o oracle, 
-    // ma qui vogliamo i risultati nella lingua dell'input dell'utente.
     const queryString = `name%3A/${encodeURIComponent(query)}/+lang%3A${lang}`;
 
     const res = await fetch(`https://api.scryfall.com/cards/search?q=${queryString}&unique=oracle`);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     return (data.data || []).slice(0, 8);
   } catch (err) {
@@ -45,27 +41,22 @@ export const fetchSearchCards = async (query: string, lang: 'en' | 'it' = 'en'):
   }
 };
 
-// 2. Fetch della carta esatta (ora mantiene la lingua scelta dall'utente)
 export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'): Promise<SimplifiedCard | null> => {
   try {
-    // Usiamo il parametro lang esplicito di Scryfall per ottenere l'edizione localizzata corretta
     const queryParam = lang === 'en' ? `exact=${encodeURIComponent(exactName)}&lang=en` : `fuzzy=${encodeURIComponent(exactName)}&lang=it`;
     const res = await fetch(`https://api.scryfall.com/cards/named?${queryParam}`);
     if (!res.ok) return null;
     let card: any = await res.json();
-    
-    // Logica per le immagini: Scryfall mette 'image_uris' a root per carte monofaccia, 
-    // ma dentro 'card_faces' per le bifronte (transform, MDFC)
+
     const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
     const backImageUrl = (card.card_faces && card.card_faces[1]?.image_uris?.normal) || undefined;
-    
-    // Per le bifronte, sommiamo i colori o prendiamo quelli della prima faccia
+
     const colors = card.colors || card.card_faces?.[0]?.colors || [];
     const typeLine = card.type_line || card.card_faces?.[0]?.type_line || '';
     const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
 
     return {
-      id: card.id, // For UI previews, use scryfall_id as instance id
+      id: card.id,
       scryfall_id: card.id,
       name: card.name,
       rarity: card.rarity,
@@ -76,6 +67,7 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
       typeLine: typeLine,
       types: typeLine.split(' — ')[0].split(' '),
       supertypes: [],
+      subtypes: typeLine.includes(' — ') ? typeLine.split(' — ')[1].split(' ') : [],
       manaCost: manaCost,
       power: card.power || card.card_faces?.[0]?.power,
       toughness: card.toughness || card.card_faces?.[0]?.toughness,
@@ -86,25 +78,18 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
     return null;
   }
 };
-// 3. Fetch bulk di carte tramite l'endpoint collection di Scryfall (più efficiente per import massivi)
-// Supporta formati Arena/MTGO: "4 Lightning Bolt (CLB) 123" o semplicemente "4 Plains" o "Plains"
 export const fetchCardsBatch = async (lines: string[]): Promise<{ found: SimplifiedCard[], notFound: string[] }> => {
   const found: SimplifiedCard[] = [];
   const notFound: string[] = [];
-  
-  // Regex per catturare [Quantità] [Nome Carta] [(SetCode)] [CollectorNumber]
-  // Esempi: 
-  // "4 Lightning Bolt (CLB) 123" -> qty: 4, name: Lightning Bolt
-  // "20 Plains" -> qty: 20, name: Plains
-  // "Shock" -> qty: 1, name: Shock
+
   const cardRegex = /^\s*(?:(\d+)x?\s+)?([^(\r\n]+)(?:\s+\(([^)]+)\)(?:\s+(\d+))?)?.*$/i;
 
   const identifiers: { name: string, qty: number }[] = [];
-  
+
   lines.forEach(line => {
     const trimmed = line.trim();
     if (!trimmed || trimmed.toLowerCase() === 'deck' || trimmed.toLowerCase() === 'sideboard' || trimmed.toLowerCase() === 'about' || trimmed.startsWith('Name ')) return;
-    
+
     const match = trimmed.match(cardRegex);
     if (match) {
       const qty = parseInt(match[1] || '1', 10);
@@ -134,7 +119,7 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
       }
 
       const data = await res.json();
-      
+
       if (data.data) {
         data.data.forEach((card: any) => {
           if (card && card.id) {
@@ -159,13 +144,13 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
               typeLine: typeLine,
               types: typeLine.split(' — ')[0].split(' '),
               supertypes: [],
+              subtypes: typeLine.includes(' — ') ? typeLine.split(' — ')[1].split(' ') : [],
               manaCost: manaCost,
               power: card.power || card.card_faces?.[0]?.power,
               toughness: card.toughness || card.card_faces?.[0]?.toughness,
               keywords: card.keywords || []
             };
 
-            // Aggiungi tante istanze quante specificate dalla qty
             for (let k = 0; k < qty; k++) {
               found.push({ ...simplified });
             }
@@ -178,7 +163,7 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
           if (item.name) notFound.push(item.name);
         });
       }
-      
+
       if (i + batchSize < identifiers.length) {
         await new Promise(r => setTimeout(r, 100));
       }

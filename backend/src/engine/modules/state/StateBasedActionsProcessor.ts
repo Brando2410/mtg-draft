@@ -5,6 +5,7 @@ import { ActionProcessor } from "../actions/ActionProcessor";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { LayerProcessor } from "../state/LayerProcessor";
+import { ActionBuilder } from "../../utils/ActionBuilder";
 
 /**
  * Rules Engine Module: State-Based Actions (Rule 704)
@@ -114,11 +115,8 @@ export class StateBasedActionsProcessor {
         // If we don't have a pending action already, create one
         if (!state.pendingAction) {
           logger.info(state, LogCategory.ACTION, `[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
-          ActionProcessor.prepareAction(state, {
-            type: ActionType.LegendRule,
-            playerId: controllerId,
-            sourceId: "system",
-            data: {
+          ActionProcessor.prepareAction(state, ActionBuilder.fromType(ActionType.LegendRule, controllerId, "system")
+            .withData({
               label: `Legend Rule: Choose which ${name} to KEEP`,
               choices: groups[key].map((obj, idx) => ({
                 label: obj.definition.name,
@@ -126,10 +124,10 @@ export class StateBasedActionsProcessor {
                 selectable: true,
                 cardData: obj
               })),
-              involvedIds: groups[key].map(o => o.id),
               isContextual: true
-            }
-          });
+            })
+            .withContext({ involvedIds: groups[key].map(o => o.id) })
+            .build());
           return true; // Action taken, need to resolve choice first
         }
       }

@@ -11,6 +11,7 @@ import { StackProcessor } from '../core/stack/StackProcessor';
 import { getActionMeta } from '@shared/utils/ActionUtils';
 import { MulliganProcessor } from '../core/MulliganProcessor';
 import { PermanentHandler } from '../effects/handlers/permanent/PermanentHandler';
+import { ActionBuilder } from '../../utils/ActionBuilder';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -153,7 +154,7 @@ export class ChoiceProcessor {
         }
 
         const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
-        const choice = !isNaN(choiceIdx) ? actionData.choices?.[choiceIdx as number] : undefined;
+        const choice = !isNaN(choiceIdx) ? actionData.choices?.[choiceIdx as number] : actionData.choices?.find((c: ChoiceOption) => c.value === firstSelection);
 
         // Handle "Back/Undo" or "Cancel"
         if (firstSelection === 'undo' || firstSelection === -1 || firstSelection === 'cancel' || choice?.value === 'cancel') {
@@ -260,11 +261,13 @@ export class ChoiceProcessor {
                     state,
                     context: getProcessors(state).effect.createEngineFrame(state, {
                         sourceId: sourceId as string,
+                        controllerIdOverride: meta.controllerId || action.playerId,
                         effects: allEffects,
                         targets: [],
                         stackObject: meta.stackObj,
                         parentContext: meta.parentContext,
-                        lookingCards: meta.lookingCards as GameObject[],
+                        lookingCards: (meta.lookingCards || meta.parentContext?.lookingCards) as GameObject[],
+                        originalTargets: meta.originalTargets || meta.parentContext?.originalTargets || [],
                         effectIndex: 0,
                         isResumption: false,
                         exileOnResolution: meta.exileOnResolution ?? meta.stackObj?.exileOnResolution ?? meta.parentContext?.exileOnResolution
@@ -291,10 +294,13 @@ export class ChoiceProcessor {
             // Resume parent resolution, advancing index since this effect sequence is complete
             const resumeIndex = (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined;
             return ResolutionManager.resume(state, engine, undefined, undefined, {
+                controllerId: meta.controllerId || meta.parentContext?.controllerId || action.playerId,
+                sourceId: sourceId || meta.parentContext?.sourceId || "",
+                effects: meta.parentContext?.effects || [],
                 ...meta.parentContext,
                 targets: [], // Clear targets from previous effect sequence to allow re-mapping
                 effectIndex: resumeIndex
-            }, action);
+            } as EngineFrame, action);
         }
 
         // 3. Handle Scry/Surveil Reordering early as payload is not an index
@@ -315,11 +321,11 @@ export class ChoiceProcessor {
                         state,
                         context: EP.createEngineFrame(state, {
                             sourceId: action.sourceId || "",
+                            controllerIdOverride: meta.controllerId || meta.parentContext?.controllerId || playerId,
                             effects: choice.effects,
                             targets: meta.targets || meta.parentContext?.targets || [],
                             stackObject: meta.stackObj as StackObject,
                             parentContext: meta.parentContext as EngineFrame,
-                            controllerIdOverride: playerId,
                             effectIndex: 0
                         }),
                         skipFizzleCheck: true
@@ -331,10 +337,13 @@ export class ChoiceProcessor {
                 }
 
                 return ResolutionManager.resume(state, engine, undefined, undefined, {
+                    controllerId: meta.controllerId || meta.parentContext?.controllerId || playerId,
+                    sourceId: action.sourceId || meta.parentContext?.sourceId || "",
+                    effects: meta.parentContext?.effects || [],
                     ...meta.parentContext,
                     targets: [],
                     effectIndex: (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined
-                }, action);
+                } as EngineFrame, action);
             }
         }
 
@@ -390,11 +399,12 @@ export class ChoiceProcessor {
         const actionData = action.data;
         const selections = payload.selections;
         const selection = selections[0];
+        const meta = getActionMeta(action);
 
         const choiceIdx = typeof selection === 'number' ? selection : parseInt(String(selection).replace('CHOICE_', ''));
         const choice = actionData?.choices?.[choiceIdx];
 
-        const cardId = actionData?.cardId;
+        const cardId = meta.cardId;
         const card = RuleUtils.findObject(state, cardId as string) as GameObject;
 
         if (!card) {
@@ -991,16 +1001,16 @@ export class ChoiceProcessor {
             const costToPay = { type: actionData.costType, amount: meta.maxChoices, value: meta.maxChoices } as AbilityCost;
             getProcessors(state).cost.pay(state, [costToPay], sourceId, playerId);
 
-            if (actionData.remainingCosts && (actionData.remainingCosts as AbilityCost[]).length > 0) {
-                getProcessors(state).cost.pay(state, actionData.remainingCosts as AbilityCost[], sourceId, playerId);
+            if (actionData.remainingCosts && actionData.remainingCosts?.length > 0) {
+                getProcessors(state).cost.pay(state, actionData.remainingCosts, sourceId, playerId);
             }
 
-            if (meta.choiceEffects && (meta.choiceEffects as EffectDefinition[]).length > 0) {
+            if (meta.choiceEffects && meta.choiceEffects.length > 0) {
                 getProcessors(state).effect.resolveEffects({
                     state,
                     context: getProcessors(state).effect.createEngineFrame(state, {
                         sourceId,
-                        effects: meta.choiceEffects as EffectDefinition[],
+                        effects: meta.choiceEffects,
                         targets: savedTargets,
                         stackObject: meta.stackObj as StackObject,
                         parentContext: meta.parentContext as EngineFrame,
@@ -1041,6 +1051,33 @@ export class ChoiceProcessor {
 
         const isTargeting = !!actionData.isTargetingModal;
         const isSpellCasting = meta.isSpellCasting;
+        const isSkip = choice?.value === 'none';
+
+        // ARCHITECTURAL NOTE: Metadata Propagation
+        state.pendingAction = undefined; // IMPORTANT: Clear the action so we don't infinitely loop
+
+        // If the user chose "None/Skip", we do not cast the spell or activate the ability.
+        // Instead, we resolve any choice-specific effects and resume the resolution sequence.
+        if (isSkip) {
+            logger.info(state, LogCategory.ACTION, `[CHOICE-SKIP] User selected Skip. Resuming resolution without casting.`);
+
+            if (choice?.effects && choice.effects.length > 0) {
+                getProcessors(state).effect.resolveEffects({
+                    state,
+                    context: getProcessors(state).effect.createEngineFrame(state, {
+                        sourceId,
+                        effects: choice.effects,
+                        targets: finalTargets,
+                        stackObject: meta.stackObj as StackObject,
+                        parentContext: meta.parentContext as EngineFrame,
+                        controllerIdOverride: playerId,
+                    }),
+                    skipFizzleCheck: true,
+                });
+            }
+
+            return ResolutionManager.resume(state, engine);
+        }
 
         // Ensure cardToPlayId remains sourceId for modes/costs/targeting. 
         // Only use choice.value if it's a legitimate card selection (e.g. from a list of faces/cards) AND not a cost choice.
@@ -1062,9 +1099,6 @@ export class ChoiceProcessor {
             }
             return ResolutionManager.resume(state, engine);
         }
-
-        // ARCHITECTURAL NOTE: Metadata Propagation
-        state.pendingAction = undefined; // IMPORTANT: Clear the action so we don't infinitely loop
 
         if (meta.abilityIndex !== undefined) {
             return getProcessors(state).spell.activateAbility(
@@ -1185,6 +1219,12 @@ export class ChoiceProcessor {
 
         if (choice.effects && choice.effects.length > 0) {
             logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolving ${choice.effects.length} effects for selection: ${choice.label}. SourceId: ${sourceId}`);
+
+            const propLooking = (meta.lookingCards || meta.parentContext?.lookingCards) as GameObject[];
+            const propOriginal = meta.originalTargets || meta.parentContext?.originalTargets || [];
+
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-DIAGNOSTIC] Propagating to consequence frame - Pool: ${propLooking?.length || 0}, OriginalTargets: ${propOriginal?.length || 0}`);
+
             const resolved = getProcessors(state).effect.resolveEffects({
                 state,
                 context: getProcessors(state).effect.createEngineFrame(state, {
@@ -1194,7 +1234,8 @@ export class ChoiceProcessor {
                     stackObject: stackObj,
                     parentContext: meta.parentContext as EngineFrame,
                     controllerIdOverride: action.playerId,
-                    lookingCards: meta.lookingCards as GameObject[],
+                    lookingCards: (meta.lookingCards || meta.parentContext?.lookingCards) as GameObject[],
+                    originalTargets: meta.originalTargets || meta.parentContext?.originalTargets || [],
                     lastMilledIds: meta.parentContext?.lastMilledIds,
                     lastDiscardedIds: meta.parentContext?.lastDiscardedIds,
                     effectIndex: 0,
@@ -1214,56 +1255,58 @@ export class ChoiceProcessor {
 
     private static finalizeResolution(state: GameState, sourceId: string, stackObj: StackObject | undefined, action: PendingAction, engine: EngineContext): boolean {
         const { logger } = getProcessors(state);
-        const actionData = action.data!;
         const meta = getActionMeta(action);
+
         // 1. Process Choice Queue (highest priority)
         if (!state.pendingAction && state.choiceQueue && state.choiceQueue.length > 0) {
             const nextItem = state.choiceQueue.shift()!;
-            if (nextItem.type === 'RESOLUTION_CHOICE' && nextItem.data?.choices && !nextItem.data.lookingCards) {
-                const choices = (nextItem.data.choices as ChoiceOption[]).map((c: ChoiceOption) => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }));
-                state.pendingAction = getProcessors(state).action.prepareAction(state, {
-                    type: nextItem.type,
-                    playerId: nextItem.playerId,
-                    sourceId: nextItem.sourceId,
-                    data: {
-                        ...nextItem.data,
-                        choices
-                    }
-                });
-                if (state.pendingAction && state.pendingAction.data) {
-                    state.pendingAction.data.nextPlayerIds = nextItem.data.nextPlayerIds;
-                }
-            } else if (nextItem.data?.isSacrificeSequence) {
+            const nextMeta = getActionMeta(nextItem as unknown as PendingAction);
+
+            if (nextItem.type === 'RESOLUTION_CHOICE' && nextItem.data?.choices && !nextMeta.lookingCards) {
+                const choices = (nextItem.data.choices as ChoiceOption[]).map((c: ChoiceOption) => ({
+                    label: c.label,
+                    value: c.value,
+                    costs: c.costs,
+                    effects: c.effects
+                }));
+
+                state.pendingAction = getProcessors(state).action.prepareAction(state, ActionBuilder.fromType(nextItem.type, nextItem.playerId, nextItem.sourceId)
+                    .ingest(nextItem.data)
+                    .withChoices(choices)
+                    .build());
+            } else if (nextMeta.isSacrificeSequence) {
                 const { effect: EP } = getProcessors(state);
                 const PermanentHandler = EP.getEffectHandler(EffectType.Sacrifice) as any;
-                const realEffect = nextItem.data.parentContext?.effects?.[nextItem.data.parentContext?.effectIndex];
-                PermanentHandler.handleSacrifice(state, realEffect || { label: nextItem.data.label }, {
+                const realEffect = nextMeta.parentContext?.effects?.[nextMeta.parentContext?.effectIndex ?? 0];
+                PermanentHandler.handleSacrifice(state, realEffect || ({ type: EffectType.Sacrifice, label: nextItem.data.label } as any), {
                     sourceId: nextItem.sourceId,
-                    controllerId: nextItem.playerId,
-                    targets: [nextItem.playerId, ...nextItem.data.nextPlayerIds],
-                    stackObject: nextItem.data.stackObj,
-                    parentContext: nextItem.data.parentContext
-                });
-            } else if (nextItem.data?.isChoiceSequence) {
+                    controllerId: nextMeta.controllerId || nextItem.playerId,
+                    effects: nextMeta.parentContext?.effects || [],
+                    targets: [nextItem.playerId, ...(nextMeta.nextPlayerIds || [])],
+                    stackObject: nextMeta.stackObj,
+                    parentContext: nextMeta.parentContext
+                } as EngineFrame);
+            } else if (nextMeta.isChoiceSequence) {
                 const { effect: EP } = getProcessors(state);
                 const ChoiceEffectHandler = EP.getEffectHandler(EffectType.Choice) as any;
-                ChoiceEffectHandler.handleChoice(state, nextItem.data.sequencedEffect, {
+                ChoiceEffectHandler.handleChoice(state, nextMeta.sequencedEffect as any, {
                     sourceId: nextItem.sourceId,
-                    controllerId: nextItem.playerId,
-                    targets: [nextItem.playerId, ...nextItem.data.nextPlayerIds],
-                    stackObject: nextItem.data.stackObj,
-                    parentContext: nextItem.data.parentContext
-                });
+                    controllerId: nextMeta.controllerId || nextItem.playerId,
+                    effects: nextMeta.parentContext?.effects || [],
+                    targets: [nextItem.playerId, ...(nextMeta.nextPlayerIds || [])],
+                    stackObject: nextMeta.stackObj,
+                    parentContext: nextMeta.parentContext
+                } as EngineFrame);
             } else {
                 state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
                     state,
-                    [nextItem.playerId, ...nextItem.data.nextPlayerIds],
+                    [nextItem.playerId, ...(nextMeta.nextPlayerIds || [])],
                     nextItem.sourceId,
-                    nextItem.data.discardAmount || 1,
+                    nextMeta.discardAmount || 1,
                     nextItem.data.label || "Discard",
-                    nextItem.data.stackObj,
-                    nextItem.data.parentContext,
-                    nextItem.data.onFailureEffects,
+                    nextMeta.stackObj,
+                    nextMeta.parentContext,
+                    nextMeta.onFailureEffects,
                 );
             }
             return true;
@@ -1276,12 +1319,19 @@ export class ChoiceProcessor {
 
         // 3. Resume/Finalize Resolution
         if (!state.pendingAction) {
-            logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] No pending action after choice. Resuming via ResolutionManager.`);
+            // Use meta.effects (which contains the FULL injected effects list from suspension)
+            // rather than meta.parentContext.effects (which is the pruned pre-suspension list).
+            const resumeEffects = meta.effects || meta.parentContext?.effects || [];
+            const resumeIndex = meta.effectIndex;
             return ResolutionManager.resume(state, engine, stackObj, sourceId, {
                 ...meta.parentContext,
-                effectIndex: (meta.effectIndex !== undefined) ? meta.effectIndex + 1 : undefined,
+                controllerId: meta.controllerId || meta.parentContext?.controllerId || action.playerId,
+                sourceId: sourceId || meta.parentContext?.sourceId || "",
+                effects: resumeEffects,
+                lookingCards: meta.lookingCards || meta.parentContext?.lookingCards,
+                effectIndex: resumeIndex,
                 targets: []
-            }, action);
+            } as EngineFrame, action);
         }
 
         return true;
@@ -1433,21 +1483,22 @@ export class ChoiceProcessor {
         const actionData = action.data!;
 
         if (meta.isSacrificeSequence) {
-            const effect = meta.parentContext?.effects?.[meta.effectIndex ?? 0];
-            PermanentHandler.handleSacrifice(state, effect || { label: actionData.label || "Sacrifice" }, {
-                ...meta.parentContext,
+            const realEffect = meta.parentContext?.effects?.[meta.effectIndex ?? 0];
+            PermanentHandler.handleSacrifice(state, realEffect || ({ type: EffectType.Sacrifice, label: actionData.label || "Sacrifice" } as any), {
+                sourceId: action.sourceId || "",
+                controllerId: meta.controllerId || action.playerId,
+                effects: meta.parentContext?.effects || [],
                 targets: nextPlayerIds,
                 effectIndex: meta.effectIndex,
-                effects: meta.effects
-            });
+                stackObject: meta.stackObj,
+                parentContext: meta.parentContext
+            } as EngineFrame);
         } else if (meta.isDiscardSequence || action.type === ActionType.Discard) {
             const discardAmount = meta.discardAmount || 1;
             const failureEffects = meta.onFailureEffects;
             const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-            const action = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
+            const action = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
             if (action && action.data) {
-                action.data.isDiscardSequence = true;
-                action.data.effectIndex = meta.effectIndex;
                 action.data.metadata = {
                     ...action.data.metadata,
                     isDiscardSequence: true,
@@ -1460,10 +1511,13 @@ export class ChoiceProcessor {
             // Fallback to resume if no known sequence is detected
             getProcessors(state).logger.warn(state, LogCategory.ACTION, `[CHOICE-HANDOFF] Unknown sequence type for ${sourceId}. Resuming parent context.`);
             ResolutionManager.resume(state, engine, undefined, undefined, {
+                controllerId: meta.controllerId || meta.parentContext?.controllerId || action.playerId,
+                sourceId: action.sourceId || meta.parentContext?.sourceId || "",
+                effects: meta.parentContext?.effects || [],
                 ...meta.parentContext,
                 targets: [],
                 effectIndex: meta.effectIndex
-            }, action);
+            } as EngineFrame, action);
         }
 
         return !!state.pendingAction;

@@ -174,7 +174,7 @@ export const Choice = memo(({
                     <CardChoiceGrid
                       cardChoices={cardChoices} filteredCardChoices={filteredCardChoices} choices={choices}
                       selectedIndices={selectedIndices} maxChoices={maxChoices}
-                      allowDuplicates={!!pendingAction.data?.allowDuplicates} availablePlayerIds={availablePlayerIds}
+                      allowDuplicates={!!meta.allowDuplicates} availablePlayerIds={availablePlayerIds}
                       activeViewedPlayerId={activeViewedPlayerId} me={me} opponent={opponent}
                       setViewedPlayerId={setViewedPlayerId} handleChoiceClick={handleChoiceClick}
                       handleChoiceRightClick={handleChoiceRightClick} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd}
@@ -183,7 +183,7 @@ export const Choice = memo(({
                   {!isOrderTriggers && !isScrySurveil && !isManaToggle && buttonChoices.length > 0 && (
                     <ButtonChoiceList
                       buttonChoices={buttonChoices} choices={choices} selectedIndices={selectedIndices}
-                      allowDuplicates={!!pendingAction.data?.allowDuplicates} handleChoiceClick={handleChoiceClick}
+                      allowDuplicates={!!meta.allowDuplicates} handleChoiceClick={handleChoiceClick}
                       handleChoiceRightClick={handleChoiceRightClick}
                     />
                   )}

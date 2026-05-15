@@ -232,6 +232,7 @@ export interface EngineFrame {
     sourceName?: string;
     xValue?: number;
     exileOnResolution?: boolean;
+    involvedIds?: string[];
 
     // === References ===
     sourceObject?: GameObject | StackObject | PlayerState;

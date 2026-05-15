@@ -59,6 +59,7 @@ export const mapRegistryToSimplified = (card: RegistryCard): SimplifiedCard => {
     types: card.types || (card.typeLine ? card.typeLine.split(' — ')[0].split(' ') : []),
     supertypes: card.supertypes || [],
     manaCost: card.manaCost || '',
+    subtypes: card.subtypes || [],
     keywords: card.keywords || []
   };
 };

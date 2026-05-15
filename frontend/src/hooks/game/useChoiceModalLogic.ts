@@ -32,14 +32,15 @@ export const useChoiceModalLogic = (
         const involvedIds = (meta.involvedIds || []) as string[];
 
         const ids = new Set<string>();
-        if (sourceId) ids.add(sourceId);
         involvedIds.forEach(id => ids.add(id));
+        if (sourceId) ids.add(sourceId);
 
         if (ids.size === 0) return [];
 
         return Array.from(ids).map(id => {
             let obj = battlefield.find(c => c.id === id);
             if (obj) return obj;
+            
             const stackObj = stack.find(s => s.id === id || s.sourceId === id);
             if (stackObj) {
                 return {
@@ -47,6 +48,11 @@ export const useChoiceModalLogic = (
                     definition: stackObj.definition || (stackObj as any).cardData?.definition
                 } as GameObject;
             }
+
+            const lookingCards = (pendingAction?.data?.lookingCards || []) as GameObject[];
+            obj = lookingCards.find((c: GameObject) => c.id === id);
+            if (obj) return obj;
+
             obj = (me?.graveyard as any[])?.find(c => c.id === id);
             if (obj) return obj;
             obj = (opponent?.graveyard as any[])?.find(c => c.id === id);
@@ -63,23 +69,23 @@ export const useChoiceModalLogic = (
     const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
 
     const choices = pendingAction?.data?.choices || [];
-    const minChoices = meta.minChoices ?? pendingAction?.data?.minChoices ?? 1;
-    const maxChoices = meta.maxChoices ?? pendingAction?.data?.maxChoices ?? 1;
-    const allowDuplicates = meta.allowDuplicates ?? pendingAction?.data?.allowDuplicates;
+    const minChoices = meta.minChoices ?? 1;
+    const maxChoices = meta.maxChoices ?? 1;
+    const allowDuplicates = meta.allowDuplicates;
 
 
     useEffect(() => {
-        if (isOrderTriggers && (pendingAction?.data?.triggers || meta.triggers)) {
-            setOrderedTriggers(pendingAction?.data?.triggers || meta.triggers);
+        if (isOrderTriggers && meta.triggers) {
+            setOrderedTriggers(meta.triggers);
         }
-        if (isScrySurveil && (pendingAction?.data?.lookingCards || meta.lookingCards)) {
+        if (isScrySurveil && meta.lookingCards) {
             setScryState({
-                top: [...(pendingAction?.data?.lookingCards || meta.lookingCards || [])],
+                top: [...(meta.lookingCards || [])],
                 bottom: [],
                 graveyard: []
             });
         }
-    }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, meta.triggers, meta.lookingCards, isOrderTriggers, isScrySurveil]);
+    }, [meta.triggers, meta.lookingCards, isOrderTriggers, isScrySurveil]);
 
     const handleChoiceClick = useCallback((originalIdx: number) => {
         const choice = choices[originalIdx];

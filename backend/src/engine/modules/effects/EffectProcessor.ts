@@ -1,6 +1,5 @@
 import {
   ActionType,
-  AmountResolver,
   ConditionType,
   EffectDefinition,
   EffectType, GameObject, GameState, PlayerId,
@@ -19,6 +18,7 @@ import {
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
+import { ActionBuilder } from "../../utils/ActionBuilder";
 import { getActionMeta } from '@shared/utils/ActionUtils';
 
 
@@ -187,7 +187,7 @@ export class EffectProcessor {
 
     for (let i = startIndex; i < activeEffects.length; i++) {
       const effect = activeEffects[i];
-      logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${activeEffects.length}: Type=${effect.type} Source=${sourceId}`);
+      logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${activeEffects.length}: Type=${effect.type} Source=${sourceId} | ContextTargets: ${context.targets.length} | Original: ${context.originalTargets?.length || 0}`);
 
       // CR 608.2: We will update the effectIndex AFTER successful execution or during suspension handling.
       // This ensures that if an effect suspends, it resumes at the CORRECT index.
@@ -197,6 +197,8 @@ export class EffectProcessor {
         context,
         effect
       });
+
+      logger.debug(state, LogCategory.ACTION, `[RESOLVE-LOOP-POST] Finished ${effect.type}. Targets were: ${context.targets.length}. Original: ${context.originalTargets?.length || 0}`);
 
       // Update the effectIndex AFTER execution (CR 608.2)
       context.effectIndex = i + 1;
@@ -227,9 +229,10 @@ export class EffectProcessor {
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
         const slimStackObj = this.slimStackObj(state, stackObject);
 
+        const pendingMeta = getActionMeta(state.pendingAction);
         if (
-          state.pendingAction.data?.stackObj &&
-          state.pendingAction.data?.effects
+          pendingMeta.stackObj &&
+          pendingMeta.effects
         ) {
           // If we already have a suspended state, do not overwrite it.
           return false;
@@ -238,7 +241,6 @@ export class EffectProcessor {
         // If the pending action was created by a sub-effect for a DIFFERENT object
         // (e.g. CastSpell created targeting for the sub-spell), don't overwrite it.
         // EXCEPT for spell copies, where the mismatch is intentional for re-targeting.
-        const pendingMeta = getActionMeta(state.pendingAction);
         if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId && !pendingMeta.isCopyTargeting) {
           logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] SourceId mismatch, skipping injection. PendingSource: ${state.pendingAction.sourceId}, ResolvedSource: ${sourceId}`);
           return false;
@@ -417,9 +419,6 @@ export class EffectProcessor {
       ? resolveMapping(effect.target2Mapping, 1)
       : [];
 
-    // CR 608.2b: Merge all resolved targets for handlers that require multiple participants (e.g. Fight)
-    const allResolvedTargets = [...validTargetIds, ...validTarget2Ids];
-
     // CR 608.2b: Legality check moved to resolveEffects to prevent middle-of-resolution fizzling
     // (e.g. when an effect moves its own target, like Destroy)
 
@@ -433,8 +432,18 @@ export class EffectProcessor {
         !effect.targetDefinitions)
     ) {
       if (effect.type === EffectType.Fight) return;
-      return;
+      // CastSpell handles its own card resolution internally — don't fizzle it here
+      if (effect.type === EffectType.CastSpell) {
+        // Fall through with the raw context targets
+        validTargetIds = [...context.targets];
+      } else {
+        return;
+      }
     }
+
+    // CR 608.2b: Merge all resolved targets for handlers that require multiple participants (e.g. Fight)
+    // Must be computed AFTER the fizzle bypass so CastSpell recovery is included
+    const allResolvedTargets = [...validTargetIds, ...validTarget2Ids];
 
     const amount =
       effect.amount !== undefined
@@ -471,21 +480,20 @@ export class EffectProcessor {
     // Registry Dispatcher
     const handler = EffectRegistry[effect.type];
     if (handler) {
-      return handler.handle(state, effect, {
-        ...context,
-        targets: allResolvedTargets,
-        originalTargets: context.originalTargets || targets, // Preserve original targets for secondary mapping resolution
-      });
+      // CRITICAL FIX: Do NOT clone the context here. Modifying a clone prevents 
+      // stateful handlers (like RevealUntilCondition) from persisting data 
+      // (like originalTargets or lookingCards) for subsequent effects in the sequence.
+      context.targets = allResolvedTargets;
+      if (!context.originalTargets || context.originalTargets.length === 0) {
+        context.originalTargets = targets;
+      }
+
+      return handler.handle(state, effect, context);
     } else {
       if (effect.targetMapping && effect.targetMapping !== "") {
         logger.warn(state, LogCategory.TARGETING, `[TARGET-MAP-WARN] No handler registered for mapping: ${effect.targetMapping}`);
       }
       return [];
-    }
-
-    // Strategy Dispatcher (Legacy) - DEPRECATED: All effects now use the Registry
-    if (!EffectRegistry[effect.type]) {
-      logger.info(state, LogCategory.ACTION, `[WARNING] Unknown/Unregistered effect type: ${effect.type}`);
     }
   }
 
@@ -517,6 +525,7 @@ export class EffectProcessor {
           EffectType.Exile,
           EffectType.PutOnBattlefield,
           EffectType.ReturnToHand,
+          EffectType.CastSpell,
         ] as EffectType[]).includes(effect.type)
       )
         return true;
@@ -728,25 +737,22 @@ export class EffectProcessor {
     ].some(t => String(firstDef.type).toUpperCase().includes(String(t).toUpperCase()));
 
     if (isBattlefieldTarget) {
-      state.pendingAction = {
-        type: ActionType.Targeting,
-        playerId: controllerId,
-        sourceId: sourceId,
-        data: {
+      const { action: AP } = getProcessors(state);
+      AP.prepareAction(state, ActionBuilder.fromType(ActionType.Targeting, controllerId, sourceId)
+        .withData({
           label: effect.label || `Choose target for ${sourceId}`,
-          metadata: {
-            stackObj: EffectProcessor.slimStackObj(state, stackObject),
-            parentContext: pruneContext(parentContext),
-            xValue: stackObject?.xValue,
-            exileOnResolution: stackObject?.exileOnResolution ?? parentContext?.exileOnResolution
-          },
           targetDefinitions: effect.targetDefinitions || [],
-          targets: validCandidates.map(c => c.id),
+          targets: validCandidates.map(c => c.id)
+        })
+        .withContext({
+          stackObj: EffectProcessor.slimStackObj(state, stackObject),
+          parentContext: pruneContext(parentContext),
+          xValue: stackObject?.xValue,
+          exileOnResolution: stackObject?.exileOnResolution ?? parentContext?.exileOnResolution,
           effectIndex: parentContext?.effectIndex,
-          effects: parentContext?.effects || [effect],
-          stackObj: stackObject, // Legal in BaseActionData
-        }
-      };
+          effects: parentContext?.effects || [effect]
+        })
+        .build());
       logger.info(state, LogCategory.ACTION, `[TARGETING] Prompting for battlefield targeting for effect resolution... Index=${parentContext?.effectIndex}, effectsCount=${(parentContext?.effects || []).length}, xValue=${stackObject?.xValue}`);
       return;
     }

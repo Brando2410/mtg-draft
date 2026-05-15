@@ -2,6 +2,7 @@ import { GameState, PlayerId, ActionType, Zone } from '@shared/engine_types';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { getProcessors } from '../ProcessorRegistry';
 import { EngineLogger, LogCategory } from '../../utils/EngineLogger';
+import { ActionBuilder } from '../../utils/ActionBuilder';
 
 export class MulliganProcessor {
   public static initialize(state: GameState, engine: EngineContext) {
@@ -144,16 +145,14 @@ export class MulliganProcessor {
       const isDone = !!state.mulliganState.discardsComplete[playerId];
 
       if (mCount > 0 && !isDone) {
-        const { action: ActionProcessor } = getProcessors(state);
-        ActionProcessor.prepareAction(state, {
-          type: ActionType.Discard,
-          playerId,
-          count: mCount,
-          data: {
+        const { action: AP } = getProcessors(state);
+        AP.prepareAction(state, ActionBuilder.fromType(ActionType.Discard, playerId, "system")
+          .withCount(mCount)
+          .withData({
             label: `Select ${mCount} card(s) to put on the bottom of your library`,
-            isMulliganPutBack: true
-          }
-        });
+          })
+          .withContext({ isMulliganPutBack: true })
+          .build());
         EngineLogger.info(state, LogCategory.ACTION, `${engine.getPlayerName(playerId)} must put ${mCount} cards on the bottom.`);
         return; 
       }

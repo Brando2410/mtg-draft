@@ -103,17 +103,7 @@ export class ActionBuilder {
         return this;
     }
 
-    public withContext(context: {
-        parentContext?: EngineFrame,
-        isFreeCast?: boolean,
-        isMiracleCast?: boolean,
-        exileOnResolution?: boolean,
-        stackObj?: any,
-        abilityIndex?: number,
-        isSpellCasting?: boolean,
-        effectIndex?: number,
-        controllerId?: PlayerId
-    }): this {
+    public withContext(context: Partial<InteractionMetadata>): this {
         this.action.data!.metadata = {
             ...this.action.data!.metadata,
             ...context
@@ -136,6 +126,11 @@ export class ActionBuilder {
     public asCost(costType: string): this {
         this.action.data!.isCostChoice = true;
         this.action.data!.costType = costType;
+        return this;
+    }
+
+    public withCount(count: number): this {
+        this.action.count = count;
         return this;
     }
 

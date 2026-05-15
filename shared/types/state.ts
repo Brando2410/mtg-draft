@@ -310,6 +310,12 @@ export interface ChoiceQueueItem {
  * InteractionMetadata - Structured cross-cutting data that must persist across interaction boundaries.
  * Used to ensure flags like 'exileOnResolution' or 'isFreeCast' are not lost between choice creation and action resolution.
  */
+export interface HybridManaGroup {
+    symbol: string;
+    idx: number;
+    options: string[];
+}
+
 export interface InteractionMetadata {
     effects?: import('./effects').EffectDefinition[];
     exileOnResolution?: boolean;
@@ -323,7 +329,7 @@ export interface InteractionMetadata {
     isResumption?: boolean;
     controllerId?: PlayerId;
     paidManaValue?: number;
-    parentContext?: import('./effects').EngineFrame | any;
+    parentContext?: import('./effects').EngineFrame;
     sourceMV?: number;
     stackObj?: StackObject;
     targets?: string[];
@@ -348,9 +354,8 @@ export interface InteractionMetadata {
     abilityIndex?: number;
     preSelectedChoice?: number;
     spellCopyRef?: StackObject;
-    isManaChoiceToggle?: boolean;
-    hybridGroups?: any[];
-    triggers?: any[];
+    hybridGroups?: HybridManaGroup[];
+    triggers?: StackObject[];
     nextPlayerIds?: string[];
     onFailureEffects?: import('./effects').EffectDefinition[];
     isOptionalDiscard?: boolean;
@@ -360,19 +365,31 @@ export interface InteractionMetadata {
     involvedIds?: string[];
     declaredTargets?: string[];
     choiceEffects?: import('./effects').EffectDefinition[];
-    nextTriggersToStack?: any[];
+    nextTriggersToStack?: StackObject[];
     isMulliganPutBack?: boolean;
     isSacrificeSequence?: boolean;
     isDiscardSequence?: boolean;
     isChoiceSequence?: boolean;
     isManaAbility?: boolean;
+    isManaChoiceToggle?: boolean;
+    sequencedEffect?: EffectDefinition;
+    originalTargets?: string[];
+    isCostChoice?: boolean;
+    costType?: string;
+    metadata?: InteractionMetadata;
+    cardId?: string;
+    label?: string;
+    originalActionData?: any;
+    selectedChoice?: any;
+    choiceCosts?: AbilityCost[];
+    isTargetingModal?: boolean;
+    count?: number;
+    reveal?: boolean;
+    summary?: string;
 }
 
 export interface CommonResolutionFields {
-    effects?: import('./effects').EffectDefinition[];
-    effectIndex?: number;
-    parentContext?: import('./effects').EngineFrame;
-    stackObj?: StackObject;
+    // Note: Most fields moved to InteractionMetadata during Phase 5 Migration
     targets?: string[];
     declaredTargets?: string[];
 }
@@ -394,15 +411,7 @@ export interface CommonChoiceFields {
 export interface BaseActionData extends CommonResolutionFields, CommonChoiceFields {
     // --- Core Identity ---
     label: string;
-    cardId?: string;
-    summary?: string;
-    allowDuplicates?: boolean;
-    reveal?: boolean;
-    isOptionalDiscard?: boolean;
-    isResolutionX?: boolean;
-    isMulliganPutBack?: boolean;
     mCount?: number;
-    discardAmount?: number | string;
     metadata?: InteractionMetadata;
 
     sourceId?: string;
@@ -434,13 +443,6 @@ export interface BaseActionData extends CommonResolutionFields, CommonChoiceFiel
     paidManaValue?: number;
 
     // --- Component: Batch & Sequencing ---
-    lookingCards?: GameObject[];
-    involvedIds?: string[];
-    lastDiscardedIds?: string[];
-    lastMilledIds?: string[];
-    nextPlayerIds?: string[];
-    effectIndex?: number;
-    triggers?: any[];
     isChoiceSequence?: boolean;
     isSacrificeSequence?: boolean;
     isDiscardSequence?: boolean;
@@ -454,7 +456,6 @@ export interface BaseActionData extends CommonResolutionFields, CommonChoiceFiel
 
     remainingCosts?: import('./abilities').AbilityCost[];
     sequencedEffect?: import('./effects').EffectDefinition;
-    onFailureEffects?: import('./effects').EffectDefinition[];
 
     // --- Legacy / Transition ---
 

@@ -1,9 +1,7 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const CampusComposerAqueousAria: CardDefinition = {
+export const CampusComposerAqueousAria: CardDefinition = {
     name: "Campus Composer",
     manaCost: "{3}{U}",
-
-
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard"],

@@ -3,7 +3,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const BeledrosWitherbloom: CardDefinition = {
     name: "Beledros Witherbloom",
     manaCost: "{5}{B}{G}",
-
     colors: ["B", "G"],
     supertypes: ["Legendary"],
     types: ["Creature"],

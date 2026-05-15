@@ -28,7 +28,7 @@ export class ChoiceEffectHandler {
       context;
 
     if (sourceId?.includes('miracle_trigger') || (stackObject && 'id' in stackObject && String(stackObject.id).includes('miracle_trigger'))) {
-        logger.info(state, LogCategory.ACTION, `[MIRACLE-RESOLVE] Miracle Choice effect resolving for ${sourceId}.`);
+      logger.info(state, LogCategory.ACTION, `[MIRACLE-RESOLVE] Miracle Choice effect resolving for ${sourceId}.`);
     }
 
     const targets = context.targets || [];
@@ -358,9 +358,12 @@ export class ChoiceEffectHandler {
           state.pendingAction.data = { label: "Resolution" };
         }
         const data = state.pendingAction.data!;
-        data.nextPlayerIds = nextTargets;
-        data.isChoiceSequence = true;
-        data.sequencedEffect = effect;
+        data.metadata = {
+          ...data.metadata,
+          nextPlayerIds: nextTargets,
+          isChoiceSequence: true,
+          sequencedEffect: effect
+        };
       }
       return;
     }
@@ -377,9 +380,15 @@ export class ChoiceEffectHandler {
     const cardTargets = targets.filter(
       (tid: string) => !state.players[tid as PlayerId],
     );
-    const lookingCards = cardTargets
-      .map((tid: string) => RuleUtils.findObject(state, tid))
-      .filter(Boolean) as GameObject[];
+    // CRITICAL FIX: Prioritize explicitly set lookingCards (reveal pool) over re-calculating from targets
+    // If targets are also empty (common in suspended triggers), fall back to originalTargets
+    const lookingCards = (context.lookingCards && context.lookingCards.length > 0)
+      ? context.lookingCards
+      : (cardTargets.length > 0)
+        ? cardTargets.map((tid: string) => RuleUtils.findObject(state, tid)).filter(Boolean) as GameObject[]
+        : (context.originalTargets && context.originalTargets.length > 0)
+          ? context.originalTargets.map((tid: string) => RuleUtils.findObject(state, tid)).filter(Boolean) as GameObject[]
+          : [];
 
     state.pendingAction = ChoiceGenerator.createModalChoice(
       state,
@@ -397,10 +406,15 @@ export class ChoiceEffectHandler {
         minChoices: EP.resolveAmount(state, (effect.minChoices || 1), context, targets),
         maxChoices: EP.resolveAmount(state, (effect.maxChoices || 1), context, targets),
         exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
-        allowDuplicates: effect.allowDuplicates,
+        allowDuplicates: !!effect.allowDuplicates,
         stackObj: stackObject,
         parentContext: context,
-        targets: originalTargets,
+        targets: targets,
+        originalTargets: context.originalTargets || originalTargets,
+        metadata: {
+          ...((effect as any).metadata || {}),
+          involvedIds: context.involvedIds || (effect as any).metadata?.involvedIds || []
+        }
       },
       (dynamicChoices || []).map((c, idx) => ({
         ...c,
@@ -413,7 +427,10 @@ export class ChoiceEffectHandler {
       state.pendingAction.data &&
       nextPlayers.length > 0
     ) {
-      state.pendingAction.data.nextPlayerIds = nextPlayers;
+      state.pendingAction.data.metadata = {
+        ...state.pendingAction.data.metadata,
+        nextPlayerIds: nextPlayers
+      };
     }
   }
 }

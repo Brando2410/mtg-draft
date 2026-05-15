@@ -18,10 +18,10 @@ import {
   Zone
 } from "@shared/engine_types";
 import { Mutation, MutationType } from "@shared/types/mutations";
-import type { RegistryProcessor } from "../core/RegistryProcessor";
 import { LogCategory } from "../../utils/EngineLogger";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
+import { ActionBuilder } from "../../utils/ActionBuilder";
 
 
 /**
@@ -250,19 +250,17 @@ export class ActionProcessor {
         // Inject a PendingAction to ask for reveal
         // Note: We don't increment cardsDrawnThisTurn yet, because the draw is being interrupted.
         // The DrawCardsHandler will handle resumption.
-        this.prepareAction(state, {
-          type: ActionType.MiracleReveal,
-          playerId: effectiveTargetId!,
-          sourceId: card.id,
-          data: {
-            cardId: card.id,
+        const { action: AP } = getProcessors(state);
+        AP.prepareAction(state, ActionBuilder.fromType(ActionType.MiracleReveal, effectiveTargetId!, card.id)
+          .withData({
             label: `Reveal the drawn card for its Miracle cost?`,
             choices: [
               { label: "Reveal", value: "reveal" },
               { label: "Don't Reveal", value: "skip" }
             ]
-          }
-        });
+          })
+          .withContext({ cardId: card.id })
+          .build());
 
         return {
           success: false,

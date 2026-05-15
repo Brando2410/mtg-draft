@@ -1,5 +1,6 @@
 import { ITargetMappingHandler, TargetMappingContext } from "../TargetMappingRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
+import { getActionMeta } from "@shared/utils/ActionUtils";
 import {
     GameObject,
     PlayerId,
@@ -22,10 +23,11 @@ export class PoolMappingHandler implements ITargetMappingHandler {
 
         // 1. Remainder Logic
         if (m === TargetMapping.RemainderOfPool || m === TargetMapping.RemainderOfLookingCards) {
+            const pendingMeta = getActionMeta(state.pendingAction);
             const pool = (lookingCards ||
                 parentContext?.lookingCards ||
                 stackObject?.lookingCards ||
-                state.pendingAction?.data?.lookingCards ||
+                pendingMeta.lookingCards ||
                 []) as GameObject[];
 
             return pool

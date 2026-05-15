@@ -1,9 +1,9 @@
-import { ManaProcessor } from "../../../magic/ManaProcessor";
-import { LayerProcessor } from "../../../state/LayerProcessor";
 import { IRestrictionHandler } from "../IRestrictionHandler";
-import { Targetable, Zone, StackObject, PlayerState, GameState, GameObject } from "@shared/engine_types";
-import { gameObjectRestriction, isGameObject, isStackObject } from "./HandlerUtils";
+import { StackObject, GameState, GameObject } from "@shared/engine_types";
+import { gameObjectRestriction } from "./HandlerUtils";
 import { RuleUtils } from "../../../../utils/RuleUtils";
+import { getProcessors } from '../../../ProcessorRegistry';
+import { LogCategory } from "src/engine/utils/EngineLogger";
 
 const evaluateNumeric = (
     state: GameState,
@@ -12,6 +12,7 @@ const evaluateNumeric = (
     op: string,
     value: number
 ): boolean => {
+    const { mana: ManaProcessor, layer: LayerProcessor } = getProcessors(state);
     let currentVal = 0;
     if (field === 'mv') currentVal = ManaProcessor.getEffectiveManaValue(obj);
     else if (field === 'power') currentVal = LayerProcessor.getEffectiveStats(obj, state).power;
@@ -26,13 +27,15 @@ const evaluateNumeric = (
 };
 
 const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
+
     "NUMERIC_REGEX": gameObjectRestriction((state, obj, restriction, context) => {
-        const { sourceId, stackObject } = context;
+        const { sourceId } = context;
         const match = restriction.toLowerCase().match(/^(cmc|mv|power|toughness)\s*(<=|>=|==|=|<|>)\s*(\d+|x|power|source_power|source_mv|source_cmc|converge_amount)$/);
         if (!match) return true;
 
         const [, field, op, valPart] = match;
         let val = 0;
+        const { mana: ManaProcessor, layer: LayerProcessor } = getProcessors(state);
 
         if (valPart.match(/^\d+$/)) {
             val = parseInt(valPart);
@@ -42,12 +45,16 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
             const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
             val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
         } else if (valPart === 'source_mv' || valPart === 'source_cmc') {
-            const source = state.battlefield.find(o => o.id === sourceId) ||
-                state.exile.find(o => o.id === sourceId) ||
-                state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
+            let source = RuleUtils.findObject(state, sourceId);
+            if (source && (RuleUtils.isStackObject(source) || (source as any).type === 'Triggered') && (source as any).sourceId) {
+                const actualSource = RuleUtils.findObject(state, (source as any).sourceId);
+                if (actualSource) source = actualSource;
+            }
+
             if (source) {
-                const effectiveObj = source;
-                val = ManaProcessor.getEffectiveManaValue(effectiveObj);
+                val = ManaProcessor.getEffectiveManaValue(source);
+                const sourceName = (source as any).definition?.name || (source as any).name || "Unknown";
+                console.log(`[CASCADE-DEBUG] Source: ${sourceName} | MV: ${val}`);
             }
         } else if (valPart === 'converge_amount') {
             const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
@@ -57,20 +64,29 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
         const normalizedField = field === 'cmc' ? 'mv' : field;
         if (normalizedField !== 'mv' && normalizedField !== 'power' && normalizedField !== 'toughness') return true;
 
-        return evaluateNumeric(state, obj, normalizedField, op, val);
+        const currentVal = (normalizedField === 'mv') 
+            ? ManaProcessor.getEffectiveManaValue(obj)
+            : (LayerProcessor.getEffectiveStats(obj, state) as any)[normalizedField];
+
+        const result = evaluateNumeric(state, obj, normalizedField, op, val);
+        const targetName = (obj as any).definition?.name || (obj as any).name || "Unknown";
+        console.log(`[CASCADE-DEBUG] Target: ${targetName} | MV: ${currentVal} | Op: ${op} | Val: ${val} | Result: ${result}`);
+        
+        return result;
     }),
 
     "MV_LE_POWER": gameObjectRestriction((state, obj, r, context) => {
+        const { layer: LayerProcessor } = getProcessors(state);
         const { sourceId } = context;
         const source = state.battlefield.find(o => o.id === sourceId);
         const sourcePower = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
         return evaluateNumeric(state, obj, 'mv', '<=', sourcePower);
     }),
     "MV_LE_X": gameObjectRestriction((state, obj, r, context) => {
+        const { mana: ManaProcessor } = getProcessors(state);
         const xValue = RuleUtils.resolveAmount(state, 'X', context);
         const mv = ManaProcessor.getEffectiveManaValue(obj);
-        const result = mv <= xValue;
-        return result;
+        return mv <= xValue;
     }),
     "MV_LE_LIFE_GAINED": gameObjectRestriction((state, obj, r, context) => {
         const { controllerId } = context;
