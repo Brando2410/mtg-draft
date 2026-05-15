@@ -292,8 +292,8 @@ export class SpellProcessor {
 
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
-            logic?.abilities?.some((a: any) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => String(c.value).includes('X'))) ||
-            currentDefinition.abilities?.some((a: any) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => String(c.value).includes('X'))) ||
+            logic?.abilities?.some((a: any) => typeof a !== 'string' && (a.type === AbilityType.Static || a.type === AbilityType.Spell) && (a.costs || a.additionalCosts)?.some((c: any) => String(c.value).includes('X'))) ||
+            currentDefinition.abilities?.some((a: any) => typeof a !== 'string' && (a.type === AbilityType.Static || a.type === AbilityType.Spell) && (a.costs || a.additionalCosts)?.some((c: any) => String(c.value).includes('X'))) ||
             logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
             modeHasX;
 
