@@ -435,6 +435,10 @@ export class TargetingProcessor {
             }
         }
 
+        if (actionData.selectedTargets.length >= maxCount) {
+            return engine.finaliseTargeting(playerId, actionData.selectedTargets.filter((t): t is string => t !== null));
+        }
+
         return true;
     }
 

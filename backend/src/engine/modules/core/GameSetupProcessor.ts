@@ -51,9 +51,9 @@ export class GameSetupProcessor {
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = oracle.getCard(cardRef.name);
-    
+
     if (!logicData) {
-        console.warn(`[REGISTRY-WARN] No backend logic found for card: "${cardRef.name}". Falling back to deck JSON data.`);
+      console.warn(`[REGISTRY-WARN] No backend logic found for card: "${cardRef.name}". Falling back to deck JSON data.`);
     }
 
     let typeLine = cardRef.typeLine || logicData?.typeLine || '';
@@ -79,10 +79,6 @@ export class GameSetupProcessor {
 
     const rawManaCost = cardRef.manaCost || (cardRef as any).mana_cost || logicData?.manaCost || '';
     const manaCost = String(rawManaCost).split('//')[0].trim();
-
-    if (cardRef.name && cardRef.name.toLowerCase().includes('witherbloom')) {
-        console.log(`[SETUP-DEBUG] Creating "${cardRef.name}" | Raw: "${rawManaCost}" | Final: "${manaCost}" | LogicFound: ${!!logicData}`);
-    }
 
     return {
       id: `${ownerId}-lib-${index}`,
@@ -159,19 +155,15 @@ export class GameSetupProcessor {
     allObjects.forEach(obj => {
       const def = obj.definition as any;
       if (!def || !def.name) return;
-      
+
       const logicData = oracle.getCard(def.name);
       if (logicData) {
         // Fix missing mana costs which are critical for Cascade/Numeric restrictions
         if (!def.manaCost || def.manaCost === '') {
-            def.manaCost = logicData.manaCost;
+          def.manaCost = logicData.manaCost;
         }
         // Ensure abilities are up to date
         def.abilities = logicData.abilities || [];
-        
-        if (def.name.toLowerCase().includes('witherbloom')) {
-             console.log(`[REFRESH-DEBUG] Refreshed ${def.name} | MV: ${def.manaCost}`);
-        }
       }
     });
   }

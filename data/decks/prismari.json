@@ -21,40 +21,6 @@
       "supertypes": []
     },
     {
-      "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
-      "name": "Expressive Firedancer",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
-      "cmc": 2,
-      "type_line": "Creature",
-      "mana_cost": "{1}{R}",
-      "keywords": [],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
-      "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
-      "name": "Expressive Firedancer",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
-      "cmc": 2,
-      "type_line": "Creature",
-      "mana_cost": "{1}{R}",
-      "keywords": [],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
       "scryfall_id": "local-Sanar, Unfinished Genius // Wild Idea",
       "name": "Sanar, Unfinished Genius // Wild Idea",
       "rarity": "common",
@@ -93,60 +59,6 @@
       "supertypes": []
     },
     {
-      "scryfall_id": "460c6afd-cddf-4fea-925f-b27517ff250a",
-      "name": "Matterbending Mage",
-      "rarity": "common",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
-      "cmc": 3,
-      "type_line": "Creature",
-      "mana_cost": "{2}{U}",
-      "keywords": [],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
-      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
-      "name": "Rubble Rouser",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
-      "cmc": 3,
-      "type_line": "Creature",
-      "mana_cost": "{2}{R}",
-      "keywords": [],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
-      "scryfall_id": "06dd56bd-de92-4202-af31-7e881c34d799",
-      "name": "Rearing Embermare",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851",
-      "cmc": 5,
-      "type_line": "Creature",
-      "mana_cost": "{4}{R}",
-      "keywords": [
-        "Reach",
-        "Haste"
-      ],
-      "types": [
-        "Creature"
-      ],
-      "supertypes": []
-    },
-    {
       "scryfall_id": "4d611278-9948-4345-b4dd-aa6eaf21b233",
       "name": "Magmablood Archaic",
       "rarity": "common",
@@ -163,23 +75,6 @@
       ],
       "types": [
         "Creature"
-      ],
-      "supertypes": []
-    },
-    {
-      "scryfall_id": "1edb449d-620f-4e21-9d76-2c840635eb9d",
-      "name": "Procrastinate",
-      "rarity": "common",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356",
-      "cmc": 1,
-      "type_line": "Instant",
-      "mana_cost": "{X}{U}",
-      "keywords": [],
-      "types": [
-        "Instant"
       ],
       "supertypes": []
     },
@@ -302,227 +197,6 @@
       "supertypes": []
     },
     {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
-      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
-      "cmc": 0,
-      "type_line": "Basic Basic",
-      "mana_cost": "",
-      "keywords": [],
-      "types": [
-        "Basic"
-      ],
-      "supertypes": [
-        "Basic"
-      ]
-    },
-    {
       "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
       "name": "Mountain",
       "rarity": "common",
@@ -572,6 +246,849 @@
       "supertypes": []
     },
     {
+      "id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Island"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Island"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "scryfall_id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "name": "Swamp",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c5f590a3-9993-4ac4-a93c-1beb44eda17b.jpg?1777658405",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Swamp"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "scryfall_id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "name": "Swamp",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c5f590a3-9993-4ac4-a93c-1beb44eda17b.jpg?1777658405",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Swamp"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "scryfall_id": "c5f590a3-9993-4ac4-a93c-1beb44eda17b",
+      "name": "Swamp",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c5f590a3-9993-4ac4-a93c-1beb44eda17b.jpg?1777658405",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Swamp"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+      "scryfall_id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+      "name": "Forest",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/3279314f-d639-4489-b2ab-3621bb3ca64b.jpg?1594737877",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Forest"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+      "scryfall_id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+      "name": "Forest",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/3279314f-d639-4489-b2ab-3621bb3ca64b.jpg?1594737877",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Forest"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Plains"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Plains"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg?1777658393",
+      "back_image_url": "",
+      "cmc": 0,
+      "typeLine": "",
+      "types": [
+        "Land"
+      ],
+      "supertypes": [
+        "Basic"
+      ],
+      "manaCost": "",
+      "subtypes": [
+        "Plains"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
+      "scryfall_id": "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
+      "name": "Silverquill, the Disputant",
+      "rarity": "mythic",
+      "colors": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577",
+      "back_image_url": "",
+      "cmc": 4,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "manaCost": "{2}{W}{B}",
+      "subtypes": [
+        "Elder",
+        "Dragon"
+      ],
+      "keywords": [
+        "Flying",
+        "Vigilance"
+      ]
+    },
+    {
+      "id": "d357d997-9d4e-4ade-81f2-37629853f13a",
+      "scryfall_id": "d357d997-9d4e-4ade-81f2-37629853f13a",
+      "name": "Arcane Omens",
+      "rarity": "uncommon",
+      "colors": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419",
+      "back_image_url": "",
+      "cmc": 5,
+      "typeLine": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{4}{B}",
+      "subtypes": [],
+      "keywords": []
+    },
+    {
+      "id": "9c99c17b-ad3a-4859-97e8-469718b81cd9",
+      "scryfall_id": "9c99c17b-ad3a-4859-97e8-469718b81cd9",
+      "name": "Pox Plague",
+      "rarity": "rare",
+      "colors": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566",
+      "back_image_url": "",
+      "cmc": 5,
+      "typeLine": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{B}{B}{B}{B}{B}",
+      "subtypes": [],
+      "keywords": []
+    },
+    {
+      "id": "c35b57e4-2358-46c0-8f09-cd27c10eaf2d",
+      "scryfall_id": "c35b57e4-2358-46c0-8f09-cd27c10eaf2d",
+      "name": "Sundering Archaic",
+      "rarity": "uncommon",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c35b57e4-2358-46c0-8f09-cd27c10eaf2d.jpg?1775936933",
+      "back_image_url": "",
+      "cmc": 6,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{6}",
+      "subtypes": [
+        "Avatar"
+      ],
+      "keywords": []
+    },
+    {
+      "id": "ac2a8a66-e38c-42ab-83e1-d2d99ee48861",
+      "scryfall_id": "ac2a8a66-e38c-42ab-83e1-d2d99ee48861",
+      "name": "Together as One",
+      "rarity": "rare",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/a/c/ac2a8a66-e38c-42ab-83e1-d2d99ee48861.jpg?1775936940",
+      "back_image_url": "",
+      "cmc": 6,
+      "typeLine": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{6}",
+      "subtypes": [],
+      "keywords": []
+    },
+    {
+      "id": "7a451985-37e1-44d8-839b-dc1e88df5c96",
+      "scryfall_id": "7a451985-37e1-44d8-839b-dc1e88df5c96",
+      "name": "The Dawning Archaic",
+      "rarity": "mythic",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7a451985-37e1-44d8-839b-dc1e88df5c96.jpg?1775936921",
+      "back_image_url": "",
+      "cmc": 10,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "manaCost": "{10}",
+      "subtypes": [
+        "Avatar"
+      ],
+      "keywords": [
+        "Reach"
+      ]
+    },
+    {
+      "id": "015afe31-af3c-4c9b-9997-d7c33b915a33",
+      "scryfall_id": "015afe31-af3c-4c9b-9997-d7c33b915a33",
+      "name": "Quandrix, the Proof",
+      "rarity": "mythic",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517",
+      "back_image_url": "",
+      "cmc": 6,
+      "typeLine": "",
+      "types": [
+        "Legendary",
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{4}{G}{U}",
+      "subtypes": [
+        "Elder",
+        "Dragon"
+      ],
+      "keywords": [
+        "Flying",
+        "Trample",
+        "Cascade"
+      ]
+    },
+    {
+      "id": "1624c680-502b-474a-b9b2-888fe3ca008c",
+      "scryfall_id": "1624c680-502b-474a-b9b2-888fe3ca008c",
+      "name": "Transcendent Archaic",
+      "rarity": "uncommon",
+      "colors": [],
+      "image_url": "https://cards.scryfall.io/normal/front/1/6/1624c680-502b-474a-b9b2-888fe3ca008c.jpg?1775936948",
+      "back_image_url": "",
+      "cmc": 7,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{7}",
+      "subtypes": [
+        "Avatar"
+      ],
+      "keywords": [
+        "Vigilance"
+      ]
+    },
+    {
+      "id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+      "scryfall_id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+      "name": "Lorehold, the Historian",
+      "rarity": "mythic",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396",
+      "back_image_url": "",
+      "cmc": 5,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "manaCost": "{3}{R}{W}",
+      "subtypes": [
+        "Elder",
+        "Dragon"
+      ],
+      "keywords": [
+        "Flying",
+        "Haste"
+      ]
+    },
+    {
+      "id": "local-Witherbloom the Balancer",
+      "scryfall_id": "local-Witherbloom the Balancer",
+      "name": "Witherbloom the Balancer",
+      "rarity": "unknown",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/d/ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0.jpg?1775938710",
+      "back_image_url": "",
+      "cmc": 8,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{6}{B}{G}",
+      "subtypes": [
+        "Elder",
+        "Dragon"
+      ],
+      "keywords": [
+        "Affinity for creatures",
+        "Flying",
+        "Deathtouch"
+      ]
+    },
+    {
+      "id": "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+      "scryfall_id": "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+      "name": "Grapple with Death",
+      "rarity": "common",
+      "colors": [
+        "G",
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
+      "back_image_url": "",
+      "cmc": 3,
+      "typeLine": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{1}{G}{B}",
+      "subtypes": [],
+      "keywords": []
+    },
+    {
+      "id": "50aaf618-dddb-4cbe-8231-d634b4498563",
+      "scryfall_id": "50aaf618-dddb-4cbe-8231-d634b4498563",
+      "name": "Withering Curse",
+      "rarity": "mythic",
+      "colors": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655",
+      "back_image_url": "",
+      "cmc": 3,
+      "typeLine": "",
+      "types": [
+        "Sorcery"
+      ],
+      "supertypes": [],
+      "manaCost": "{1}{B}{B}",
+      "subtypes": [],
+      "keywords": []
+    },
+    {
+      "id": "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
+      "scryfall_id": "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
+      "name": "Goblin Glasswright // Craft with Pride",
+      "rarity": "common",
+      "colors": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
+      "back_image_url": "",
+      "cmc": 2,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{1}{R}",
+      "subtypes": [
+        "Goblin",
+        "Sorcerer"
+      ],
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "id": "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
+      "scryfall_id": "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
+      "name": "Colorstorm Stallion",
+      "rarity": "rare",
+      "colors": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240",
+      "back_image_url": "",
+      "cmc": 3,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{1}{U}{R}",
+      "subtypes": [
+        "Elemental",
+        "Horse"
+      ],
+      "keywords": [
+        "Ward {1}",
+        "Haste"
+      ]
+    }
+  ],
+  "sideboard": [
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "Basic Basic",
+      "mana_cost": "",
+      "keywords": [],
+      "types": [
+        "Basic"
+      ],
+      "supertypes": [
+        "Basic"
+      ]
+    },
+    {
+      "scryfall_id": "1edb449d-620f-4e21-9d76-2c840635eb9d",
+      "name": "Procrastinate",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{X}{U}",
+      "keywords": [],
+      "types": [
+        "Instant"
+      ],
+      "supertypes": []
+    },
+    {
+      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+      "name": "Rubble Rouser",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+      "cmc": 3,
+      "type_line": "Creature",
+      "mana_cost": "{2}{R}",
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
+    },
+    {
+      "scryfall_id": "460c6afd-cddf-4fea-925f-b27517ff250a",
+      "name": "Matterbending Mage",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
+      "cmc": 3,
+      "type_line": "Creature",
+      "mana_cost": "{2}{U}",
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
+    },
+    {
+      "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
+      "name": "Expressive Firedancer",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
+      "cmc": 2,
+      "type_line": "Creature",
+      "mana_cost": "{1}{R}",
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
+    },
+    {
       "scryfall_id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
       "name": "Muse's Encouragement",
       "rarity": "common",
@@ -584,9 +1101,74 @@
       "mana_cost": "{4}{U}",
       "keywords": [],
       "types": [],
+      "supertypes": []
+    },
+    {
+      "id": "local-Witherbloom the Balancer",
+      "scryfall_id": "local-Witherbloom the Balancer",
+      "name": "Witherbloom the Balancer",
+      "rarity": "unknown",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/a/da336d33-3d33-4d33-9d33-da336d33da33.jpg",
+      "back_image_url": "",
+      "cmc": 8,
+      "typeLine": "",
+      "types": [
+        "Creature"
+      ],
+      "supertypes": [],
+      "manaCost": "{6}{B}{G}",
+      "subtypes": [
+        "Elder",
+        "Dragon"
+      ],
+      "keywords": [
+        "Affinity for creatures",
+        "Flying",
+        "Deathtouch"
+      ]
+    },
+    {
+      "scryfall_id": "06dd56bd-de92-4202-af31-7e881c34d799",
+      "name": "Rearing Embermare",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851",
+      "cmc": 5,
+      "type_line": "Creature",
+      "mana_cost": "{4}{R}",
+      "keywords": [
+        "Reach",
+        "Haste"
+      ],
+      "types": [
+        "Creature"
+      ],
+      "supertypes": []
+    },
+    {
+      "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
+      "name": "Expressive Firedancer",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
+      "cmc": 2,
+      "type_line": "Creature",
+      "mana_cost": "{1}{R}",
+      "keywords": [],
+      "types": [
+        "Creature"
+      ],
       "supertypes": []
     }
   ],
-  "cardCount": 34,
-  "lastUpdated": "2026-04-23T18:59:08.444Z"
+  "cardCount": 38,
+  "lastUpdated": "2026-05-15T17:14:30.633Z"
 }

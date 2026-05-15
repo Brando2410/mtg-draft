@@ -23,6 +23,6 @@ export const WitherbloomtheBalancer: CardDefinition = {
             ]
         }
     ],
-    image_url: "https://cards.scryfall.io/normal/front/d/a/da336d33-3d33-4d33-9d33-da336d33da33.jpg"
+    image_url: "https://cards.scryfall.io/normal/front/e/d/ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0.jpg?1775938710"
 };
 

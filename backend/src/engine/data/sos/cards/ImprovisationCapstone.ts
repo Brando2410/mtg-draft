@@ -2,8 +2,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const ImprovisationCapstone: CardDefinition = {
     name: "Improvisation Capstone",
     manaCost: "{5}{R}{R}",
-
-
     colors: ["R"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],

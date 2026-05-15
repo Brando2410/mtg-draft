@@ -16,7 +16,6 @@ class OracleLogicMap {
     }
 
     private initialize() {
-        console.log(`[ORACLE-DEBUG] Starting initialization... SOS size: ${Object.keys(sos).length}`);
         // Load Dedicated Set Logic
         [m21, random, stx, sos].forEach(setRegistry => {
             Object.keys(setRegistry).forEach(key => {
@@ -28,10 +27,6 @@ class OracleLogicMap {
 
                 // 1. Index by the key used in the registry (the canonical full name)
                 this.registry.set(key.toLowerCase(), enriched as CardLogic);
-                
-                if (key.toLowerCase().includes('witherbloom')) {
-                    console.log(`[ORACLE-DEBUG] Registered: "${key.toLowerCase()}" | name: "${card.name}" | MV: "${card.manaCost}"`);
-                }
 
                 // 2. Index by the internal card name if different
                 if (card.name && card.name.toLowerCase() !== key.toLowerCase()) {
@@ -85,10 +80,6 @@ class OracleLogicMap {
         if (!card && lower.includes(' // ')) {
             // 3. Try first face only if full name fails
             card = this.registry.get(lower.split(' // ')[0].trim());
-        }
-
-        if (!card && (name.includes('Witherbloom') || name.includes('Dig Site'))) {
-            console.log(`[ORACLE-DEBUG] Failed to find: "${name}" | RegistrySize: ${this.registry.size}`);
         }
 
         return card;
