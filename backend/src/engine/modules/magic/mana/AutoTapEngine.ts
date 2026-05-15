@@ -13,15 +13,15 @@ import { getProcessors } from '../../ProcessorRegistry';
  * Uses heuristics like "Least Waste", "Playability Look-ahead", and "Restricted Preference".
  */
 export class AutoTapEngine {
-    
+
     /**
      * Unified validation: Checks if a cost is payable using all available sources.
      * This is the single source of truth for all mana availability checks.
      */
     public static canPayMana(
-        state: GameState, 
-        playerId: PlayerId, 
-        costStr: string, 
+        state: GameState,
+        playerId: PlayerId,
+        costStr: string,
         payingFor?: GameObject,
         excludeId?: string
     ): boolean {
@@ -62,9 +62,9 @@ export class AutoTapEngine {
     ): { tappedIds: string[], producedMana: ManaPoolRecord } {
         const player = state.players[playerId];
         if (!player) return { tappedIds: [], producedMana: this.emptyPool() };
-        
+
         const requirements = ManaParser.parseManaCost(costStr);
-        EngineLogger.info(state, LogCategory.MANA, `[AUTOTAP] Auto-taping sources for cost: ${costStr}`);
+        //  EngineLogger.info(state, LogCategory.MANA, `[AUTOTAP] Auto-taping sources for cost: ${costStr}`);
 
         const tappedIds: string[] = [];
         const producedMana: ManaPoolRecord = this.emptyPool();
@@ -104,7 +104,7 @@ export class AutoTapEngine {
     private static calculateColorDemand(player: any, availableSources: ManaSourceCandidate[], localPool: ManaPoolRecord, costStr: string, payingFor?: GameObject): Record<string, number> {
         const totalCapacity = Object.values(localPool).reduce((a, b: any) => a + b, 0) + availableSources.length;
         const budget = totalCapacity - ManaParser.getManaValue(costStr);
-        
+
         const demandMap: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
         const playables = [...player.hand, ...(player.virtualHand || [])].filter((c: GameObject) => {
             if (c.id === payingFor?.id) return false;
@@ -130,13 +130,13 @@ export class AutoTapEngine {
      */
     private static isSatisfied(requirements: any, pool: ManaPoolRecord, canSpendAsAny: boolean): boolean {
         const workPool = { ...pool };
-        
+
         if (canSpendAsAny) {
             const totalRequired = ManaParser.getManaValue(""); // Need a way to get total value from requirements
             // Fallback to manual sum since parseManaCost output is structured
             let requiredSum = requirements.generic;
             Object.values(requirements.colored).forEach((v: any) => requiredSum += v);
-            
+
             const totalAvailable = Object.values(workPool).reduce((a, b) => a + (b as number), 0);
             return totalAvailable >= requiredSum;
         }
@@ -191,7 +191,7 @@ export class AutoTapEngine {
 
             const options = req.includes('/') ? req.split('/') : [req];
             const bestSource = this.findBestSource(state, availableSources, tappedIds, options, canSpendAsAnyColor, demandMap, payingFor);
-            
+
             if (bestSource) {
                 this.executeSourceTapping(state, playerId, bestSource, req, tappedIds, producedMana, localPool, engine, payingFor, isSimulation);
                 this.trySatisfyFromPool(localPool, req); // Consume the produced mana
@@ -293,7 +293,7 @@ export class AutoTapEngine {
             if (a.yieldScore !== b.yieldScore) return (a.yieldScore || 0) - (b.yieldScore || 0);
             if (a.versatility !== b.versatility) return (a.versatility || 0) - (b.versatility || 0);
             if (a.demandScore !== b.demandScore) return (a.demandScore || 0) - (b.demandScore || 0);
-            
+
             const aIsLand = RuleUtils.isLand(a.obj);
             const bIsLand = RuleUtils.isLand(b.obj);
             if (aIsLand !== bIsLand) return aIsLand ? -1 : 1;
@@ -316,8 +316,8 @@ export class AutoTapEngine {
 
             if (!this.isLegalForSource(yieldInfo.restrictions, payingFor)) return;
 
-            const satisfies = !effectiveReqs || effectiveReqs.some(c => 
-                yieldInfo.colors.has('ANY' as ManaColor) || yieldInfo.colors.has(c as ManaColor) || 
+            const satisfies = !effectiveReqs || effectiveReqs.some(c =>
+                yieldInfo.colors.has('ANY' as ManaColor) || yieldInfo.colors.has(c as ManaColor) ||
                 yieldInfo.choiceColors.includes('ANY') || yieldInfo.choiceColors.includes(c)
             );
 
@@ -420,8 +420,10 @@ export class AutoTapEngine {
         }
 
         if (!isSimulation && engine) {
+            EngineLogger.info(state, LogCategory.MANA, `[DEBUG-MANA] executeSourceTapping: Tapping ${source.obj.definition.name} (${source.obj.id}) for ${desiredColor} using ability index ${source.aIdx || 0}.`);
             engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
-            
+            EngineLogger.info(state, LogCategory.MANA, `[DEBUG-MANA] executeSourceTapping: Tapped ${source.obj.definition.name} (${source.obj.id}).`);
+
             // Stealth Action Clearance
             if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE' || state.pendingAction.type === 'OPTIONAL_ACTION')) {
                 state.pendingAction = undefined;
@@ -479,7 +481,7 @@ export class AutoTapEngine {
 
         state.battlefield.forEach((obj: GameObject) => {
             if (obj.controllerId !== playerId || alreadyTapped.includes(obj.id) || obj.id === excludeId) return;
-            
+
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             const abilities = (stats.abilities || []) as (AbilityDefinition | string)[];
 

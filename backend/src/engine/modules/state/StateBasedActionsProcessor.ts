@@ -114,7 +114,7 @@ export class StateBasedActionsProcessor {
         // If we don't have a pending action already, create one
         if (!state.pendingAction) {
           logger.info(state, LogCategory.ACTION, `[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
-          state.pendingAction = {
+          ActionProcessor.prepareAction(state, {
             type: ActionType.LegendRule,
             playerId: controllerId,
             sourceId: "system",
@@ -129,7 +129,7 @@ export class StateBasedActionsProcessor {
               involvedIds: groups[key].map(o => o.id),
               isContextual: true
             }
-          };
+          });
           return true; // Action taken, need to resolve choice first
         }
       }

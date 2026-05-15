@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CounterType, DurationType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const WildgrowthArchaic: CardDefinition = {
     name: "Wildgrowth Archaic",
     manaCost: "{2/G}{2/G}",
@@ -16,7 +16,7 @@ export const WildgrowthArchaic: CardDefinition = {
                 {
                     type: EffectType.EntersWithCounters,
                     amount: DynamicAmount.ConvergeAmount,
-                    counterType: '+1/+1',
+                    counterType: CounterType.P1P1,
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -37,7 +37,7 @@ export const WildgrowthArchaic: CardDefinition = {
                                 {
                                     type: EffectType.EntersWithCounters,
                                     amount: DynamicAmount.ConvergeAmount,
-                                    counterType: '+1/+1',
+                                    counterType: CounterType.P1P1,
                                     targetMapping: TargetMapping.Self
                                 }
                             ]

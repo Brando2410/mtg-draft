@@ -211,7 +211,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     );
 
     const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-    state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
+    ChoiceGenerator.createCardChoice(state, pool, {
       label:
         effect.label ||
         `Select up to ${resolvedMax} card${resolvedMax !== 1 ? "s" : ""} to move from your graveyard`,
@@ -289,7 +289,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       );
 
       // Push a choice to cast any number of them
-      state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
+      ChoiceGenerator.createCardChoice(state, cards, {
         label: `Cast any number of exiled spells?`,
         playerId: controllerId,
         sourceId: context.sourceId || stackObject?.id || "",
@@ -422,7 +422,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           const choicesArr = modalEffect.choices || [];
 
           const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-          state.pendingAction = ChoiceGenerator.createCardChoice(
+          ChoiceGenerator.createCardChoice(
             state,
             [targetCard],
             {
@@ -740,8 +740,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     }
 
     if (effect.type === EffectType.Scry) {
-      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-      state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
+      const { action: ActionProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+      const action = ChoiceGenerator.createScryChoice(state, cards, {
         label: `Scry ${cards.length}`,
         playerId: controllerId,
         sourceId: context.sourceId || stackObject?.id || "",
@@ -750,12 +750,13 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         isSpellCasting: !!effect.isSpellCasting,
         isFreeCast: !!effect.isFreeCast,
       });
+      ActionProcessor.prepareAction(state, action);
       return;
     }
 
     if (effect.type === EffectType.Surveil) {
-      const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-      state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
+      const { action: ActionProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+      const action = ChoiceGenerator.createSurveilChoice(state, cards, {
         label: `Surveil ${cards.length}`,
         playerId: controllerId,
         sourceId: context.sourceId || stackObject?.id || "",
@@ -764,6 +765,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         isSpellCasting: !!effect.isSpellCasting,
         isFreeCast: !!effect.isFreeCast,
       });
+      ActionProcessor.prepareAction(state, action);
       return;
     }
 

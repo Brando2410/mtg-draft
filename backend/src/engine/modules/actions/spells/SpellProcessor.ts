@@ -369,11 +369,12 @@ export class SpellProcessor {
                 };
             });
 
-            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, modalAbility.label || 'Choose options')
+            const { action: ActionProcessor } = getProcessors(state);
+            ActionProcessor.prepareAction(state, ActionBuilder.modal(playerId, cardToPlay.id, modalAbility.label || 'Choose options')
                 .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(choices, minChoices, maxChoices)
                 .withData({ isModeSelection: true, allowDuplicates: modalAbility.allowDuplicates, declaredTargets: declaredTargets || [] })
-                .build();
+                .build());
             return true;
         }
 
@@ -389,11 +390,12 @@ export class SpellProcessor {
 
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
-            state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, choiceEffect.label || 'Choose an option')
+            const { action: ActionProcessor } = getProcessors(state);
+            ActionProcessor.prepareAction(state, ActionBuilder.modal(playerId, cardToPlay.id, choiceEffect.label || 'Choose an option')
                 .withContext({ isSpellCasting: true, isFreeCast, isMiracleCast, parentContext, exileOnResolution })
                 .withChoices(choiceEffect.choices as ChoiceOption[], (choiceEffect.minChoices as number) || 1, (choiceEffect.maxChoices as number) || 1)
                 .withData({ declaredTargets: declaredTargets || [] })
-                .build();
+                .build());
             return true;
         }
 
@@ -416,7 +418,6 @@ export class SpellProcessor {
     public static activateAbility(state: GameState, engine: EngineContext, options: ActivateAbilityOptions): boolean {
         const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue, parentContext, exileOnResolution } = options;
         const { logger, layer: LayerProcessor, spellValidator: SpellValidator, spellInteractiveManager: SpellInteractiveManager } = getProcessors(state);
-
         const playerMustDiscard = Object.values(state.players).find(p => p.pendingDiscardCount > 0);
         if (playerMustDiscard) {
             logger.info(state, LogCategory.ACTION, `[DISCARD-BLOCK] Player ${playerMustDiscard.name} must finish discarding (${playerMustDiscard.pendingDiscardCount} cards) before any player can activate abilities.`);
@@ -424,24 +425,35 @@ export class SpellProcessor {
         }
 
         const obj = RuleUtils.findObject(state, cardId);
-        if (!obj) return false;
+        if (!obj) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: cardId ${cardId} not found.`);
+            return false;
+        }
 
         if (xValue !== undefined && RuleUtils.isEntity(obj)) {
             obj.xValue = xValue;
         }
 
         const player = state.players[playerId];
-        if (!player) return false;
+        if (!player) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: playerId ${playerId} not found.`);
+            return false;
+        }
 
         if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: priority player mismatch.`);
             return false;
         }
 
         if (state.pendingAction && !bypassPriority) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: pending action blocks activation.`);
             return false;
         }
 
-        if (!RuleUtils.isEntity(obj)) return false;
+        if (!RuleUtils.isEntity(obj)) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: obj is not an entity.`);
+            return false;
+        }
         const definition = obj.definition;
 
         const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
@@ -470,11 +482,13 @@ export class SpellProcessor {
         }
 
         if (!abilities[abilityIndex]) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: abilityIndex ${abilityIndex} not found in abilities array (length ${abilities.length}).`);
             return false;
         }
 
         const ability = abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) {
+            logger.warn(state, LogCategory.ACTION, `[DEBUG-MANA] activateAbility failed: ability at index ${abilityIndex} is not Activated.`);
             return false;
         }
 
@@ -531,7 +545,8 @@ export class SpellProcessor {
 
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
-            state.pendingAction = {
+            const { action: ActionProcessor } = getProcessors(state);
+            ActionProcessor.prepareAction(state, {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
@@ -548,7 +563,7 @@ export class SpellProcessor {
                     },
                     declaredTargets: declaredTargets || []
                 }
-            };
+            });
             return true;
         }
 
@@ -569,7 +584,8 @@ export class SpellProcessor {
                 const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, engine, cardToPlay);
 
                 if (tappedIds.length > 0) {
-                    state.pendingAction = ActionBuilder.confirmAutoTap(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
+                    const { action: ActionProcessor } = getProcessors(state);
+                    ActionProcessor.prepareAction(state, ActionBuilder.confirmAutoTap(playerId, cardToPlay.id, `Confirm auto-tap for ${cardToPlay.definition.name}?`)
                         .ingest({
                             isSpellCasting: true,
                             isFreeCast: isFreeCast,
@@ -583,7 +599,7 @@ export class SpellProcessor {
                             totalMana,
                             declaredTargets: declaredTargets || []
                         })
-                        .build();
+                        .build());
                     return true;
                 }
             } else if (!hasConfirmedAutoTap && !ManaProcessor.canPayMana(state, player, totalMana, cardToPlay)) {
@@ -841,7 +857,8 @@ export class SpellProcessor {
                 const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
 
                 if (tappedIds.length > 0) {
-                    state.pendingAction = ActionBuilder.confirmAutoTap(playerId, obj.id, `Confirm auto-tap for ${obj.definition.name}?`)
+                    const { action: ActionProcessor } = getProcessors(state);
+                    ActionProcessor.prepareAction(state, ActionBuilder.confirmAutoTap(playerId, obj.id, `Confirm auto-tap for ${obj.definition.name}?`)
                         .ingest({
                             isSpellCasting: true,
                             parentContext,
@@ -854,13 +871,15 @@ export class SpellProcessor {
                             abilityIndex,
                             declaredTargets: declaredTargets || []
                         })
-                        .build();
+                        .build());
                     return true;
                 }
             }
         }
 
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] finalizeAbilityActivation for ${obj.definition.name} (${obj.id}). Paying costs...`);
         CostProcessor.pay(state, ability.costs || [], obj, playerId);
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] finalizeAbilityActivation: costs paid.`);
 
         if (state.interaction) {
             state.interaction.lastSelections = {};
@@ -874,6 +893,7 @@ export class SpellProcessor {
 
         if (ability.isManaAbility) {
             const { effect: EffectProcessor } = getProcessors(state);
+            logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] Executing ${(ability.effects || []).length} effects for mana ability of ${obj.definition.name}.`);
             (ability.effects || []).forEach((eff) => {
                 EffectProcessor.executeEffect({
                     state,
@@ -885,6 +905,7 @@ export class SpellProcessor {
                     })
                 });
             });
+            logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] Executed effects for mana ability of ${obj.definition.name}.`);
             return true;
         }
 
@@ -957,7 +978,8 @@ export class SpellProcessor {
             };
         });
 
-        state.pendingAction = ActionBuilder.modal(playerId, cardToPlay.id, `Choose exact payment for ${cardToPlay.definition.name}`)
+        const { action: ActionProcessor } = getProcessors(state);
+        ActionProcessor.prepareAction(state, ActionBuilder.modal(playerId, cardToPlay.id, `Choose exact payment for ${cardToPlay.definition.name}`)
             .ingest({
                 isSpellCasting: true,
                 parentContext,
@@ -969,7 +991,7 @@ export class SpellProcessor {
                 declaredTargets,
                 choices: [{ label: 'Cancel', value: 'cancel' }]
             })
-            .build();
+            .build());
 
         const { logger } = getProcessors(state);
         logger.info(state, LogCategory.ACTION, `[MANA-CHOICE] ${state.players[playerId].name} must toggle hybrid payment.`);

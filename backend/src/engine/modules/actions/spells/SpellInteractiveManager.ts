@@ -380,7 +380,7 @@ export class SpellInteractiveManager {
             if (legalSacrificeIds.length === 0 && !isSelfSac) {
                 const { logger } = getProcessors(state);
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid objects to sacrifice for ${obj.definition.name}.`);
-                return false;
+                return null;
             }
 
             if (isSelfSac) {
@@ -416,7 +416,7 @@ export class SpellInteractiveManager {
             })).map(c => c.id);
             if (legalDiscardIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
-                return false;
+                return null;
             }
             const { action: ActionProcessor, logger: interactionLogger } = getProcessors(state);
             const action = ActionBuilder.modal(playerId, obj.id, "Discard a card to activate " + obj.definition.name)
@@ -446,7 +446,7 @@ export class SpellInteractiveManager {
             const amount = Number((tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
-                return false;
+                return null;
             }
             const { action: ActionProcessor, logger: interactionLogger } = getProcessors(state);
             const action = ActionBuilder.modal(playerId, obj.id, `Tap ${amount} creatures to activate ` + obj.definition.name)
@@ -484,7 +484,7 @@ export class SpellInteractiveManager {
             })).map((o: GameObject) => o.id);
             if (legalExileIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
-                return false;
+                return null;
             }
             const { action: ActionProcessor, logger: interactionLogger } = getProcessors(state);
             const action = ActionBuilder.modal(playerId, obj.id, "Exile a card to activate " + obj.definition.name)
@@ -502,7 +502,7 @@ export class SpellInteractiveManager {
             return true;
         }
 
-        return null;
+        return false;
     }
 
     /**

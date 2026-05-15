@@ -3,7 +3,7 @@ import { CardDefinition } from '@shared/engine_types';
 import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
-import { ManaProcessor } from '../engine/modules/magic/ManaProcessor';
+import { RuleUtils } from '../engine/utils/RuleUtils';
 
 export interface RegistryCard {
   name: string;
@@ -19,6 +19,8 @@ export interface RegistryCard {
   scryfall_id?: string;
   rarity?: string;
   subtypes?: string[];
+  types?: string[];
+  supertypes?: string[];
 }
 
 export class CardRegistryService {
@@ -29,31 +31,24 @@ export class CardRegistryService {
    * into the unified Card interface used by the frontend and persistence.
    */
   static standardizeCard(raw: any): Card {
-    const types = raw.types || [];
-    const subtypes = raw.subtypes || [];
-    const supertypes = raw.supertypes || [];
-
-    // 1. Resolve standard names from common aliases
     const name = raw.name || 'Unknown Card';
     const scryfall_id = raw.scryfall_id || raw.id || '';
     const manaCost = (raw.manaCost || raw.mana_cost || '').trim();
     const image_url = raw.image_url || raw.image_uris?.normal || raw.image_uris?.large || '';
     const back_image_url = raw.back_image_url || raw.card_faces?.[1]?.image_uris?.normal || '';
-    const colors = raw.colors || raw.card_colors || [];
     const keywords = raw.keywords || [];
 
-    // 2. Type Line Resolution
-    let typeLine = raw.typeLine || '';
-    if (!typeLine && types.length > 0) {
-      const parts = [];
-      if (supertypes.length > 0) parts.push(supertypes.join(' '));
-      parts.push(types.join(' '));
-      if (subtypes.length > 0) {
-        parts.push('—');
-        parts.push(subtypes.join(' '));
-      }
-      typeLine = parts.join(' ');
-    }
+    // Resolve Type Components
+    const typeLine = raw.typeLine || raw.type_line || '';
+    const parts = RuleUtils.getTypeLineParts(typeLine);
+
+    const types = raw.types || parts.types;
+    const subtypes = raw.subtypes || parts.subtypes;
+    const supertypes = raw.supertypes || parts.supertypes;
+
+    // Resolve Colors and CMC
+    const colors = raw.colors || (manaCost ? RuleUtils.getColorsFromManaCost(manaCost) : []);
+    const cmc = typeof raw.cmc === 'number' ? raw.cmc : (manaCost ? RuleUtils.getManaValue(manaCost) : 0);
 
     return {
       id: raw.id || `${scryfall_id}-${Math.random().toString(36).substring(2, 9)}`,
@@ -61,9 +56,9 @@ export class CardRegistryService {
       name,
       image_url,
       back_image_url,
-      rarity: raw.rarity || 'common',
+      rarity: raw.rarity || 'unknown',
       manaCost,
-      cmc: typeof raw.cmc === 'number' ? raw.cmc : (manaCost ? ManaProcessor.getManaValue(manaCost) : 0),
+      cmc,
       colors,
       typeLine,
       oracleText: raw.oracleText || raw.oracle_text || '',
@@ -72,6 +67,7 @@ export class CardRegistryService {
       loyalty: raw.loyalty?.toString(),
       keywords,
       types,
+      subtypes,
       supertypes
     };
   }

@@ -60,8 +60,8 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
             return;
         }
 
-        const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-        state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
+        const { action: ActionProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+        const action = ChoiceGenerator.createCardChoice(state, pool, {
             label: `${effect.label || "Search your library"}`,
             playerId: affectedPlayerId,
             sourceId: sourceId,
@@ -97,6 +97,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
             parentContext: context,
             targets: targets,
         });
+        ActionProcessor.prepareAction(state, action);
 
         if (effect.shuffle && context.effects) {
             context.effects.splice((context.effectIndex ?? 0) + 1, 0, {

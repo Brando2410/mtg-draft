@@ -53,7 +53,8 @@ export class TriggerProcessor {
       // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
       const uniqueTriggersMap = new Map<string, TriggeredAbility>();
       matchingTriggers.forEach((t: TriggeredAbility) => {
-        const key = `${t.id || t.sourceId + "_" + (t.abilityIndex || 0)}`;
+        // Rule 603.2: Use the persistent ID for deduplication
+        const key = t.id || `${t.sourceId}_${t.abilityIndex || 0}`;
         if (!uniqueTriggersMap.has(key)) {
           uniqueTriggersMap.set(key, t);
         }
@@ -438,7 +439,12 @@ export class TriggerProcessor {
       // Gather Registry Triggers
       if (state.ruleRegistry.triggeredAbilities) {
         logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-CACHE] Registry has ${state.ruleRegistry.triggeredAbilities.length} triggers.`);
-        state.ruleRegistry.triggeredAbilities.forEach((t) => allTriggers.push(t));
+        state.ruleRegistry.triggeredAbilities.forEach((t) => {
+          if (!t.id) {
+            t.id = IdUtils.generateId(`reg_${t.sourceId}_${t.abilityIndex || 0}`);
+          }
+          allTriggers.push(t);
+        });
       }
 
       // Index by bucket

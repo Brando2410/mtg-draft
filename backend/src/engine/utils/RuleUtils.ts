@@ -192,7 +192,7 @@ export class RuleUtils {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = keyword.toLowerCase().replace(/\s/g, '');
-        
+
         const check = (k: string) => {
             const normalized = k.toLowerCase().replace(/\s/g, '');
             return normalized === search || normalized.startsWith(search + '{') || (normalized.startsWith(search) && !isNaN(Number(normalized.substring(search.length, search.length + 1))));
@@ -539,6 +539,7 @@ export class RuleUtils {
      * Rule 603.10: Creates a robust snapshot of an object's state at a specific moment.
      * Essential for "leaves-the-battlefield" triggers which must look back in time.
      */
+
     public static createSnapshot(obj: GameObject): GameObject {
         return {
             ...obj,
@@ -550,6 +551,82 @@ export class RuleUtils {
             isBlocking: false,
             isGoaded: false,
         };
+    }
+
+    /**
+     * Standardized Type-Line Parsing (CR 205).
+     * Splits a string like "Legendary Creature — Elf Warrior" into its component parts.
+     */
+    public static getTypeLineParts(typeLine: string = ""): { supertypes: string[], types: string[], subtypes: string[] } {
+        const parts = typeLine.split(/[—\u2014-]/);
+        const main = parts[0].trim().split(/\s+/);
+        const sub = parts.length > 1 ? parts[1].trim().split(/\s+/) : [];
+
+        const supertypesList = ['Legendary', 'Basic', 'World', 'Snow', 'Ongoing'];
+        const supertypes: string[] = [];
+        const types: string[] = [];
+
+        main.forEach(p => {
+            if (supertypesList.includes(p)) supertypes.push(p);
+            else if (p) types.push(p);
+        });
+
+        return { supertypes, types, subtypes: sub.filter(s => !!s) };
+    }
+
+    /**
+     * Checks if a type-line string contains a specific type/subtype/supertype.
+     */
+    public static isTypeInLine(typeLine: string, search: string): boolean {
+        if (!typeLine) return false;
+        const s = search.toLowerCase().trim();
+        const { supertypes, types, subtypes } = this.getTypeLineParts(typeLine);
+        return [...supertypes, ...types, ...subtypes].some(t => t.toLowerCase() === s);
+    }
+
+    /**
+     * CR 202: Mana Cost and Mana Value.
+     * Calculates the numeric mana value (CMC) from a string like "{2}{B}{B}".
+     */
+    public static getManaValue(manaCost: string = ""): number {
+        if (!manaCost) return 0;
+        const matches = manaCost.match(/\{([^}]+)\}/g) || [];
+        let total = 0;
+
+        matches.forEach(m => {
+            const val = m.replace(/\{|\}/g, '');
+            if (!isNaN(Number(val))) {
+                total += Number(val);
+            } else if (val === 'X') {
+                // X is 0 for mana value calculation unless on the stack (CR 202.3e)
+                total += 0;
+            } else {
+                // Colored mana symbols, hybrid, etc.
+                total += 1;
+            }
+        });
+
+        return total;
+    }
+
+    /**
+     * Extracts colors from a mana cost string.
+     */
+    public static getColorsFromManaCost(manaCost: string = ""): string[] {
+        if (!manaCost) return [];
+        const colors = new Set<string>();
+        const matches = manaCost.match(/\{([^}]+)\}/g) || [];
+
+        matches.forEach(m => {
+            const val = m.replace(/\{|\}/g, '').toUpperCase();
+            if (val.includes('W')) colors.add('W');
+            if (val.includes('U')) colors.add('U');
+            if (val.includes('B')) colors.add('B');
+            if (val.includes('R')) colors.add('R');
+            if (val.includes('G')) colors.add('G');
+        });
+
+        return Array.from(colors);
     }
 }
 

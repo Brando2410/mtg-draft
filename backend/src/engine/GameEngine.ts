@@ -13,6 +13,8 @@ import { MovementHandler } from './modules/effects/handlers/zone/MoveEffectHandl
 import { SpellValidator } from './modules/actions/spells/SpellValidator';
 import { SpellCostCalculator } from './modules/actions/spells/SpellCostCalculator';
 import { SpellInteractiveManager } from './modules/actions/spells/SpellInteractiveManager';
+import { LogCategory } from './utils/EngineLogger';
+import { getProcessors } from './modules/ProcessorRegistry';
 import { oracle } from './OracleLogicMap';
 
 /**
@@ -186,6 +188,8 @@ export class GameEngine implements EngineContext {
       console.error('[GameEngine] interactWithPermanent called but state is undefined');
       return false;
     }
+    const { logger } = getProcessors(this.state);
+    logger.info(this.state, LogCategory.ACTION, `[DEBUG-MANA] GameEngine.interactWithPermanent called for playerId: ${playerId}, cardId: ${cardId}`);
     return PlayerActionProcessor.interactWithPermanent(
       this.state,
       playerId,

@@ -24,8 +24,8 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
         if (cards.length === 0) return;
 
         if (effect.type === EffectType.Scry) {
-            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-            state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
+            const { action: ActionProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+            const action = ChoiceGenerator.createScryChoice(state, cards, {
                 label: `Scry ${cards.length}`,
                 playerId: affectedPlayerId,
                 sourceId: context.sourceId || stackObject?.id || "",
@@ -34,9 +34,10 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
                 isSpellCasting: !!effect.isSpellCasting,
                 isFreeCast: !!effect.isFreeCast,
             });
+            ActionProcessor.prepareAction(state, action);
         } else if (effect.type === EffectType.Surveil) {
-            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-            state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
+            const { action: ActionProcessor, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+            const action = ChoiceGenerator.createSurveilChoice(state, cards, {
                 label: `Surveil ${cards.length}`,
                 playerId: affectedPlayerId,
                 sourceId: context.sourceId || stackObject?.id || "",
@@ -45,6 +46,7 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
                 isSpellCasting: !!effect.isSpellCasting,
                 isFreeCast: !!effect.isFreeCast,
             });
+            ActionProcessor.prepareAction(state, action);
         }
     }
 };

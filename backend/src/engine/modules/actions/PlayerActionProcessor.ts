@@ -86,7 +86,8 @@ export class PlayerActionProcessor {
           return isActivated && hasLoyalty;
         });
 
-      state.pendingAction = {
+      const { action: ActionProcessor } = getProcessors(state);
+      ActionProcessor.prepareAction(state, {
         type: ActionType.ModalSelection,
         playerId: playerId,
         sourceId: cardId,
@@ -109,7 +110,7 @@ export class PlayerActionProcessor {
             };
           })
         }
-      };
+      });
       state.priorityPlayerId = null;
       return true;
     }
@@ -196,7 +197,8 @@ export class PlayerActionProcessor {
         }
 
         // Safety Step: For single non-mana utility abilities, show a confirmation modal 
-        state.pendingAction = {
+        const { action: ActionProcessor } = getProcessors(state);
+        ActionProcessor.prepareAction(state, {
           type: ActionType.ModalSelection,
           playerId: playerId,
           sourceId: cardId,
@@ -208,14 +210,15 @@ export class PlayerActionProcessor {
               { label: 'Cancel', value: 'none' }
             ]
           }
-        };
+        });
         state.priorityPlayerId = null;
         return true;
       }
 
       // If multiple abilities (common for creatures with utility + mana or multiple utilities)
       if (filtered.length > 1) {
-        state.pendingAction = {
+        const { action: ActionProcessor } = getProcessors(state);
+        ActionProcessor.prepareAction(state, {
           type: ActionType.ModalSelection,
           playerId: playerId,
           sourceId: cardId,
@@ -226,7 +229,7 @@ export class PlayerActionProcessor {
               value: entry.index
             }))
           }
-        };
+        });
         state.priorityPlayerId = null;
         return true;
       }
@@ -259,6 +262,9 @@ export class PlayerActionProcessor {
       manaAbilityIdx = abilities.findIndex((a) => a.isManaAbility);
     }
     if (manaAbilityIdx === -1) return false;
+
+    const { logger } = getProcessors(state);
+    logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] autoTapLand called for ${obj.definition.name} (${cardId}). abilityIndex: ${manaAbilityIdx}, choiceIndex: ${choiceIndex}`);
 
     // Standardize ability index and use bypassTargeting=true for silent, synchronous tapping 
     // during the auto-tap sequence.

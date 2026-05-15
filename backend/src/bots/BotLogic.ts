@@ -80,7 +80,7 @@ export class BotLogic {
       // 1. Calculate color commitment based on ALL picked cards
       const colorCounts: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
       player.pool.forEach(card => {
-         const colors = card.colors || card.card_colors || [];
+         const colors = card.colors || [];
          colors.forEach(c => { if (colorCounts[c] !== undefined) colorCounts[c]++; });
       });
 
@@ -90,7 +90,7 @@ export class BotLogic {
 
       // Helper for in-color check
       const isCardOnColor = (c: Card) => {
-         const colors = c.colors || c.card_colors || [];
+         const colors = c.colors || [];
          if (colors.length === 0) return true; // C
          return colors.some(col => col === topColor || col === secondColor);
       };
@@ -120,7 +120,7 @@ export class BotLogic {
          let rarityScore = rarityOrder[card.rarity?.toLowerCase() || 'common'] || 5;
 
          // 2. COLOR CHECK & AFFINITY
-         const cardColors = card.colors || card.card_colors || [];
+         const cardColors = card.colors || [];
          let isOnColor = false;
          let isStrictlyOffColor = false;
          

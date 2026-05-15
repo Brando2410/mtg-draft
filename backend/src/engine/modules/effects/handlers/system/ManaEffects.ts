@@ -89,13 +89,13 @@ export const ManaHandler: IEffectHandler = {
               const total = (a as number) * amount;
               if (total > 0) {
                 newPool[s as keyof ManaPool] += total;
-                logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total}`);
+                logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] Produced {${s}} x ${total}`);
               }
             });
             const genericTotal = res.generic * amount;
             if (genericTotal > 0) {
               newPool.C += genericTotal;
-              logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${genericTotal}`);
+              logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] Produced {C} x ${genericTotal}`);
             }
             p.manaPool = newPool;
           }

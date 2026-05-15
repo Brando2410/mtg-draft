@@ -195,9 +195,11 @@ export class CostProcessor {
 
     switch (cost.type) {
       case CostType.Tap:
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] CostProcessor.paySingle: Tapping ${source.definition.name} (${source.id}). Previous state: ${source.isTapped}`);
         source.isTapped = true;
         const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, payload: { targetIds: [source.id], sourceId: source.id, object: source } });
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] CostProcessor.paySingle: Tapped ${source.definition.name}.`);
         break;
 
       case CostType.Mana:

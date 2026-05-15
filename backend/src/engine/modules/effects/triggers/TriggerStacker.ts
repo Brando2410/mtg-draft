@@ -60,12 +60,13 @@ export class TriggerStacker {
           return true;
         }
 
-        logger.info(state, LogCategory.TRIGGER, `[TRIGGER-QUEUE] Player ${pId} must order ${playersTriggers.length} triggers.`);
-        state.pendingAction = {
+        const { action: ActionProcessor, logger: triggerLogger } = getProcessors(state);
+        triggerLogger.info(state, LogCategory.TRIGGER, `[TRIGGER-QUEUE] Player ${pId} must order ${playersTriggers.length} triggers.`);
+        ActionProcessor.prepareAction(state, {
           type: ActionType.OrderTriggers,
           playerId: pId,
           data: { label: "OrderTriggers", triggers: playersTriggers },
-        };
+        });
         return true;
       }
     }

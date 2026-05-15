@@ -107,7 +107,7 @@ export class ChoiceProcessor {
         const selections = payload.selections;
         const firstSelection = selections[0];
 
-        logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Selections: ${selections.join(', ')}`);
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] ChoiceProcessor.resolveChoice: Resolving ${action.type} for ${playerId}. Selections: ${selections.join(', ')}`);
 
         const isModal = action.type === ActionType.ModalSelection;
         const isLegendRule = action.type === ActionType.LegendRule;
@@ -697,13 +697,12 @@ export class ChoiceProcessor {
                     action.data.metadata = { ...action.data.metadata, abilityIndex };
                     action.data.isTargetingModal = true;
                 }
-                state.pendingAction = action;
-
                 logger.info(state, LogCategory.ACTION, `Select target from graveyard for ${obj.definition.name}'s ability.`);
                 return true;
             }
 
-            state.pendingAction = {
+            const { action: ActionProcessor } = getProcessors(state);
+            ActionProcessor.prepareAction(state, {
                 type: ActionType.Targeting,
                 playerId,
                 sourceId: obj.id,
@@ -717,7 +716,7 @@ export class ChoiceProcessor {
                     minCount,
                     count
                 }
-            };
+            });
             state.priorityPlayerId = playerId;
             logger.info(state, LogCategory.ACTION, `Select target for ${obj.definition.name}'s ability.`);
             return true;
@@ -759,14 +758,19 @@ export class ChoiceProcessor {
         if (!choice && firstSelection !== undefined && !isEmptyConfirm) {
             let idxStr = String(firstSelection);
             const idx = parseInt(idxStr.startsWith('CHOICE_') ? idxStr.substring(7) : idxStr);
-            choice = actionData.choices?.[idx] || null;
+            choice = !isNaN(idx) ? (actionData.choices?.[idx] || null) : (actionData.choices?.find(c => String(c.value) === idxStr) || null);
         }
 
         const savedTargets = (meta.declaredTargets as string[]) || [];
         const costType = actionData.costType as string;
 
         const isConfirmAutoTap = action.type === ActionType.ConfirmAutoTap;
-        if (!choice && !isEmptyConfirm && !meta.isManaChoiceToggle && !isConfirmAutoTap) return false;
+        logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] ChoiceProcessor.handleModalSelection: firstSelection=${firstSelection}, choiceValue=${choice?.value}, isEmptyConfirm=${isEmptyConfirm}, isManaToggle=${meta.isManaChoiceToggle}, isConfirmAutoTap=${isConfirmAutoTap}`);
+
+        if (!choice && !isEmptyConfirm && !meta.isManaChoiceToggle && !isConfirmAutoTap) {
+            logger.info(state, LogCategory.ACTION, `[DEBUG-MANA] ChoiceProcessor.handleModalSelection: Rejected choice because it didn't match any known modality.`);
+            return false;
+        }
 
         // --- FLAG PERSISTENCE ---
         // We must set the confirmedAutoTap flag BEFORE any redirections (like activateAbility)
@@ -788,6 +792,32 @@ export class ChoiceProcessor {
         }
 
         state.pendingAction = undefined;
+
+        if (isConfirmAutoTap) {
+            const choiceStr = String(firstSelection).toLowerCase();
+            const isConfirm = choiceStr === 'confirm' || choiceStr === 'done' || choiceStr === 'true';
+
+            if (isConfirm) {
+                if (!state.interaction) state.interaction = { lastSelections: {}, flags: {} };
+                if (!state.interaction.flags) state.interaction.flags = {};
+                state.interaction.flags.confirmedAutoTap = true;
+            } else {
+                const actionData = action.data as any;
+                const player = state.players[playerId];
+                if (player && actionData?.metadata) {
+                    if (actionData.metadata.manaSnapshot) player.manaPool = actionData.metadata.manaSnapshot;
+                    if (actionData.metadata.restrictedSnapshot) player.restrictedMana = actionData.metadata.restrictedSnapshot;
+                    if (actionData.metadata.tappedLandIds) {
+                        (actionData.metadata.tappedLandIds as string[]).forEach((id: string) => {
+                            const land = RuleUtils.findObject(state, id);
+                            if (land && 'isTapped' in land) land.isTapped = false;
+                        });
+                    }
+                }
+                logger.info(state, LogCategory.ACTION, `Auto-tap cancelled. Reverting mana and lands.`);
+                return false;
+            }
+        }
 
         if (costType === 'Sacrifice') {
             const val = choice?.value as string;
@@ -984,9 +1014,6 @@ export class ChoiceProcessor {
             const stackObj = meta.stackObj as StackObject;
             ResolutionManager.resume(state, engine, stackObj, sourceId, undefined, action);
             return true;
-
-            this.finalizeResolution(state, sourceId, stackObj, action, engine);
-            return true;
         }
 
         let finalTargets = savedTargets;
@@ -1038,7 +1065,7 @@ export class ChoiceProcessor {
 
         // ARCHITECTURAL NOTE: Metadata Propagation
         state.pendingAction = undefined; // IMPORTANT: Clear the action so we don't infinitely loop
-        
+
         if (meta.abilityIndex !== undefined) {
             return getProcessors(state).spell.activateAbility(
                 state,
@@ -1416,12 +1443,13 @@ export class ChoiceProcessor {
         } else if (meta.isDiscardSequence || action.type === ActionType.Discard) {
             const discardAmount = meta.discardAmount || 1;
             const failureEffects = meta.onFailureEffects;
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
-            if (state.pendingAction && state.pendingAction.data) {
-                state.pendingAction.data.isDiscardSequence = true;
-                state.pendingAction.data.effectIndex = meta.effectIndex;
-                state.pendingAction.data.metadata = {
-                    ...state.pendingAction.data.metadata,
+            const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
+            const action = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
+            if (action && action.data) {
+                action.data.isDiscardSequence = true;
+                action.data.effectIndex = meta.effectIndex;
+                action.data.metadata = {
+                    ...action.data.metadata,
                     isDiscardSequence: true,
                     effects: meta.effects,
                     effectIndex: meta.effectIndex,

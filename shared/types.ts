@@ -25,6 +25,7 @@ export interface Card {
     // --- UI/Logic Helpers ---
     types: string[];
     supertypes: string[];
+    subtypes: string[];
 }
 
 export interface Player {

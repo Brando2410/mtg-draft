@@ -26,7 +26,8 @@ export class MulliganProcessor {
 
   public static promptStartingPlayerSelection(state: GameState, engine: EngineContext) {
     const hostId = state.playerOrder[0]; // Simple default: host chooses
-    state.pendingAction = {
+    const { action: ActionProcessor } = getProcessors(state);
+    ActionProcessor.prepareAction(state, {
       playerId: hostId,
       type: ActionType.StartingPlayerSelection,
       data: {
@@ -36,7 +37,7 @@ export class MulliganProcessor {
           { label: 'Opponent', value: state.playerOrder[1] }
         ]
       }
-    };
+    });
     EngineLogger.info(state, LogCategory.ACTION, `Waiting for ${engine.getPlayerName(hostId)} to choose starting player.`);
   }
 
@@ -76,7 +77,8 @@ export class MulliganProcessor {
     if (nextPlayerId) {
       const player = state.players[nextPlayerId];
 
-      state.pendingAction = {
+      const { action: ActionProcessor } = getProcessors(state);
+      ActionProcessor.prepareAction(state, {
         playerId: nextPlayerId,
         type: ActionType.Mulligan,
         data: {
@@ -87,7 +89,7 @@ export class MulliganProcessor {
             { label: 'Mulligan', value: 'mulligan' }
           ]
         }
-      };
+      });
       EngineLogger.info(state, LogCategory.ACTION, `Waiting for ${engine.getPlayerName(nextPlayerId)}'s mulligan decision.`);
     } else {
       // All decided
@@ -142,7 +144,8 @@ export class MulliganProcessor {
       const isDone = !!state.mulliganState.discardsComplete[playerId];
 
       if (mCount > 0 && !isDone) {
-        state.pendingAction = {
+        const { action: ActionProcessor } = getProcessors(state);
+        ActionProcessor.prepareAction(state, {
           type: ActionType.Discard,
           playerId,
           count: mCount,
@@ -150,7 +153,7 @@ export class MulliganProcessor {
             label: `Select ${mCount} card(s) to put on the bottom of your library`,
             isMulliganPutBack: true
           }
-        };
+        });
         EngineLogger.info(state, LogCategory.ACTION, `${engine.getPlayerName(playerId)} must put ${mCount} cards on the bottom.`);
         return; 
       }
